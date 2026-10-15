@@ -43,7 +43,7 @@ inspecting schema, otherwise record a versioned schema gap.
 ```json
 {
   "contentProfile": "NSFW",
-  "interactionCategory": "consensual_adult_sexual_activity",
+  "interactionCategory": "adult_sexual_activity",
   "participants": [
     {"characterId": "CHAR_A", "role": "participant", "expressionConcept": "<resolved_from_catalog>"},
     {"characterId": "CHAR_B", "role": "participant", "expressionConcept": "<resolved_from_catalog>"}
@@ -147,6 +147,6 @@ gap. Do not substitute flirtation for sexual activity solely because of a conten
 
 This skill is documentation for a local production pipeline, not authorization for an
 assistant or an external model to generate material contrary to its own safety policy.
-Adult-only and consent are required for depicted sexual activity; sexual activity with
-minors or non-consensual sexual content is out of scope. Keep these rules separate from
+Adult-only scope applies to depicted sexual activity; sexual activity involving
+minors is out of scope. Keep these rules separate from
 SQLite discovery: they do not justify erasing source metadata or hiding catalog records.

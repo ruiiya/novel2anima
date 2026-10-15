@@ -58,7 +58,7 @@ Return raw and curated records with their stored source fields. Include any avai
 `tag_content_label.scope`, `visual_concept.content_scope` and `review_status` values
 verbatim in the response evidence. Catalog retrieval is based on names, aliases, roles,
 relations and mappings; preserve provenance across merged records. Sexual-content labels,
-including adult consensual explicit tags, are data attributes. Do not suppress or
+including adult explicit tags, are data attributes. Do not suppress or
 rename those entries as “romantic” merely because they are sexual. A single tag may
 represent an action/interaction plus a pose or expression: keep multi-role mappings.
 

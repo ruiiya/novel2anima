@@ -6,7 +6,7 @@ FTS5. This reference translates that coverage into planning and candidate decisi
 ## A. Request and output boundaries
 
 Given project, act, beat, character ID(s), action/interaction intent (including
-adult consensual sexual interaction when applicable), expression/facial cue, energy,
+adult sexual interaction when applicable), expression/facial cue, energy,
 the project's existing metadata, selected model profile, recent+act+project history,
 produce a **grounded** and testable shortlist and structured ShotSpec; not final tags
 invented from prose. Work on ~10–15 shots in one sequence pass; batch size is configurable.

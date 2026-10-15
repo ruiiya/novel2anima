@@ -34,7 +34,7 @@ with these runtime skills to prevent duplicate, outdated instructions taking pre
 - Directed `IMPLIES` comes from source edges; `COMPATIBLE`, `RECOMMENDS`, and
   `CONFLICTS_WITH` are separate curated mappings only if present in the DB.
 - Content-like source metadata fields and editorial statuses are stored DB facts;
-  their field names and native scales remain unchanged. NSFW-first includes
+  their field names and native scales remain unchanged. NSFW-first includes adult
   sexual-action/interaction vocabulary, not only suggestiveness. Keep these records
   discoverable alongside SFW material; source labels do not establish model permissions.
 - SQLite MVP uses FTS5/B-tree/JSON, with migrations, integrity checks and WAL.

@@ -1,6 +1,6 @@
 ---
 name: novel2anima-shot-pipeline
-description: "Plan Novel2Anima V4 acts and action/expression-first ShotSpecs, including adult consensual sexual NSFW scene intents, with full SQLite catalog retrieval, project memory, and render QC. The LLM selects contextually and the backend compiles model-supported Anima Base 2B + Turbo 4-step LoRA prompts."
+description: "Plan Novel2Anima V4 acts and action/expression-first ShotSpecs, including adult sexual NSFW scene intents, with full SQLite catalog retrieval, project memory, and render QC. The LLM selects contextually and the backend compiles model-supported Anima Base 2B + Turbo 4-step LoRA prompts."
 metadata:
   short-description: V4 full-catalog shot planning, Anima compilation and QC
 ---
@@ -27,7 +27,7 @@ references are not evidence that a populated DB or production backend exists.
   revisions rather than rejected for violating the default. A shot may depict one or multiple **adult**
   participants; when interaction involves multiple subjects, preserve distinct identities
   and action/expression roles. Do not force `solo` onto multi-character interactions.
-- **NSFW-first scope includes sexual interaction and sexual activity**,
+- **NSFW-first scope includes adult sexual interaction and activity**,
   rather than limiting shots to teasing, nudity or romance. Keep the intent recognizable
   at the structured planning/metadata layer; do not silently rewrite an NSFW sexual beat
   into a SFW beat. This is a workflow scope.
