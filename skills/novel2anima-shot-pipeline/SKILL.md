@@ -16,7 +16,10 @@ references are not evidence that a populated DB or production backend exists.
 
 ## Invariants
 
-- Start with a user's **idea** and collaboratively build a *living novel/project*.
+- Idea stage first: when the user asks for suggestions, present **3–5 distinct ideas**,
+  each as a short synopsis (logline, premise, cast with ages, tone/kink focus, one-line act
+  shape). Do not expand acts, beats or ShotSpecs until the user picks one.
+- After the user selects an idea, collaboratively build the *living novel/project* with them.
   Adaptively plan acts and beats; detail the current act, leave future acts as outlines.
   Batches of ~10–15 shots and projects of 200–500+ shots are planning targets, not limits.
 - Each ShotIntent and ShotSpec must contain **ACTION/INTERACTION + EXPRESSION/FACIAL CUES**.
@@ -41,36 +44,39 @@ references are not evidence that a populated DB or production backend exists.
 
 ## End-to-end execution
 
-1. **Load context:** `project`, `character_profile`, current `act`, `model_profile`,
+1. **Idea pass (skip if the user already fixed an idea):** offer 3–5 distinct ideas, each with a
+   short synopsis and its kink/tone plus rough act shape. Then **stop and wait for the user's
+   pick**; only the chosen idea goes on to detailed narrative co-development.
+2. **Load context:** `project`, `character_profile`, current `act`, `model_profile`,
    previous `shot` and `generation`. Report missing or unimported data.
-2. **Plan beats:** articulate primary action, expression/facial cues, intensity,
+3. **Plan beats:** articulate primary action, expression/facial cues, intensity,
    interaction and narrative progression separately from model-specific tag syntax.
-3. **Retrieve from all lanes:** For NSFW sexual beats, look for adult sexual
+4. **Retrieve from all lanes:** For NSFW sexual beats, look for adult sexual
    action/interaction tags and their associated expressions, as well as neutral pose,
    motion and camera support; do not downgrade the semantic intent. Search
    `visual_concept_fts`, `visual_concept`, `concept_tag`, raw `tag`, `tag_alias`, multi-role `tag_role`, directed `tag_relation` and
    `concept_relation`, Wardrobe/Tools seed mappings, `tag_source` and `source_snapshot`,
    original `tag_content_label` data, shot history and generation feedback. A `draft` or
    missing concept must not hide relevant raw tags.
-4. **Combine evidence:** canonical IDs, source revisions, original metadata/labels,
+5. **Combine evidence:** canonical IDs, source revisions, original metadata/labels,
    concept mappings, role/confidence, review state and the paths by which a candidate was
    discovered. Keep all discovery lanes observable; report gaps instead of fake results.
    Let the LLM make context-sensitive creative selections using the full retrieved evidence.
-5. **Rank:** action match and expression match first; then character/style continuity,
+6. **Rank:** action match and expression match first; then character/style continuity,
    novelty of the action-expression pair, QC-informed pose/motion/camera choice. Compare
    last 5–10 approved shots, whole act and whole project; weights need benchmarking.
-6. **Sequence Director:** consider top 5–10 alternatives per needed role/slot as a useful
+7. **Sequence Director:** consider top 5–10 alternatives per needed role/slot as a useful
    baseline, then compare combinations across an entire batch. Generate `ShotSpec[]`
    grounded in real DB identifiers, without many identical action-expression signatures.
-7. **Validate/compile:** check required action/expression, real tag/concept IDs, identity
+8. **Validate/compile:** check required action/expression, real tag/concept IDs, identity
    locks (for every participant), tag syntax, alias/implied redundancies, curated conflicts
    and camera/pose consistency. Do not mechanically downgrade sexual tags by source rating;
    actual output still follows applicable assistant/tool/provider constraints. Select
    compact primary/optional/alternative ingredients; do not stuff all retrieved tags
    into the prompt. Contextual interpretation remains with the LLM.
-8. **Render:** use the actual ComfyUI workflow with Anima Base 2B + Turbo 4-step LoRA;
+9. **Render:** use the actual ComfyUI workflow with Anima Base 2B + Turbo 4-step LoRA;
    record model, LoRA, sampler, CFG, prompt, seed, generated paths and outcome.
-9. **QC and revise:** review action/expression fidelity, identity, white background,
+10. **QC and revise:** review action/expression fidelity, identity, white background,
    artifacts and near-duplicates. Keep rejected attempts as diagnostics, revisions appended
    rather than overwriting accepted shots; use bounded targeted retries.
 
