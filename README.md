@@ -57,15 +57,16 @@ from that cache. Licenses are recorded per source in `sources.json` and copied i
 - **No retrieval/ranking API, no shot history, no ComfyUI orchestration** (P3–P5).
 - Alias conflicts (26,653 rows) are resolved first-writer-wins, implications db first.
   Losing CSV aliases are counted in the load stats, not stored.
-- `data/sources/` and `db/novel_anima.db` are gitignored: `python etl/build.py all`
-  rebuilds both. The implications snapshot is a weak pin (site rebuild changes bytes),
-  so the manifest hash is the authoritative record.
+- `data/sources/` is gitignored: `python etl/build.py fetch` refetches it. `db/novel_anima.db`
+  is tracked via Git LFS, so run `git lfs install` before cloning. The implications snapshot
+  is a weak pin (site rebuild changes bytes), so the manifest hash is the authoritative record.
 
 ## Layout
 
     sql/schema_v1.sql      DDL (16 tables + FTS5 + triggers), from the V1 schema-only db
     etl/sources.json       pinned source list
     etl/build.py           schema / fetch / load / verify
-    db/novel_anima.db      built catalog (gitignored)
+    db/novel_anima.db      built catalog (Git LFS)
     db/import_report.json  counts + check results from the last verify
     data/sources/          raw downloads + sha256 manifest (gitignored)
+    skills/                novel2anima-catalog + novel2anima-shot-pipeline (skill specs)
