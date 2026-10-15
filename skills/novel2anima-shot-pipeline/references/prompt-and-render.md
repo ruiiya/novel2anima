@@ -32,30 +32,38 @@ action remains nonsexual**. When the actual beat involves adult sexual interacti
 represent that intent and participants in the ShotSpec fields supported by the
 application; never invent SQLite columns to hold it.
 
-## Adult sexual ShotSpec representation (non-graphic schema illustration)
+## High-intensity, multi-participant NSFW ShotSpec (metadata example)
 
-A sexual scene can be modeled without censoring its semantic category to romance.
-For **multiple adult participants**, the LLM-level DTO may carry an interaction category,
-participant IDs, and an expression for each character. This structure is **not** a claim
-that these fields already exist in SQLite V1; map into existing JSON fields only after
-inspecting schema, otherwise record a versioned schema gap.
+An adult story can carry specific group/intensity genre metadata without its meaning
+being rewritten as romance. A high-intensity group scene may include labels such as
+`gangbang`, `group_sex` or `rough_sex` when those labels actually describe user intent.
+Preserve the number of participants and each adult character's identity, action role,
+expression, and state. Treat genre/tone labels separately from the primary action tag.
+
+This application-level DTO is illustrative, **not** a claim about SQLite V1 columns:
 
 ```json
 {
   "contentProfile": "NSFW",
-  "interactionCategory": "adult_sexual_activity",
+  "storyGenre": ["gangbang", "group_sex"],
+  "toneTags": ["rough_sex"],
+  "intensityBand": "high",
+  "interactionCategory": "adult_group_sex",
   "participants": [
     {"characterId": "CHAR_A", "role": "participant", "expressionConcept": "<resolved_from_catalog>"},
-    {"characterId": "CHAR_B", "role": "participant", "expressionConcept": "<resolved_from_catalog>"}
+    {"characterId": "CHAR_B", "role": "participant", "expressionConcept": "<resolved_from_catalog>"},
+    {"characterId": "CHAR_C", "role": "participant", "expressionConcept": "<resolved_from_catalog>"}
   ],
   "primaryActionConcept": "<resolved_from_catalog>",
   "background": "pure_white"
 }
 ```
 
-Do not invent specific catalog IDs or turn this illustrative DTO into a purported
-existing database schema. The exact sexual action is selected from the imported catalog
-and represented only at the level compatible with the applicable output policies.
+The displayed genre labels are input/retrieval candidates, **not asserted live DB
+entries**. Only use concrete catalog IDs after resolving them. Map extra DTO fields
+into actual JSON fields where supported, otherwise report a schema gap; never invent
+SQLite columns. Keep original semantic labels available even if a downstream provider
+cannot render a particular request.
 
 ## Prompt block order
 
@@ -84,6 +92,8 @@ rendering environment.
    return original source fields and review values with the candidates.
 3. Attach provenance, original labels and editorial status. Let the LLM interpret shot
    context while keeping candidate discovery comprehensive. Preserve source usage rights.
+   In group scenes, retain participant count, role assignments, story genre and intensity
+   separately from model tag candidates.
 4. Rank on action relevance, expression fit, and novelty of the action-expression pair;
    sexual action/interaction is eligible for this semantic ranking like any other adult
    scene intent. Preserve evidence without adding content-grade penalties;
@@ -144,9 +154,6 @@ Do not treat `contentProfile=NSFW` as a request to change all shots to sexual co
 mixed projects also contain nonsexual actions. Preserve relationship/participants and
 per-character expressions if the actual schema supports them; otherwise flag a DTO/schema
 gap. Do not substitute flirtation for sexual activity solely because of a content label.
-
-This skill is documentation for a local production pipeline, not authorization for an
-assistant or an external model to generate material contrary to its own safety policy.
-Adult-only scope applies to depicted sexual activity; sexual activity involving
-minors is out of scope. Keep these rules separate from
-SQLite discovery: they do not justify erasing source metadata or hiding catalog records.
+For multi-character scenes, preserve subject-specific action/expression and per-character
+carry/delta instead of flattening all participants into one shared state. Adult-only
+scope is unchanged; keep catalog discovery independent from generation-stage constraints.

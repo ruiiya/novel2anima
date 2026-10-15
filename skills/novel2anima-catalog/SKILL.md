@@ -18,7 +18,8 @@ and [references/full-coverage.md](references/full-coverage.md) for coverage and 
 Maintain **one local SQLite file** (B-tree, JSON, FTS5) holding three connected layers:
 `Raw Danbooru/Anima Tags → Visual Concepts → Project/Shot History + Render Feedback`.
 Import and search the complete source vocabulary, **including adult sexual/explicit NSFW
-terms**, without replacing their meaning with generic romance or suggestiveness. Keep
+terms and high-intensity group/rough labels when present**, without replacing their
+meaning with generic romance or suggestiveness. Keep
 source-provided fields, original values, editorial statuses and provenance as ordinary
 database metadata. NSFW, sexual activity and explicit source categories are part of the
 catalog's searchable vocabulary, not automatic reasons to omit records. Semantic and
@@ -66,8 +67,11 @@ directed relationship expansion; Wardrobe/Tools seeds and variants; provenance; 
 history; model profile; generation QC. Dedupe on canonical IDs while retaining *all*
 evidence paths. `draft`, `unreviewed`, and unmapped raw records remain **discoverable** with
 original metadata and confidence attached. Use all recorded statuses in generic retrieval.
-A query for an adult sexual interaction must search action/interaction and expression roles, plus canonical tags, aliases,
-concepts and relations, not just clothing/pose/euphemistic vocabulary.
+A query for an adult sexual interaction, including group/rough genre intent, must
+search action/interaction and expression roles, plus canonical tags, aliases, concepts
+and relations, not just clothing/pose/euphemistic vocabulary. Search user-provided labels
+such as `gangbang`, `group_sex`, `rough_sex` as canonical/alias/FTS candidates; never
+assume they exist or create synthetic tag IDs when the source DB lacks them.
 
 When no curated concept exists, return raw-tag, alias or role candidates and report
 `CURATION_GAP`. An editorial status records review progress, not whether a term exists in the catalog.

@@ -58,8 +58,10 @@ Return raw and curated records with their stored source fields. Include any avai
 `tag_content_label.scope`, `visual_concept.content_scope` and `review_status` values
 verbatim in the response evidence. Catalog retrieval is based on names, aliases, roles,
 relations and mappings; preserve provenance across merged records. Sexual-content labels,
-including adult explicit tags, are data attributes. Do not suppress or
-rename those entries as “romantic” merely because they are sexual. A single tag may
+including adult explicit tags and group/rough genre labels, are data attributes.
+Do not suppress or rename those entries as “romantic” merely because they are sexual.
+Original category/tone labels are not proof of an actionable tag ID: resolve canonical
+spellings and roles against imported sources before referencing any tag in a ShotSpec. A single tag may
 represent an action/interaction plus a pose or expression: keep multi-role mappings.
 
 The historical report of 297 `draft` concepts is unverified without the live DB. When

@@ -196,7 +196,8 @@ Capture for each import/retrieval/release:
 1. Same pinned ETL twice → no duplicate canonical/alias/source/relation rows.
 2. All five source families have contributions or explicit skip reasons.
 3. All stored label values remain searchable without being relabeled or overwritten,
-   including NSFW and adult sexual activity categories (where such records exist).
+   including NSFW, high-intensity adult group/rough labels and adult sexual activity
+   categories (where such records exist).
 4. Draft and unreviewed concepts are returned as provisional in discovery.
 5. FTS miss + canonical hit, FTS miss + alias hit, and concept-less raw role search succeed.
 6. Multi-role tag preserves every role and source sighting.
@@ -228,3 +229,8 @@ These tests verify **reachability**, not permission to generate a particular ima
 5. A query with `contentProfile=SFW` can still inspect all available catalog evidence;
    final selection should follow the intended scene and external output constraints,
    not permanently erase or mutate source data.
+6. For adult-only high-intensity group intent, query `gangbang`, `group_sex` and
+   `rough_sex` through canonical, alias and FTS/role routes. Preserve any real hits and
+   source labels; if absent, return an explicit catalog gap instead of a sanitized
+   substitute or fabricated IDs. Confirm participant tracking is per character in the
+   planner and do not impose a source-label-based severity ceiling.

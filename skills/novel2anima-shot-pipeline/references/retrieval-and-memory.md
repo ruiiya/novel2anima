@@ -6,7 +6,8 @@ FTS5. This reference translates that coverage into planning and candidate decisi
 ## A. Request and output boundaries
 
 Given project, act, beat, character ID(s), action/interaction intent (including
-adult sexual interaction when applicable), expression/facial cue, energy,
+high-intensity and multi-participant adult sexual interaction when applicable),
+per-character expression/facial cue, energy, story genre/tone/intensity,
 the project's existing metadata, selected model profile, recent+act+project history,
 produce a **grounded** and testable shortlist and structured ShotSpec; not final tags
 invented from prose. Work on ~10–15 shots in one sequence pass; batch size is configurable.
@@ -39,7 +40,10 @@ performs contextual interpretation using the user's narrative and the retrieval 
 1. Action/interaction: require a clearly visualizable primary action, with optional
    interaction target. An adult sexual action/interaction is still an action/interaction
    candidate, not automatically a clothing/pose item. Preserve participant roles without
-   overwriting character identity. Search both concepts and raw `tag_role` action/interaction entries.
+   overwriting character identity. In group scenes, retain every adult participant and
+   distinguish story-level genre labels (`gangbang`, `group_sex`, `rough_sex` as applicable)
+   from action tags; never infer concrete IDs from these example strings. Search both
+   concepts and raw `tag_role` action/interaction entries.
 2. Expression: require primary expression + intensity + facial cues. Search both concepts
    and raw expression-role tags. Do not infer a missing expression from a camera tag.
 3. Identity/outfit/style: validate canonical project and character constraints, not fresh
@@ -139,7 +143,8 @@ was exercised by the skill documentation alone.
   labeled `CURATION_GAP`; no fabrication of catalog IDs.
 - Alias/source roles/relations were consulted where relevant, and effective coverage
   across lanes is logged, including provisional and raw-only candidates.
-- Real project/character/act records determine identity/style continuity.
+- Real project/character/act records determine identity/style continuity; group scenes
+  must maintain separate character-level state and interaction roles.
 - Shortlist preserves original source labels, review state, provenance and evidence,
   including adult sexual concepts rather than a euphemistic-only substitute.
 - Selected tag set has no duplicate aliases, implied redundancy or curated conflicts.

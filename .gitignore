@@ -1,5 +1,10 @@
-# raw pinned downloads (~45 MB) are regenerable: python etl/build.py fetch
-data/sources/
+# sources and act plans stay local; sources are regenerable (python etl/build.py fetch)
+data/
 db/*.db-wal
 db/*.db-shm
 __pycache__/
+# local-only planning artifacts - kept out of git on purpose
+docs/
+prompts/
+sql/
+
