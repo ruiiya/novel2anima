@@ -1,0 +1,3 @@
+interface:
+  display_name: "N2A Shot Pipeline"
+  short_description: "Action/expression ShotSpec incl. adult NSFW"

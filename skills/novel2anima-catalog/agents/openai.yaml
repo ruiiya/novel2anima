@@ -1,0 +1,3 @@
+interface:
+  display_name: "N2A Catalog"
+  short_description: "Full SQLite catalog incl. adult NSFW metadata"

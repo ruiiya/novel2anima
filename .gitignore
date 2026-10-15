@@ -1,0 +1,6 @@
+# raw pinned downloads (~45 MB) and the built db are regenerable: `python etl/build.py all`
+data/sources/
+db/*.db
+db/*.db-wal
+db/*.db-shm
+__pycache__/

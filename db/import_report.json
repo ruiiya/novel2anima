@@ -1,0 +1,104 @@
+{
+  "checks": [
+    {
+      "check": "integrity_check",
+      "detail": "PRAGMA integrity_check",
+      "ok": true
+    },
+    {
+      "check": "foreign_key_check",
+      "detail": "0 violations",
+      "ok": true
+    },
+    {
+      "check": "fts5_index",
+      "detail": "fts rows 297 == concept rows 297",
+      "ok": true
+    },
+    {
+      "check": "fts5_query",
+      "detail": "MATCH 'pose' -> 297 rows",
+      "ok": true
+    },
+    {
+      "check": "rows:tag",
+      "detail": "280100 (min 160000)",
+      "ok": true
+    },
+    {
+      "check": "rows:tag_alias",
+      "detail": "49340 (min 40000)",
+      "ok": true
+    },
+    {
+      "check": "rows:tag_relation",
+      "detail": "45501 (min 40000)",
+      "ok": true
+    },
+    {
+      "check": "rows:tag_role",
+      "detail": "30265 (min 5000)",
+      "ok": true
+    },
+    {
+      "check": "rows:tag_source",
+      "detail": "387997 (min 300000)",
+      "ok": true
+    },
+    {
+      "check": "rows:visual_concept",
+      "detail": "297 (min 200)",
+      "ok": true
+    },
+    {
+      "check": "sources_imported",
+      "detail": "5 imported, missing none",
+      "ok": true
+    },
+    {
+      "check": "roles_link_to_tags",
+      "detail": "0 orphan tag_role rows",
+      "ok": true
+    },
+    {
+      "check": "content_review_pending",
+      "detail": "297/297 draft concepts still 'contextual' (P2 review gate, not an import failure)",
+      "ok": true
+    }
+  ],
+  "db": "db\\novel_anima.db",
+  "sources": {
+    "anima_tag_index": {
+      "revision": "77fba8414fff61ec87c100befce44f5616a62d6d",
+      "sha256": "8eb85ed22df548d2ac67112a6b22a8d560583c55390e109f4571675a8ca272fa"
+    },
+    "anima_tools": {
+      "revision": "f9c0fd579b38d01a89678ea7fb01e8bee8efb2d0",
+      "sha256": "f01b558d0a01161a9c2a0162c4e1febd7f5475f0f188c9d46d702172f8cf1702"
+    },
+    "anima_wardrobe": {
+      "revision": "e049b034641575addef313a2f1d59cea674a4d8e",
+      "sha256": "36d1edeaab3274cb575fdc01c104f55982602b12bbf79f4abafb773cb79bbbda"
+    },
+    "danbooru_implications": {
+      "revision": "2026-08-22",
+      "sha256": "d0ccc38d18faecc30ee80d0625d3ca3e10ff4d71d9e5716a5948c399ae7e0064"
+    },
+    "danbooru_taxonomy": {
+      "revision": "1fc970c943534d2184e5bf8f7a3aba108d483b9b",
+      "sha256": "28f61e095f8992b91f0c87b42e8c762e5133645532626b997265c5027510cc28"
+    }
+  },
+  "tables": {
+    "concept_relation": 0,
+    "concept_tag": 514,
+    "source_snapshot": 5,
+    "tag": 280100,
+    "tag_alias": 49340,
+    "tag_content_label": 548,
+    "tag_relation": 45501,
+    "tag_role": 30265,
+    "tag_source": 387997,
+    "visual_concept": 297
+  }
+}

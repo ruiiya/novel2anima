@@ -1,0 +1,52 @@
+{
+  "danbooru_taxonomy": {
+    "enabled": true,
+    "pinned_by": "huggingface revision",
+    "origin": "https://huggingface.co/datasets/Mexes/danbooru-tag-taxonomy",
+    "revision": "1fc970c943534d2184e5bf8f7a3aba108d483b9b",
+    "url_template": "https://huggingface.co/datasets/Mexes/danbooru-tag-taxonomy/resolve/{revision}/{path}",
+    "license": "Danbooru public tag data; dataset packaging by Mexes (check dataset card before redistribution)",
+    "use": "raw dictionary: canonical tags, category/slot/confidence, post_count, aliases",
+    "files": ["tags.csv"]
+  },
+  "danbooru_implications": {
+    "enabled": true,
+    "pinned_by": "content sha256 (site rebuild has no public revision)",
+    "origin": "https://grio43.github.io/danbooru-implication-map/danbooru_implications.db",
+    "revision": "2026-08-22",
+    "url_template": "https://grio43.github.io/danbooru-implication-map/{path}",
+    "license": "Danbooru public tag data (implications/aliases snapshot 2026-08-22)",
+    "use": "alias + implication graph, full tag name/category/post_count census",
+    "files": ["danbooru_implications.db"]
+  },
+  "anima_tag_index": {
+    "enabled": true,
+    "pinned_by": "git commit",
+    "origin": "https://github.com/ShiroEirin/comfyui-good-anima",
+    "revision": "77fba8414fff61ec87c100befce44f5616a62d6d",
+    "url_template": "https://raw.githubusercontent.com/ShiroEirin/comfyui-good-anima/{revision}/{path}",
+    "license": "GPL-3.0 (per repo LICENSE); tag names are Danbooru data",
+    "use": "Anima naming/post-count cross-check + banned artist list",
+    "files": ["danbooru-tags/anima-1.0.csv", "danbooru-tags/banned_tags.csv"]
+  },
+  "anima_wardrobe": {
+    "enabled": true,
+    "pinned_by": "git commit",
+    "origin": "https://github.com/lingdongbudong/Comfyui-Anima-Wardrobe",
+    "revision": "e049b034641575addef313a2f1d59cea674a4d8e",
+    "url_template": "https://raw.githubusercontent.com/lingdongbudong/Comfyui-Anima-Wardrobe/{revision}/{path}",
+    "license": "see repo LICENSE (verify before redistribution)",
+    "use": "attire slots + pose/expression/clothing preset vocabulary",
+    "files": ["presets/attire_slots.json", "presets/anima_presets.json"]
+  },
+  "anima_tools": {
+    "enabled": true,
+    "pinned_by": "git commit",
+    "origin": "https://github.com/nregret/Comfyui-Anima-Tools",
+    "revision": "f9c0fd579b38d01a89678ea7fb01e8bee8efb2d0",
+    "url_template": "https://raw.githubusercontent.com/nregret/Comfyui-Anima-Tools/{revision}/{path}",
+    "license": "see repo LICENSE; preview images are NOT imported",
+    "use": "pose/action groups -> visual_concept seeds",
+    "files": ["js/pose_data.js"]
+  }
+}
