@@ -77,6 +77,15 @@ either "initial state" (`outfit:stage` level 0 = dressed) or a catalog gap.
 
 Harvested from `tag_relation(relation='implies')` - the same source also drives prompt
 pruning, see below.
+`shot_state` has two independent producers, separated by the `source` column:
+`etl/infer_state.py` writes `inferred:*` (this continuity model) and `etl/qa_shots.py` writes
+`source='qa:v1'` report rows with the axes `mau_thieu` / `mau_lech` / `xung_dot` /
+`tu_the_lech` / `noi_dung_chan` (see
+[wardrobe-and-pose.md](wardrobe-and-pose.md)). `infer_state` deletes only its own rows
+(`WHERE source LIKE 'inferred:%'`); reseeding a plan cascades a shot's rows away, so run
+`etl/qa_shots.py --apply` again after any reseed. A `qa:` row is a flagged problem with a
+severity hint, not a verdict, and not part of the continuity ladders below.
+
 
 ### Value ladders (v0.3)
 

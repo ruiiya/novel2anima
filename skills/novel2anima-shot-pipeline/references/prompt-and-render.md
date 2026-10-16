@@ -65,17 +65,97 @@ into actual JSON fields where supported, otherwise report a schema gap; never in
 SQLite columns. Keep original semantic labels available even if a downstream provider
 cannot render a particular request.
 
-## Prompt block order
+## Anima prompt rules (circlestone-labs/Anima model card)
+
+- Syntax: lowercase tags, **spaces instead of underscores** (`long hair`, `from behind`, `dark-skinned male`);
+  only `score_*` tags keep their underscore. Artist tags need an `@` prefix (`@artist name`).
+- Tag order: `[quality/meta/year/safety] [1girl/1boy/1other] [character] [series] [artist] [general]`.
+  Order inside a section is arbitrary.
+- Positive prefix: `masterpiece, best quality, score_7, ` on the base model, then the safety tag
+  (`safe` / `sensitive` / `nsfw` / `explicit`). Anima-Aesthetic is quality-tuned: quality tags are
+  optional and `score_*` tags should be dropped.
+- Negative: `worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, chromatic aberration`.
+  The compiler writes it to `<prompt file>.neg.txt` beside the prompt file. At CFG 1 negatives lose
+  effect, so still state constraints positively.
+- Natural language may be mixed with tags in any order; a pure-NL prompt should be at least two
+  sentences. Name a character and then describe their appearance - required for multi-character
+  shots, otherwise the model mixes the cast up.
+- Prompt weighting needs a higher value than SDXL, e.g. `(chibi:2)`.
+- The model was trained with random tag dropout: do not stuff every relevant tag in.
+- The base model's default style is plain; artist/quality tags are what shape it.
+- One artist per project, not per shot: a plan-level `artist_line` (for example `@miyama-zero`, the
+  High School DxD light-novel illustrator) is emitted once after the `[series]` block, so faces and
+  rendering stay consistent across acts. Two artists is the ceiling; three collapse the style. The
+  separate `artist name` negative only suppresses watermark signatures, so it can stay.
+
+## Outfit colour, pose and QA gates (seed time)
+
+The prompt compiler does not decide garment colours or stance order by itself: `etl/wardrobe.py`
+swaps every garment for the colour variant recorded in the catalog (`visual_concept WC_*`, prepared
+for phase 1 in `data/wardrobe/*.json`) and keeps stance monotone inside a phase
+(standing -> kneeling -> sitting -> lying). Problems the gates cannot decide are written to
+`shot_state` by `etl/qa_shots.py` for the model to judge. Details, commands and the current axes:
+[wardrobe-and-pose.md](wardrobe-and-pose.md).
+
+## Prompt self-check (`etl/check_prompts.py`)
+
+After seeding an act (or the whole project) run `python etl/check_prompts.py [--act N]
+[--examples K]` — read-only, exit 1 when an ERROR remains. It compares the prompt file with
+the db and with the catalog tables:
+
+| check | what it means |
+|---|---|
+| file vs db | prompt line count == shot count, and every line == `shot_spec_json.prompt` |
+| syntax | lowercase tags, no `_` left (except `score_*`), no `, ,` |
+| missing tag | every tag in the spec must appear in the prompt — unless another tag in the same shot implies it (deliberately pruned) |
+| redundant tag | a tag that another tag implies is still in the prompt |
+| conflict | a `tag_relation(relation='conflicts')` pair in one shot: ERROR, downgraded to WARN when the pair is also `compatible` or its note says "not to be confused" |
+| counts | `Ngirls / Nboys / yuri` line matches the participants (gender read from the plan) |
+| slots | missing action / expression / pose |
+| length | more than 80 tags per prompt (random tag dropout flattens long prompts) |
+| duplicates | two shots share a prompt, or one action repeats 4 shots in a row |
+| negative | `<prompt file>.neg.txt` exists, is non-empty and carries worst/low quality + blurry |
+| `shot_state` | the act's `qa:*` rows (`mau_thieu`, `mau_lech`, `xung_dot`, `tu_the_lech`, `noi_dung_chan`) |
+
+### LLM self-check (`etl/llm_review.py`)
+
+`check_prompts.py` is mechanical; it cannot tell that a caption says "legs clamping" while the tag
+says `spread_legs`, or that the bra flips black -> white inside one beat. For that layer:
+
+    python etl/llm_review.py --act 13            # goi LLM (mac dinh: codex exec, stdin -> JSON)
+    python etl/llm_review.py --act 13 --apply    # ghi shot_state source='qa:llm:v1'
+    python etl/llm_review.py --act 13 --payload  # chi in payload (agent/nguoi tu soat)
+
+Each batch of shots is sent as `shot | phase | participants | beat | caption | tags` and the model
+answers strict JSON `{"findings":[{"shot","axis","severity","why"}]}` with axes
+`y_nghia / mau_thuan / danh_tinh / tiep_dien / gia_tao / thieu / khac` (meaning vs beat,
+self-contradiction, wrong character assignment, reset state, unreadable phrasing, missing beat
+detail). Raw answer is kept in `data/reviews/actNN_llm.json`, rows land in `shot_state` as
+`llm:<axis>`.
+
+Treat LLM findings as **hypotheses, not verdicts** (it does hallucinate, e.g. "tag lap 2 lan" that
+is not in the string): `check_prompts.py` reports them as WARN, so the mechanical checks stay the
+gate and the LLM layer only proposes what to inspect. Verify each one against the prompt before
+changing a plan. `--cmd` swaps in another LLM that reads stdin and prints JSON. Re-seeding an act cascades `shot_state` rows away, so
+`etl/llm_review.py --replay` reloads the saved reports (`data/reviews/act*_llm.json`) without
+calling the model again — `check_reseed.py` runs it.
+
+A WARN is a judgement call to report, an ERROR blocks: fix the plan or the catalog and re-seed,
+never hand-edit the prompt file. `etl/check_reseed.py` runs this as its 6th check, so one
+`check_reseed` = reseed + `qa_shots` + prompt self-check.
+
+## Prompt block order (compiler output)
 
 ```text
-[QUALITY + STYLE + WHITE BACKGROUND]
-[CHARACTER IDENTITIES / OUTFITS — per participant when relevant]
+[quality + score tags][safety tag][count: 1girl / Nboys]
+[CHARACTER IDENTITIES + OUTFITS — character, series, attributes, per participant]
+[OUTFIT / BODY STATE — carried marks, piercings, fluids live here]
 [PRIMARY ACTION / INTERACTION, including adult sexual intent when relevant] # priority 1
 [EXPRESSION + FACIAL CUES]          # priority 1
 [POSE / GESTURE]                    # support
 [MOTION]                            # support
 [CAMERA / COMPOSITION]              # support
-[SHORT NATURAL LANGUAGE DETAIL]
+[BACKGROUND CONSTRAINT][SHORT NATURAL LANGUAGE CAPTION]
 ```
 
 Hybrid Danbooru tags plus a short natural-language caption: exactly one primary action, no
@@ -121,10 +201,11 @@ POC value, say so when reporting results, and never present a ranking score as v
 |---|---|---|
 | checkpoint | Anima Base | plus the 4-step LoRA, not an Anima-Turbo checkpoint |
 | LoRA | `sorryhyun/anima-turbo-4step` v3 | strength start 1.0 |
-| steps | 4 | official Anima-Turbo runs 8-12 steps; do not stack |
-| CFG | 1 | negative prompts lose effect; use positive constraints |
-| sampler | `er_sde` | confirm it exists in the installed ComfyUI |
-| background | white | `white background`, `simple background`; use `solo` **only** for one participant |
+| steps | 4 | POC value; the model card gives 30-50 steps for Base/Aesthetic and 8-12 for Turbo |
+| CFG | 1 | Turbo setting; Base/Aesthetic want CFG 4-5. Negatives lose effect at CFG 1 |
+| sampler | `er_sde` | card's neutral default; `euler_a`, `dpmpp_2m_sde_gpu`, `euler` also work |
+| resolution | 512-1536 px | fixed square per project style; 1024 is the usual middle |
+| background | white | `white background`, `simple background` in the general section; use `solo` **only** for one participant |
 
 Read the model card and prompt rules for the exact checkpoint/LoRA in use before a run, and
 save the actual workflow, seed, sampler, steps and CFG with each generation row.

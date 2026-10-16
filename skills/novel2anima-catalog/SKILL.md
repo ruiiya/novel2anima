@@ -37,6 +37,21 @@ consistent choice of supported visual tags.
 - Runtime: `model_profile`, `project`, `character_profile`, `act`, `shot`, `generation`.
 
 Each table has a stage-specific purpose; no individual query needs to join all 17 objects.
+
+## Derived knowledge stored as concepts
+
+Some catalog edits do not add tables — they add `visual_concept` rows that later steps read:
+
+- **Outfit colours**: `python etl/import_colour_sets.py --apply` writes one `visual_concept`
+  per garment (`code='WC_<garment>'`, kind `other`) whose `concept_tag` rows name the base
+  garment (`usage='primary'`), the real `<colour>_<garment>` variants (`alternative`) and the
+  chosen colour (`priority=1`). Source of truth for the phase-1 decisions is
+  `data/wardrobe/colour_choice.json` (`garment -> colour`) plus `colour_cue.json` for garments
+  with no colour variant in the catalog. It deletes stale `WC_*` concepts and rebuilds FTS.
+- **Wiki-derived grouping**: `etl/import_wiki_groups.py` / `import_wiki_links.py` turn Danbooru
+  wiki text into concept tags and `tag_relation` evidence (`from_tag_id`/`to_tag_id`, note kept).
+- Tag hygiene: `python etl/prune_tags.py`, `python etl/cleanup_db.py [--apply] [--vacuum]`,
+  `python etl/import_danbooru_dump.py`, `python etl/import_posts_unknown.py`.
 Report empty, unmapped and unused domains separately. Do not invent V1 columns or
 migrations: inspect `sqlite_master` and `PRAGMA table_info(...)` in the actual DB.
 Preserve `tag_content_label`, `content_scope` and `contentProfile` values when they exist;

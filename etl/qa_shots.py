@@ -1,0 +1,127 @@
+﻿# -*- coding: utf-8 -*-
+"""Xac dinh van de cua tung shot bang du lieu trong catalog (khong tu sua prompt).
+
+Usage:
+  python etl/qa_shots.py [--act N] [--apply]
+
+Ghi vao bang shot_state (axis, value_tag_id, severity, since_shot_no, cause_shot_no, source)
+de model/nguoi doc roi quyet dinh - day la phan "xac dinh van de" thay cho viec sua cung:
+  * mau_thieu    - mon do chua co mau nao trong db (chua chuan bi cho phase 1)
+  * mau_lech     - mon do co mau trong db nhung shot dung ban khong mau (prompt chua chuan hoa)
+  * xung_dot     - 2 tag trong cung shot co quan he conflicts
+  * tu_the_lech  - tu the lui thang (dung -> quy -> ngoi -> nam) so voi shot truoc
+  * noi_dung_chan- tag bi danh dau blocked trong tag_content_label
+"""
+import argparse, collections, json, pathlib, sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import build, wardrobe
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+SOURCE = "qa:v1"
+SEV = {"mau_thieu": 0.4, "mau_lech": 0.5, "xung_dot": 0.6, "tu_the_lech": 0.5, "noi_dung_chan": 1.0}
+
+def shot_refs(spec):
+    out = {}
+    for group in ("identity", "outfit", "action", "expression", "pose", "motion", "camera"):
+        for x in spec.get(group) or []:
+            out.setdefault(group, []).append((x["name"], x["tagId"]))
+    return out
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--act", type=int)
+    ap.add_argument("--apply", action="store_true")
+    args = ap.parse_args(argv)
+
+    con = build.connect(build.DB_PATH)
+    con.isolation_level = None
+    table = wardrobe.colour_table(con)
+    conflicts = collections.defaultdict(set)
+    for a, b, note in con.execute("SELECT from_tag_id, to_tag_id, note FROM tag_relation"
+                                  " WHERE relation='conflicts'"):
+        sev = SEV["xung_dot"] * 0.5 if note and "confused" in note else SEV["xung_dot"]
+        conflicts[a].add((b, sev))          # note dang "not to be confused" -> chi la nhac nho
+        conflicts[b].add((a, sev))
+    blocked = {r[0] for r in con.execute("SELECT tag_id FROM tag_content_label WHERE scope='blocked'")}
+
+    acts = con.execute("SELECT id, act_no FROM act%s ORDER BY act_no"
+                       % (" WHERE act_no=%d" % args.act if args.act else "")).fetchall()
+    found = collections.Counter()
+    rows = []
+    for aid, act_no in acts:
+        floor, cause, phase = -1, 0, None
+        for shot_id, shot_no, spec_json in con.execute(
+                "SELECT id, shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no", (aid,)):
+            spec = json.loads(spec_json)
+            refs = shot_refs(spec)
+            worn = refs.get("outfit", [])
+            ids = {t for _n, t in worn}
+            # mau
+            for n, t in worn:
+                e = table.get(t)
+                if not e or t != e["base_id"] or wardrobe.colour_of(n)[0]:
+                    continue                     # khong phai do goc -> da co mau trong ten
+                axis = None
+                if not e["chosen"] and not e["cue"]:
+                    axis = "mau_thieu"           # phase 1 chua chuan bi bo mau cho mon nay
+                elif e["cue"] and e["cue"][1] in ids:
+                    pass                         # da co cue <mau>_clothing trong shot
+                else:
+                    axis = "mau_lech"            # db biet mau nhung prompt khong mang mau
+                if axis:
+                    rows.append((shot_id, axis, t, SEV[axis], shot_no, shot_no))
+                    found[axis] += 1
+            # xung dot
+            for t in ids:
+                for other, sev in conflicts.get(t, ()):
+                    if other in ids and t < other:
+                        rows.append((shot_id, "xung_dot", other, sev, shot_no, shot_no))
+                        found["xung_dot"] += 1
+            # noi dung bi chan
+            for grp in refs.values():
+                for _n, t in grp:
+                    if t in blocked:
+                        rows.append((shot_id, "noi_dung_chan", t, SEV["noi_dung_chan"], shot_no, shot_no))
+                        found["noi_dung_chan"] += 1
+            # thang tu the
+            if spec.get("phase") != phase:
+                phase, floor, cause = spec.get("phase"), -1, shot_no
+            ranked = [wardrobe.STANCE_ORDER[n] for n, _t in refs.get("pose", []) if n in wardrobe.STANCE_ORDER]
+            if ranked:
+                here = max(ranked)
+                if here < floor:
+                    back = [t for n, t in refs.get("pose", []) if n in wardrobe.STANCE_ORDER]
+                    rows.append((shot_id, "tu_the_lech", back[0], SEV["tu_the_lech"], shot_no, cause))
+                    found["tu_the_lech"] += 1
+                else:
+                    floor = here
+    print("van de tim thay: %s" % dict(found or {"khong co": 0}))
+    if rows:
+        print("vi du:")
+        for r in rows[:8]:
+            name = con.execute("SELECT canonical_name FROM tag WHERE id=?", (r[2],)).fetchone()
+            print("  shot_id=%s %-14s tag=%-24s sev=%s" % (r[0], r[1], name[0] if name else r[2], r[3]))
+    if not args.apply:
+        print("dry-run: them --apply de ghi vao shot_state")
+        con.close()
+        return
+    con.execute("BEGIN")
+    con.execute("DELETE FROM shot_state WHERE source=?", (SOURCE,))
+    for r in rows:
+        if len(r) == 6:
+            sid, axis, tid, sev, since, cause_ = r
+        else:
+            sid, axis, tid, sev = r[:4]
+            since = cause_ = None
+        con.execute("INSERT OR REPLACE INTO shot_state(shot_id, axis, value_tag_id, severity,"
+                    " since_shot_no, cause_shot_no, source) VALUES(?,?,?,?,?,?,?)",
+                    (sid, axis, tid, sev, since or 1, cause_ or 1, SOURCE))
+    con.commit()
+    print("shot_state: %d dong (source=%s)" % (len(rows), SOURCE))
+    con.close()
+
+if __name__ == "__main__":
+    main()
+
+

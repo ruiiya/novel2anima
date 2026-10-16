@@ -1,0 +1,1632 @@
+{
+ "project": {
+  "title": "Tinh Dien Cac Da"
+ },
+ "_note": "DxD cast roster. Characters WITHOUT a danbooru character tag keep identity_tags=[] and rely on attributes only (schema has no tag to validate against).",
+ "characters": [
+  {
+   "code": "CHAR_011",
+   "name": "Rias Gremory",
+   "gender": "girl",
+   "identity_line": "1girl, solo, red hair, long hair, hair ornament, blue eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "rias_gremory:164437",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "red_hair:131321",
+     "long_hair:108633",
+     "hair_ornament:89533",
+     "blue_eyes:69444",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Rias Gremory (High School DxD) - nam 3 Kuoh, 18 tuoi; khong dung big breasts"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433",
+     "school_bag:136513",
+     "hair_ribbon:89512"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_012",
+   "name": "Akeno Himejima",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, very long hair, ponytail, hair ribbon, purple eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "himejima_akeno:165059",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "very_long_hair:154614",
+     "ponytail:128325",
+     "hair_ribbon:89512",
+     "purple_eyes:129626",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Akeno Himejima (High School DxD) - nam 3 Kuoh, 18 tuoi; khong dung big breasts"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433",
+     "school_bag:136513",
+     "hair_ribbon:89512"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_010",
+   "name": "Kuroka",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, very long hair, hair between eyes, blunt bangs, yellow eyes, slit pupils, cat ears, two tails, multiple tails, large breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "kuroka_(high_school_dxd):167948",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "very_long_hair:154614",
+     "hair_between_eyes:40249",
+     "blunt_bangs:69626",
+     "yellow_eyes:158917",
+     "slit_pupils:141191",
+     "cat_ears:72044",
+     "two_tails:151412",
+     "multiple_tails:117917",
+     "large_breasts:106633",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Kuroka (High School DxD) - nekoshou 2 duoi; dong cosplay co trang + cao"
+   },
+   "outfit_json": {
+    "han_phuc": [
+     "black_hanfu:35072",
+     "white_hanfu:30639",
+     "wide_sleeves:156609",
+     "sash:136019"
+    ],
+    "kimono": [
+     "kimono:102537",
+     "furisode:85539",
+     "obi:122828",
+     "fox_mask:84533"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_013",
+   "name": "Asia Argento",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, long hair, hair ornament, green eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "asia_argento:168247",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "hair_ornament:89533",
+     "green_eyes:88439",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Asia Argento (High School DxD) - cu nun, chuyen sang Kuoh nam 2; 18 tuoi trong AU nay"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nun": [
+     "nun:122528",
+     "habit:162543",
+     "cross_necklace:75905",
+     "rosary:165740"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_014",
+   "name": "Xenovia Quarta",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blue hair, short hair, green eyes, large breasts, muscular female, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "xenovia_quarta:157487",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blue_hair:69544",
+     "short_hair:139716",
+     "green_eyes:88439",
+     "large_breasts:106633",
+     "muscular_female:118093",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Xenovia Quarta (High School DxD) - thanh kiem Excalibur, than hinh luc luong"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "exorcist": [
+     "armored_dress:64783",
+     "gauntlets:86432",
+     "sword:145213",
+     "thigh_boots:148215",
+     "cape:71743"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_015",
+   "name": "Shidou Irina",
+   "gender": "girl",
+   "identity_line": "1girl, solo, brown hair, long hair, braid, purple eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "shidou_irina:170600",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "long_hair:108633",
+     "braid:70142",
+     "purple_eyes:129626",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Irina Shidou (High School DxD) - thanh kiem Michael, ban thuo cua Issei"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "exorcist": [
+     "white_dress:156415",
+     "cross_necklace:75905",
+     "sword:145213"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_016",
+   "name": "Toujou Koneko",
+   "gender": "girl",
+   "identity_line": "1girl, solo, white hair, short hair, cat ears, cat tail, yellow eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "toujou_koneko:167763",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "white_hair:156414",
+     "short_hair:139716",
+     "cat_ears:72044",
+     "cat_tail:72035",
+     "yellow_eyes:158917",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": false,
+    "note": "Koneko Toujou (High School DxD) - nam 1 Kuoh, canon 15-16 tuoi: CANH BAO minor, chi dung lam SFW/khong dung cho act NSFW"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_017",
+   "name": "Sona Sitri",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, short hair, glasses, purple eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "sona_sitri:186714",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "short_hair:139716",
+     "glasses:87340",
+     "purple_eyes:129626",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Sona Sitri (High School DxD) - chu tich hoi hoc sinh Kuoh, 18 tuoi trong AU nay"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_018",
+   "name": "Serafall Leviathan",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, twintails, blue eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "serafall_leviathan:173677",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "twintails:151318",
+     "blue_eyes:69444",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Serafall Leviathan (High School DxD) - Ma Vuong, chi Sona; chua co danbooru character tag nen de identity_tags rong"
+   },
+   "outfit_json": {
+    "default": [
+     "white_dress:156415",
+     "magical_girl:110225",
+     "cape:71743",
+     "thighhighs:148319"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_019",
+   "name": "Grayfia Lucifuge",
+   "gender": "girl",
+   "identity_line": "1girl, solo, silver hair, very long hair, braid, blue eyes, large breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "grayfia_lucifuge:170904",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "silver_hair:140417",
+     "very_long_hair:154614",
+     "braid:70142",
+     "blue_eyes:69444",
+     "large_breasts:106633",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Grayfia Lucifuge (High School DxD) - ho hau giam cua nha Gremory, vo Sirzechs"
+   },
+   "outfit_json": {
+    "maid": [
+     "maid:110532",
+     "maid_headdress:110517",
+     "black_dress:68842",
+     "black_pantyhose:68934"
+    ],
+    "suit": [
+     "suit:144114",
+     "dress_shirt:79637",
+     "necktie:120026",
+     "pleated_skirt:127621",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_020",
+   "name": "Venelana Gremory",
+   "gender": "girl",
+   "identity_line": "1girl, solo, brown hair, long hair, green eyes, large breasts, mature female, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "venelana_gremory:201208",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "long_hair:108633",
+     "green_eyes:88439",
+     "large_breasts:106633",
+     "mature_female:112375",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Venelana Gremory (High School DxD) - me Rias, quy toc Bael"
+   },
+   "outfit_json": {
+    "default": [
+     "black_dress:68842",
+     "jewelry:98135",
+     "earrings:80139"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_021",
+   "name": "Ravel Phenex",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, twintails, blue eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "ravel_phenex:175460",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "twintails:151318",
+     "blue_eyes:69444",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Ravel Phenex (High School DxD) - em gai Riser, sau la quan hau cua Issei"
+   },
+   "outfit_json": {
+    "default": [
+     "white_dress:156415",
+     "hair_ribbon:89512",
+     "thighhighs:148319"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_022",
+   "name": "Rossweisse",
+   "gender": "girl",
+   "identity_line": "1girl, solo, grey hair, long hair, blue eyes, large breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "rossweisse:167829",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "grey_hair:88539",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "large_breasts:106633",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Rossweisse (High School DxD) - valkyrie Odin, giao vien Kuoh, 19+ tuoi"
+   },
+   "outfit_json": {
+    "default": [
+     "dress_shirt:79637",
+     "pleated_skirt:127621",
+     "necktie:120026",
+     "loafers:108433"
+    ],
+    "valkyrie": [
+     "valkyrie:164934",
+     "armor:64847",
+     "armored_dress:64783",
+     "gauntlets:86432",
+     "cape:71743",
+     "thigh_boots:148215"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_023",
+   "name": "Raynare",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, very long hair, purple eyes, large breasts, black wings, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "raynare:131089",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "very_long_hair:154614",
+     "purple_eyes:129626",
+     "large_breasts:106633",
+     "black_wings:69039",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Raynare (High School DxD) - fallen angel, ke sat hai Issei dau truyen"
+   },
+   "outfit_json": {
+    "default": [
+     "leotard:107435",
+     "thigh_boots:148215",
+     "choker:73743",
+     "black_wings:69039"
+    ],
+    "disguise": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_024",
+   "name": "Mittelt",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, twintails, blue eyes, small breasts, black wings, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "mittelt:189358",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "twintails:151318",
+     "blue_eyes:69444",
+     "small_breasts:141202",
+     "black_wings:69039",
+     "pale_skin:125520"
+    ],
+    "adult": false,
+    "note": "Mittelt (High School DxD) - fallen angel, thiet ke loli: CANH BAO minor, chi SFW"
+   },
+   "outfit_json": {
+    "default": [
+     "gothic_lolita:87939",
+     "black_wings:69039",
+     "thighhighs:148319"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_025",
+   "name": "Kalawarner",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blue hair, long hair, blue eyes, large breasts, black wings, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "kalawarner:202595",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blue_hair:69544",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "large_breasts:106633",
+     "black_wings:69039",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Kalawarner (High School DxD) - fallen angel, dong phuc vest"
+   },
+   "outfit_json": {
+    "default": [
+     "suit:144114",
+     "dress_shirt:79637",
+     "necktie:120026",
+     "black_wings:69039"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_026",
+   "name": "Yasaka",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, very long hair, fox ears, fox tail, green eyes, large breasts, mature female, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "yasaka_(high_school_dxd):208084",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "very_long_hair:154614",
+     "fox_ears:84541",
+     "fox_tail:84534",
+     "green_eyes:88439",
+     "large_breasts:106633",
+     "mature_female:112375",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Yasaka (High School DxD) - thu lanh Kyoto, me Kunou"
+   },
+   "outfit_json": {
+    "default": [
+     "kimono:102537",
+     "furisode:85539",
+     "obi:122828",
+     "geta:86837"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_027",
+   "name": "Kunou",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, long hair, fox ears, fox tail, yellow eyes, small breasts",
+   "identity_json": {
+    "identity_tags": [
+     "kunou_(high_school_dxd):268656",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "fox_ears:84541",
+     "fox_tail:84534",
+     "yellow_eyes:158917",
+     "small_breasts:141202"
+    ],
+    "adult": false,
+    "note": "Kunou (High School DxD) - con Yasaka, canon la tre em: CANH BAO minor, chi SFW"
+   },
+   "outfit_json": {
+    "default": [
+     "kimono:102537",
+     "furisode:85539",
+     "obi:122828"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_028",
+   "name": "Ophis",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, very long hair, yellow eyes, small breasts, pale skin, gothic lolita",
+   "identity_json": {
+    "identity_tags": [
+     "ophis_(high_school_dxd):207109",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "very_long_hair:154614",
+     "yellow_eyes:158917",
+     "small_breasts:141202",
+     "pale_skin:125520",
+     "gothic_lolita:87939"
+    ],
+    "adult": false,
+    "note": "Ophis (High School DxD) - Infinite Dragon God, than hinh loli: CANH BAO, chi SFW"
+   },
+   "outfit_json": {
+    "default": [
+     "gothic_lolita:87939"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_029",
+   "name": "Murayama",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, ponytail, brown eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "murayama_(high_school_dxd):196543",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "ponytail:128325",
+     "brown_eyes:70544",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Murayama (High School DxD) - hoi kiem dao Kuoh, ban hoc cua Issei; 18 tuoi trong AU nay"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_030",
+   "name": "Katase",
+   "gender": "girl",
+   "identity_line": "1girl, solo, brown hair, twintails, brown eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "katase_(high_school_dxd):211891",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "twintails:151318",
+     "brown_eyes:70544",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Katase (High School DxD) - hoi kiem dao Kuoh, ban hoc cua Issei; 18 tuoi trong AU nay"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_031",
+   "name": "Momo Momozono",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, twintails, brown eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "momozono_momo_(high_school_dxd):218217",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "twintails:151318",
+     "brown_eyes:70544",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Momo Momozono (High School DxD) - hoc sinh Kuoh, ban cua Koneko"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_032",
+   "name": "Marion",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, long hair, blue eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "marion_(high_school_dxd):197297",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Marion (High School DxD) - thoc peerage Riser Phenex"
+   },
+   "outfit_json": {
+    "default": [
+     "black_dress:68842",
+     "thighhighs:148319"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_033",
+   "name": "Xuelan",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, long hair, red eyes, large breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "xuelan:209700",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "red_eyes:131320",
+     "large_breasts:106633",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Xuelan (High School DxD) - thoc peerage Riser, phong cach Trung Hoa"
+   },
+   "outfit_json": {
+    "default": [
+     "chinese_clothes:73441",
+     "qipao:130026",
+     "thighhighs:148319"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_034",
+   "name": "Yubelluna",
+   "gender": "girl",
+   "identity_line": "1girl, solo, purple hair, very long hair, purple eyes, large breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "yubelluna:201234",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "purple_hair:129625",
+     "very_long_hair:154614",
+     "purple_eyes:129626",
+     "large_breasts:106633",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Yubelluna (High School DxD) - ho hau cua Riser, phep no"
+   },
+   "outfit_json": {
+    "default": [
+     "black_dress:68842",
+     "thighhighs:148319",
+     "choker:73743"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_035",
+   "name": "Hyoudou Issei",
+   "gender": "boy",
+   "identity_line": "1boy, solo, brown hair, short hair, brown eyes, muscular male",
+   "identity_json": {
+    "identity_tags": [
+     "hyoudou_issei:174322",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "short_hair:139716",
+     "brown_eyes:70544",
+     "muscular_male:118058"
+    ],
+    "adult": true,
+    "note": "Issei Hyoudou (High School DxD) - nhan vat chinh, Red Dragon Emperor"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "necktie:120026",
+     "loafers:108433"
+    ],
+    "scale_mail": [
+     "armor:64847",
+     "gauntlets:86432",
+     "dragon_wings:79527"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_036",
+   "name": "Gasper Vladi",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, long hair, red eyes, pale skin, vampire",
+   "identity_json": {
+    "identity_tags": [
+     "gasper_vladi:192121",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "red_eyes:131320",
+     "pale_skin:125520",
+     "vampire:154217"
+    ],
+    "adult": true,
+    "note": "Gasper Vladi (High School DxD) - dhampir, canon mac do nu (cross-dressing), nam 1 Kuoh"
+   },
+   "outfit_json": {
+    "default": [
+     "gothic_lolita:87939",
+     "cross_necklace:75905"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_037",
+   "name": "Yuuto Kiba",
+   "gender": "boy",
+   "identity_line": "1boy, solo, blonde hair, short hair, blue eyes, sword",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "short_hair:139716",
+     "blue_eyes:69444",
+     "sword:145213"
+    ],
+    "adult": true,
+    "note": "Yuuto Kiba (High School DxD) - hiep si Kuoh, chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "necktie:120026",
+     "loafers:108433"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_038",
+   "name": "Vali Lucifer",
+   "gender": "boy",
+   "identity_line": "1boy, solo, silver hair, short hair, blue eyes, white wings",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "silver_hair:140417",
+     "short_hair:139716",
+     "blue_eyes:69444",
+     "white_wings:156494"
+    ],
+    "adult": true,
+    "note": "Vali Lucifer (High School DxD) - White Dragon Emperor; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "dress_shirt:79637",
+     "black_dress:68842",
+     "thigh_boots:148215"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_039",
+   "name": "Sirzechs Lucifer",
+   "gender": "boy",
+   "identity_line": "1boy, solo, red hair, long hair, blue eyes, muscular male",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "red_hair:131321",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "muscular_male:118058"
+    ],
+    "adult": true,
+    "note": "Sirzechs Lucifer (High School DxD) - Lucifer hien tai, anh trai Rias; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "suit:144114",
+     "dress_shirt:79637",
+     "cape:71743"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_040",
+   "name": "Riser Phenex",
+   "gender": "boy",
+   "identity_line": "1boy, solo, blonde hair, long hair, blue eyes, muscular male",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "muscular_male:118058"
+    ],
+    "adult": true,
+    "note": "Riser Phenex (High School DxD) - quy toc Phenex, hon phu cu cua Rias; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "suit:144114",
+     "dress_shirt:79637",
+     "cape:71743"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_041",
+   "name": "Azazel",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, long hair, yellow eyes, black wings, muscular male",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "yellow_eyes:158917",
+     "black_wings:69039",
+     "muscular_male:118058"
+    ],
+    "adult": true,
+    "note": "Azazel (High School DxD) - thu linh fallen angel; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "dress_shirt:79637",
+     "black_wings:69039",
+     "suit:144114"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_042",
+   "name": "Barakiel",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, long hair, purple eyes, muscular male, black wings",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "purple_eyes:129626",
+     "muscular_male:118058",
+     "black_wings:69039"
+    ],
+    "adult": true,
+    "note": "Barakiel (High School DxD) - cha Akeno, thu linh fallen angel; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "topless_male:149629",
+     "black_wings:69039"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_043",
+   "name": "Dohnaseek",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, short hair, blue eyes, glasses",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "short_hair:139716",
+     "blue_eyes:69444",
+     "glasses:87340"
+    ],
+    "adult": true,
+    "note": "Dohnaseek (High School DxD) - fallen angel; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "suit:144114",
+     "dress_shirt:79637",
+     "necktie:120026"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_044",
+   "name": "Freed Sellzen",
+   "gender": "boy",
+   "identity_line": "1boy, solo, white hair, short hair, red eyes, knife",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "white_hair:156414",
+     "short_hair:139716",
+     "red_eyes:131320",
+     "knife:103619"
+    ],
+    "adult": true,
+    "note": "Freed Sellzen (High School DxD) - linh muc bien thai, sat nhan; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "priest:163416",
+     "black_dress:68842",
+     "cross_necklace:75905"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_045",
+   "name": "Kokabiel",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, long hair, black wings, muscular male",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "black_wings:69039",
+     "muscular_male:118058"
+    ],
+    "adult": true,
+    "note": "Kokabiel (High School DxD) - thu linh fallen angel, ke gay chien tranh; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "armor:64847",
+     "black_wings:69039",
+     "cape:71743"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_046",
+   "name": "Sairaorg Bael",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, short hair, purple eyes, dark-skinned male, muscular male",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "short_hair:139716",
+     "purple_eyes:129626",
+     "dark-skinned_male:77220",
+     "muscular_male:118058"
+    ],
+    "adult": true,
+    "note": "Sairaorg Bael (High School DxD) - Ma Vuong ke vi, bi an Bael; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "topless_male:149629",
+     "armor:64847"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_047",
+   "name": "Elmenhilde Karnstein",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, long hair, red eyes, small breasts, fangs, vampire, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "red_eyes:131320",
+     "small_breasts:141202",
+     "fangs:82831",
+     "vampire:154217",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Elmenhilde Karnstein (High School DxD) - cong chua vampire; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "white_dress:156415",
+     "cape:71743"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_048",
+   "name": "Le Fay Pendragon",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, twintails, green eyes, small breasts, witch hat",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "twintails:151318",
+     "green_eyes:88439",
+     "small_breasts:141202",
+     "witch_hat:156915"
+    ],
+    "adult": false,
+    "note": "Le Fay Pendragon (High School DxD) - phap su cua Vali, canon la tre em: CANH BAO minor, chi SFW"
+   },
+   "outfit_json": {
+    "default": [
+     "gothic_lolita:87939",
+     "witch_hat:156915",
+     "cape:71743"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_049",
+   "name": "Seekvaira Agares",
+   "gender": "girl",
+   "identity_line": "1girl, solo, silver hair, long hair, blue eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "silver_hair:140417",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Seekvaira Agares (High School DxD) - Ma Vuong Agares, mo hinh robot; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "suit:144114",
+     "pleated_skirt:127621",
+     "thighhighs:148319"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_050",
+   "name": "Waltraute",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, long hair, blue eyes, large breasts, valkyrie",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "large_breasts:106633",
+     "valkyrie:164934"
+    ],
+    "adult": true,
+    "note": "Waltraute (High School DxD) - valkyrie, chi Rossweisse; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "valkyrie": [
+     "valkyrie:164934",
+     "armor:64847",
+     "armored_dress:64783",
+     "gauntlets:86432",
+     "cape:71743"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_051",
+   "name": "Tosca",
+   "gender": "girl",
+   "identity_line": "1girl, solo, brown hair, long hair, green eyes, medium breasts, nun",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "long_hair:108633",
+     "green_eyes:88439",
+     "medium_breasts:112810",
+     "nun:122528"
+    ],
+    "adult": true,
+    "note": "Tosca (High School DxD) - nun bi Freed sat hai; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "nun": [
+     "nun:122528",
+     "habit:162543",
+     "cross_necklace:75905",
+     "rosary:165740"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_052",
+   "name": "Tsubaki Shinra",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, long hair, purple eyes, medium breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "shinra_tsubaki:186709",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "purple_eyes:129626",
+     "medium_breasts:112810",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Tsubaki Shinra (High School DxD) - ho hau cua Sona; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_053",
+   "name": "Momo Hanakai",
+   "gender": "girl",
+   "identity_line": "1girl, solo, pink hair, twintails, blue eyes, small breasts, pale skin",
+   "identity_json": {
+    "identity_tags": [
+     "hanakai_momo:202516",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "pink_hair:127128",
+     "twintails:151318",
+     "blue_eyes:69444",
+     "small_breasts:141202",
+     "pale_skin:125520"
+    ],
+    "adult": true,
+    "note": "Momo Hanakai (High School DxD) - thoc peerage Sona; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_054",
+   "name": "Reya Kusaka",
+   "gender": "girl",
+   "identity_line": "1girl, solo, brown hair, short hair, glasses, brown eyes, small breasts",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "short_hair:139716",
+     "glasses:87340",
+     "brown_eyes:70544",
+     "small_breasts:141202"
+    ],
+    "adult": true,
+    "note": "Reya Kusaka (High School DxD) - thoc peerage Sona, thich doc sach; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_055",
+   "name": "Tsubasa Yura",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, short hair, blue eyes, small breasts",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "short_hair:139716",
+     "blue_eyes:69444",
+     "small_breasts:141202"
+    ],
+    "adult": true,
+    "note": "Tsubasa Yura (High School DxD) - thoc peerage Sona, tomboy; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_056",
+   "name": "Tomoe Meguri",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, ponytail, brown eyes, medium breasts",
+   "identity_json": {
+    "identity_tags": [
+     "meguri_tomoe:224864",
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "ponytail:128325",
+     "brown_eyes:70544",
+     "medium_breasts:112810"
+    ],
+    "adult": true,
+    "note": "Tomoe Meguri (High School DxD) - thoc peerage Sona; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "pleated_skirt:127621",
+     "kneehighs:103636",
+     "loafers:108433"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_057",
+   "name": "Genshirou Saji",
+   "gender": "boy",
+   "identity_line": "1boy, solo, black hair, short hair, blue eyes",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "short_hair:139716",
+     "blue_eyes:69444"
+    ],
+    "adult": true,
+    "note": "Genshirou Saji (High School DxD) - thoc peerage Sona, Absorption Line; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "kuoh_academy_school_uniform:168815",
+     "blazer:69144",
+     "necktie:120026",
+     "loafers:108433"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_058",
+   "name": "Mira",
+   "gender": "girl",
+   "identity_line": "1girl, solo, black hair, long hair, red eyes, medium breasts",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "black_hair:68843",
+     "long_hair:108633",
+     "red_eyes:131320",
+     "medium_breasts:112810"
+    ],
+    "adult": true,
+    "note": "Mira (High School DxD) - knight cua Riser; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "black_dress:68842",
+     "armor:64847"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_059",
+   "name": "Isabela",
+   "gender": "girl",
+   "identity_line": "1girl, solo, brown hair, long hair, green eyes, medium breasts",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "brown_hair:70543",
+     "long_hair:108633",
+     "green_eyes:88439",
+     "medium_breasts:112810"
+    ],
+    "adult": true,
+    "note": "Isabela (High School DxD) - thoc peerage Riser; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "black_dress:68842",
+     "armor:64847"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  },
+  {
+   "code": "CHAR_060",
+   "name": "Karlamine",
+   "gender": "girl",
+   "identity_line": "1girl, solo, blonde hair, long hair, blue eyes, medium breasts, armor",
+   "identity_json": {
+    "identity_tags": [
+     "high_school_dxd:92313"
+    ],
+    "attributes": [
+     "blonde_hair:69238",
+     "long_hair:108633",
+     "blue_eyes:69444",
+     "medium_breasts:112810",
+     "armor:64847"
+    ],
+    "adult": true,
+    "note": "Karlamine (High School DxD) - knight cua Riser; chua co danbooru character tag"
+   },
+   "outfit_json": {
+    "default": [
+     "armor:64847",
+     "armored_dress:64783",
+     "gauntlets:86432",
+     "cape:71743",
+     "thigh_boots:148215"
+    ],
+    "nude": [
+     "completely_nude:75101"
+    ]
+   }
+  }
+ ]
+}

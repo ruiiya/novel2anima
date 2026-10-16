@@ -10,6 +10,7 @@ concepts and the runtime tables, in one file. No PostgreSQL, no vector DB.
     python etl/build.py load       # idempotent import into db/novel_anima.db
     python etl/build.py verify     # integrity_check / foreign_key_check / FTS5 / row gates
     python etl/build.py schema --force   # drop and rebuild the db from sql/schema_v1.sql
+    python etl/seed_plan.py data/characters/dxd_roster.json   # roster-only: upserts character_profile, writes no shots
 
 Python 3.9+ stdlib only (`sqlite3`, `urllib`, `csv`, `json`). SQLite must have FTS5.
 
@@ -44,6 +45,69 @@ Every download is hashed into `data/sources/manifest.json`; `load`/`verify` run 
 from that cache. Licenses are recorded per source in `sources.json` and copied into
 `source_snapshot.license_note` — check them before redistribution.
 
+## Local Danbooru dump (`etl/import_danbooru_dump.py`)
+
+`python etl/import_danbooru_dump.py [--dir DIR] [--only tags,aliases,implications,artists]`
+imports the official Danbooru CSV dumps (`tags.csv.gz`, `tag_aliases.csv.gz`,
+`tag_implications.csv.gz`, `artists.csv.gz`) straight from disk. Each file is hashed into
+`source_snapshot`, so reruns are idempotent: existing tags keep their id, `post_count`
+takes the max, new tags land as `unreviewed`. No schema change, no invented ids.
+
+`python etl/analyze_posts.py [--file PATH] [--limit N] [--pair-every 8] [--dry-run]`
+(6.7M post, ~25 min): cap nhat `tag.post_count` theo so post that, sinh `tag_content_label`
+tu histogram rating (adult/contextual/neutral), sinh `tag_relation(relation='compatible')`
+theo lift co-occurrence (chi giu lift >= 5), va liet ke tag thieu ra
+`data/sources/posts_unknown_tags.txt`.
+`python etl/import_posts_unknown.py [--min-count 5]`: nap cac tag thieu do vao bang tag
+(category NULL vi khong biet, post_count = so lan xuat hien).
+
+`python etl/import_wiki_pages.py [--file PATH]`: wiki text -> tag_source metadata.
+`python etl/import_wiki_links.py [--reset]`: wiki sections -> tag_relation
+("related tags"/"see also" = recommends, "not to be confused with"/"should not be tagged as" =
+conflicts) + under_debate flag trong tag_source.
+`python etl/import_wiki_groups.py`: 48 page `tag_group:*` (4 nhom e621 bi skip) -> visual_concept kind=other
++ concept_tag (palette theo nhom: clothes, colors, anatomy, sex_positions...).
+`python etl/prune_tags.py [--apply] [--vacuum]`: xoa tag post_count=0 khong duoc
+tham chieu o dau (giu tag co wiki/role/relation/concept/alias hoac duoc nhac trong plan).
+`python etl/cleanup_db.py [--apply] [--vacuum]`: xoa alias trung ten tag that (tag thang alias),
+xuat `data/sources/tags_not_prompt_token.txt` (tag ky tu dac biet/emoji - van giu trong db) va vacuum.
+`python etl/check_reseed.py`: seed lai toan bo `data/plans/*.json` va assert ket qua idempotent
+(prompt file khong doi, khong con alias mo ho, fk sach). Dung sau moi lan sua du lieu catalog.
+
+## Quy tac chung cho moi plan (`etl/wardrobe.py`, seed_plan tu ap)
+
+Ca hai quy tac chi ap khi db *biet*, khong hard-code trong code:
+
+- **Khoa mau do**: du lieu mau nam trong catalog — `visual_concept` code `WC_<do>` + `concept_tag`
+  (`primary` = do goc, `alternative` = bien the mau, `priority=1` = mau dang chon).
+  Nap bang `python etl/import_colour_sets.py --apply`: bien the `<mau>_<do>` that trong catalog
+  (`black_thighhighs`, `white_shirt`...), bo mau chuan bi cho phase 1
+  (`data/wardrobe/colour_choice.json`: `<do> -> <mau>`), va cue `<mau>_clothing` cho do khong co
+  bien the mau (`data/wardrobe/colour_cue.json`). seed_plan thay tag do bang bien the mau, noi y
+  doi mau theo bo (set den -> `black_panties`). Mon nao chua co quyet dinh mau thi khong doan —
+  chi bao `chua chon mau: [...]`.
+- **Thang tu the**: trong 1 phase tu the chi di mot chieu dung -> quy -> ngoi -> nam; shot lui
+  thang bi keo ve tu the shot truoc (`--no-fix-pose` neu chi muon bao cao).
+  Luat nay o lai trong `wardrobe.py` (STANCE_ORDER/LADDER) vi no la y doan ve tu the.
+
+Thu tu sau `python etl/build.py all`: seed_plan moi plan -> `python etl/qa_shots.py --apply`
+-> `python etl/check_prompts.py` (soat may: file vs db, cu phap, tag thieu/thua/lap, xung dot,
+so nguoi, do dai, trung lap, negative, dong `qa:*`)
+-> `python etl/llm_review.py --act N --apply` (soat nghia bang LLM: caption vs tag, doi mau
+giua cac shot, tag gan sai nguoi; ket qua la goi y, luu `data/reviews/`). `python etl/check_reseed.py`
+gom 6 buoc dau va tra ve 0 error.
+
+## Xac dinh van de, khong cung nhac (`etl/qa_shots.py`, `etl/suggest_tags.py`)
+
+- `python etl/qa_shots.py --apply`: quet moi shot, ghi van de vao `shot_state` (axis
+  `mau_thieu`, `mau_lech`, `xung_dot`, `tu_the_lech`, `noi_dung_chan`; `source='qa:v1'`).
+  Day la lop bao cao de model/nguoi doc roi quyet dinh: khong sua prompt, khong chan seed.
+  `infer_state.py` chi xoa dong `inferred:*` cua chinh no nen hai nguon cung ton tai.
+- `python etl/suggest_tags.py --tag black_thighhighs` (hoac `--shot ID` / `--act 13`): goi y tag
+  ngoai tag goc tu `tag_relation` + `concept_tag optional/alternative` + `tag_role`.
+- Plan chi can dung *ten* tag: id cu trong plan duoc thay bang id trong catalog (bao
+  `id cu trong plan -> lay theo ten: N ref`); chi ten khong co trong catalog moi bi tu choi.
+
 ## Deliberate limits (not done yet)
 
 - **Danbooru API sync** (`tags.json` / `aliases.json` / `tag_implications.json`) returns
@@ -58,15 +122,32 @@ from that cache. Licenses are recorded per source in `sources.json` and copied i
 - Alias conflicts (26,653 rows) are resolved first-writer-wins, implications db first.
   Losing CSV aliases are counted in the load stats, not stored.
 - `data/sources/` is gitignored: `python etl/build.py fetch` refetches it. `db/novel_anima.db`
-  is tracked via Git LFS, so run `git lfs install` before cloning. The implications snapshot
-  is a weak pin (site rebuild changes bytes), so the manifest hash is the authoritative record.
+  is a **build artifact, not tracked** (gitignored): rebuild it with `python etl/build.py all`
+  then re-seed the plans. Committing a 327 MB file left ~300 MB of LFS scratch in
+  `.git/lfs/tmp` per git operation; to publish a checkpoint on purpose use
+  `git add -f db/novel_anima.db` (the LFS filter in `.gitattributes` still applies).
+  The implications snapshot is a weak pin (site rebuild changes bytes), so the manifest hash
+  is the authoritative record.
+
+## Bao tri (git / dia)
+
+    git lfs prune                 # xoa LFS object khong con ref nao tro toi
+    del .git\lfs\tmp\*            # scratch cua LFS (an toan khi khong co git/lfs dang chay)
+    python etl/build.py verify    # 13 checks
+
+Giu `db/` ngoai git la yeu cau: file 327 MB bi stage lai moi lan git thao tac, sinh ra
+hang tram GB trong `.git/lfs/tmp`.
 
 ## Layout
 
     sql/schema_v1.sql      DDL (16 tables + FTS5 + triggers), from the V1 schema-only db
+    data/characters/       character roster (dxd_roster.json) -> character_profile
+    etl/gen_kuoh_acts.py   regenerates the 12 Kuoh cosplay acts (act13..act24) from the roster
     etl/sources.json       pinned source list
     etl/build.py           schema / fetch / load / verify
-    db/novel_anima.db      built catalog (Git LFS)
+    db/novel_anima.db      built catalog (gitignored, khong track)
     db/import_report.json  counts + check results from the last verify
+    etl/check_prompts.py   self-check prompt cua mot act (0 error moi render)
+    etl/llm_review.py      soat prompt bang LLM (codex exec qua stdin, JSON)
     data/sources/          raw downloads + sha256 manifest (gitignored)
     skills/                novel2anima-catalog + novel2anima-shot-pipeline (skill specs)

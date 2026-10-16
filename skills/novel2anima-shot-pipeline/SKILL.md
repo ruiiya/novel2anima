@@ -12,6 +12,10 @@ and schema, [references/continuity-state.md](references/continuity-state.md) for
 experimental continuity model, plus
 [references/retrieval-and-memory.md](references/retrieval-and-memory.md) and
 [references/prompt-and-render.md](references/prompt-and-render.md) for implementation.
+Dress, stance and prompt hygiene are enforced at seed time by `etl/wardrobe.py` +
+`etl/seed_plan.py`; whatever those gates cannot decide is reported by `etl/qa_shots.py` into
+`shot_state` instead of being forced - see
+[references/wardrobe-and-pose.md](references/wardrobe-and-pose.md).
 The catalog skill owns ETL/table semantics. Inspect the actual SQLite schema; skill
 references are not evidence that a populated DB or production backend exists.
 
@@ -35,7 +39,17 @@ references are not evidence that a populated DB or production backend exists.
   background** rather than detailed scene reconstruction.
 - Identity, style and default outfit come from `project`/`character_profile` and must stay
   coherent through acts and revisions; intentional outfit changes are recorded as
-  revisions rather than rejected for violating the default. A shot may depict one or multiple **adult**
+  revisions rather than rejected for violating the default.
+- Every garment a shot names carries a colour (or the shot carries its `<colour>_clothing`
+  cue): the seed swaps the base garment for the colour variant recorded in
+  `visual_concept WC_*` / `data/wardrobe/colour_choice.json`, and underwear follows the set.
+  A garment without a colour decision is reported (`chua chon mau`, QA axis `mau_thieu`) —
+  never silently repainted. Inside a phase the stance only escalates
+  (standing -> kneeling -> sitting -> lying).
+- Problems are *reported* before they are *fixed*: `etl/qa_shots.py --apply` writes flagged
+  shots (missing/mismatched colour, conflicting tags, stance step-back, blocked content) into
+  `shot_state` with a severity hint. Read them, decide, then change the plan or the catalog —
+  no gate silently rewrites creative content. A shot may depict one or multiple **adult**
   participants; when interaction involves multiple subjects, preserve distinct identities
   and action/expression roles. Do not force `solo` onto multi-character interactions.
 - **NSFW-first scope includes adult sexual interactions and high-intensity group scenes**,
@@ -85,6 +99,9 @@ references are not evidence that a populated DB or production backend exists.
    `concept_relation`, Wardrobe/Tools seed mappings, `tag_source` and `source_snapshot`,
    original `tag_content_label` data, shot history and generation feedback. A `draft` or
    missing concept must not hide relevant raw tags.
+   To go *outside* the base tag of a garment/action, ask `python etl/suggest_tags.py
+   --tag <tag> | --shot <id> | --act <n>`; it suggests from `tag_relation`, concept
+   `optional`/`alternative` mappings and `tag_role` with post_count evidence.
 6. **Combine evidence:** canonical IDs, source revisions, original metadata/labels,
    concept mappings, role/confidence, review state and the paths by which a candidate was
    discovered. Keep all discovery lanes observable; report gaps instead of fake results.
@@ -104,7 +121,13 @@ references are not evidence that a populated DB or production backend exists.
 10. **Render:** use the actual ComfyUI workflow with Anima Base 2B + Turbo 4-step LoRA;
    record model, LoRA, sampler, CFG, prompt, seed, generated paths and outcome.
 11. **QC and revise:** review action/expression fidelity, identity, white background,
-   artifacts and near-duplicates. Keep rejected attempts as diagnostics, revisions appended
+   artifacts and near-duplicates. After seeding, run `python etl/check_prompts.py`
+   (0 error before render: it diffs the prompt file against the db and the catalog),
+   then `python etl/llm_review.py --act <n> --apply` for the semantic pass (caption vs tag,
+   colour flips inside a beat, wrong-character tags) whose findings are advisory and read the report rows
+   (`etl/qa_shots.py --apply` -> `shot_state`, axes in
+   [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md)) and fix the plan or the
+   catalog data instead of hand-editing prompts. Keep rejected attempts as diagnostics, revisions appended
    rather than overwriting accepted shots; use bounded targeted retries.
 
 ## Retrieval failure strategy

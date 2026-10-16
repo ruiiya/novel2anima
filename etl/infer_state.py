@@ -20,6 +20,17 @@ KISS = {"french_kiss", "tongue", "cunnilingus"}
 BITE = {"biting", "bite_mark", "bite_mark_on_shoulder", "bite_mark_on_neck"}
 SCRATCH = {"scratching", "clawing", "scratches"}
 TREMBLE = {"trembling", "shaking"}
+ROPE = {"rope", "crotch_rope", "chain", "chain_leash", "leash", "shackles", "handcuffs", "bondage"}
+OWNERSHIP = {"body_writing", "slave_tattoo"}
+SEMEN = {"cum_in_pussy", "cum_overflow", "cum_pool", "cumdrip", "cum_in_womb", "cum_on_stomach", "cum_in_ass"}
+BELLY = {"pregnant", "implied_pregnancy", "stomach_bulge", "big_belly", "pregnancy_mark"}
+LACTATION = {"lactation", "projectile_lactation", "milk", "breast_milking", "milking"}
+IMPACT = {"stomach_punch", "punching", "slapping", "slap_mark", "kicking", "headlock",
+           "pinching_another's_belly", "belly_grab"}
+SPANK = {"spanking", "spanked", "spanked_mark", "red_ass", "welts"}
+WHIP = {"whip", "whip_marks", "riding_crop", "cattle_prod"}
+PIERCED = {"piercing", "nipple_piercing", "nipple_rings", "navel_piercing", "clitoris_piercing",
+           "labia_piercing", "labia_ring", "barbell_piercing", "multiple_piercings", "belly_chain"}
 TOY = {"sex_toy", "vibrator", "dildo", "double_dildo", "strap-on", "strap_on"}
 AFTER = {"after_sex", "afterglow"}
 
@@ -38,6 +49,28 @@ LADDERS = {
                   (2, "bite_mark_on_shoulder",     lambda n, s: n["bite"] >= 1 and s.get("shoulder", 0) >= 1)],
     "mark:scratch": [(1, "scratches",              lambda n, s: n["scratch"] >= 1),
                      (2, "red_skin",               lambda n, s: n["scratch"] >= 2)],
+    "mark:rope": [(1, "red_skin",                  lambda n, s: n["rope"] >= 1),
+                  (2, "bruise",                    lambda n, s: n["rope"] >= 3)],
+    "mark:ownership": [(1, "slave_tattoo",         lambda n, s: n["ownership"] >= 1)],
+    "mark:impact": [(1, "slap_mark",               lambda n, s: n["impact"] >= 1),
+                    (2, "bruise",                  lambda n, s: n["impact"] >= 2),
+                    (3, "bruise_on_stomach",       lambda n, s: n["impact"] >= 5)],
+    "mark:spank": [(1, "red_skin",                 lambda n, s: n["spank"] >= 1),
+                   (2, "red_ass",                  lambda n, s: n["spank"] >= 2),
+                   (3, "welts",                    lambda n, s: n["spank"] >= 6)],
+    "mark:whip": [(1, "red_skin",                  lambda n, s: n["whip"] >= 1),
+                  (2, "whip_marks",                lambda n, s: n["whip"] >= 2)],
+    "mark:piercing": [(1, "nipple_piercing",       lambda n, s: n["pierced"] >= 1),
+                      (2, "navel_piercing",        lambda n, s: n["pierced"] >= 3),
+                      (3, "belly_chain",           lambda n, s: n["pierced"] >= 6)],
+    "fluid:semen": [(1, "cum_in_pussy",            lambda n, s: n["semen"] >= 1),
+                    (2, "cum_overflow",            lambda n, s: n["semen"] >= 3),
+                    (3, "cum_pool",                lambda n, s: n["semen"] >= 5)],
+    "body:pregnancy": [(1, "stomach_bulge",        lambda n, s: n["pregnancy"] >= 1),
+                       (2, "pregnant",             lambda n, s: n["pregnancy"] >= 2),
+                       (3, "big_belly",            lambda n, s: n["pregnancy"] >= 5)],
+    "physiology:lactation": [(1, "lactation",      lambda n, s: n["lactation"] >= 1),
+                             (2, "projectile_lactation", lambda n, s: n["lactation"] >= 3)],
     "physiology:flush": [(1, "blush",              lambda n, s: s["blush"] >= 1),
                          (2, "red_skin",           lambda n, s: n["strong"] >= 2)],
     "physiology:nipples": [(1, "nipples",          lambda n, s: s["bare"] >= 1)],
@@ -59,6 +92,15 @@ REFRESH = {
     "fluid:sweat": (SWEAT, 0.15),
     "mark:bite": (BITE, 0.03),
     "mark:scratch": (SCRATCH, 0.04),
+    "mark:rope": (ROPE, 0.05),
+    "mark:ownership": (OWNERSHIP, 0.0),   # a sold lot keeps its number
+    "mark:impact": (IMPACT, 0.04),
+    "mark:spank": (SPANK, 0.06),
+    "mark:whip": (WHIP, 0.03),
+    "mark:piercing": (PIERCED, 0.0),   # hardware does not come out
+    "fluid:semen": (SEMEN, 0.03),
+    "body:pregnancy": (BELLY, 0.0),       # a belly does not go away
+    "physiology:lactation": (LACTATION, 0.08),
     "physiology:flush": ({"blush", "red_skin"}, 0.10),
     "physiology:nipples": ({"nipples", "topless", "completely_nude"}, 0.02),
     "physiology:breath": (SWEAT | STRONG, 0.15),
@@ -94,7 +136,7 @@ def main():
     ladder_ids = {ax: [(lvl, tid(v), pred) for lvl, v, pred in steps] for ax, steps in LADDERS.items()}
     stage_ids = {lvl: (tid(v) if v else None) for lvl, v, _ in OUTFIT_STAGE}
 
-    cur.execute("DELETE FROM shot_state")
+    cur.execute("DELETE FROM shot_state WHERE source LIKE 'inferred:%'")  # khong xoa qa:*
     cur.execute("DELETE FROM act_continuity")
 
     acts = cur.execute("SELECT id, act_no FROM act ORDER BY act_no").fetchall()
@@ -103,9 +145,10 @@ def main():
         shots = cur.execute("SELECT shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no",
                             (act_id,)).fetchall()
         counts = {k: 0 for k in ("genital", "fingers", "strong", "ejac", "sweat", "saliva", "kiss",
-                                 "bite", "scratch", "tremble", "toy")}
+                                 "bite", "scratch", "tremble", "toy", "rope", "ownership",
+                                 "semen", "pregnancy", "lactation", "impact", "spank", "whip", "pierced")}
         flags = {"blush": 0, "bare": 0, "motion": 0, "after": 0, "shoulder": 0}
-        live, stage = {}, 0
+        live, stage, opening = {}, 0, set()
 
         def write(shot_no, axis, vtid, sev, since, cause, source):
             cur.execute("INSERT INTO shot_state(shot_id, axis, value_tag_id, severity, since_shot_no,"
@@ -118,9 +161,14 @@ def main():
             for g in ("outfit", "action", "expression", "pose", "motion", "camera"):
                 names |= {t["name"] for t in spec.get(g, [])}
             caption = (spec.get("caption", "") + " " + spec.get("beat", "")).lower()
+            if shot_no == shots[0][0]:
+                opening = set(names)
             for key, watch in (("genital", GENITAL), ("fingers", FINGERS), ("strong", STRONG), ("ejac", EJAC),
                                ("sweat", SWEAT), ("saliva", SALIVA), ("kiss", KISS), ("bite", BITE),
-                               ("scratch", SCRATCH), ("tremble", TREMBLE), ("toy", TOY)):
+                               ("scratch", SCRATCH), ("tremble", TREMBLE), ("toy", TOY),
+                               ("rope", ROPE), ("ownership", OWNERSHIP), ("semen", SEMEN),
+                               ("pregnancy", BELLY), ("lactation", LACTATION), ("impact", IMPACT),
+                               ("spank", SPANK), ("whip", WHIP), ("pierced", PIERCED)):
                 if names & watch:
                     counts[key] += 1
             if names & {"blush"}:
@@ -185,9 +233,16 @@ def main():
                 write(shot_no, axis, vtid, round(sev, 3), since, cause, "inferred:v0.3")
                 rows += 1
 
-        for axis, note in (("fluid", "act starts clean: no fluids"),
-                           ("mark", "act starts clean: no marks"),
-                           ("outfit", "act starts fully dressed"),
+        props = sorted(opening & {"choker", "rope", "crotch_rope", "shackles", "handcuffs", "chain_leash",
+                                  "leash", "blindfold", "slave_tattoo", "body_writing", "pregnancy_mark"})
+        body = sorted((opening & BELLY) | (opening & {"nipples"}))
+        fluids = sorted((opening & SEMEN) | (opening & {"saliva", "sweat", "pussy_juice", "female_ejaculation"}))
+        for axis, note in (("fluid", "opening frame already shows: " + ", ".join(fluids) if fluids
+                            else "act starts clean: no fluids"),
+                           ("mark", "opening frame already carries: " + ", ".join(props) if props
+                            else "act starts clean: no marks"),
+                           ("outfit", "opening frame: " + ", ".join(sorted(set(props) | set(body))) if props or body
+                            else "act starts fully dressed"),
                            ("environment", "white background, no set state tracked yet")):
             cur.execute("INSERT INTO act_continuity(act_id, axis, initial_tag_id, notes) VALUES(?,?,NULL,?)",
                         (act_id, axis, note))
