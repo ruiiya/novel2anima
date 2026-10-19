@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 # -*- coding: utf-8 -*-
 """Soat prompt cua mot act truoc khi render: file vs db, cu phap Anima, tag thieu/thua,
 xung dot, so nguoi, do dai, trung lap, negative file, va cac van de da ghi trong shot_state.
@@ -11,7 +12,7 @@ Exit 1 khi co ERROR. Read-only: khong sua prompt, khong ghi db.
 import argparse, collections, glob, json, pathlib, re, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import build
+import build, story_db, story_logic
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 MAX_TOKENS = 80
@@ -24,10 +25,14 @@ def tag_text(name):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--act", type=int)
+    ap.add_argument("--project")
+    ap.add_argument("--revision", type=int)
+    ap.add_argument("--db", default=build.DB_PATH)
+    ap.add_argument("--plan-dir", default="data/plans")
     ap.add_argument("--examples", type=int, default=6, help="so vi du in ra moi loai loi")
     args = ap.parse_args(argv)
 
-    con = build.connect(build.DB_PATH)
+    con = build.connect(args.db)
     edges = collections.defaultdict(list)
     for f, t in con.execute("SELECT from_tag_id, to_tag_id FROM tag_relation WHERE relation='implies'"):
         edges[f].append(t)
@@ -51,20 +56,25 @@ def main(argv=None):
         return seen
 
     plans = {}
-    for f in glob.glob("data/plans/*.json"):
+    for f in glob.glob(str(pathlib.Path(args.plan_dir) / "*.json")):
         d = json.load(open(f, encoding="utf-8-sig")) or {}
         no = (d.get("act") or {}).get("act_no")
         if no and d.get("shots"):
-            plans[no] = d
+            plans[(d["project"]["title"], no, (d.get("act") or {}).get("revision", 1))] = d
 
-    acts = con.execute("SELECT id, act_no FROM act%s ORDER BY act_no"
-                       % (" WHERE act_no=%d" % args.act if args.act else "")).fetchall()
+    acts = con.execute("SELECT a.id,a.act_no,p.title,a.revision FROM act a "
+                       "JOIN project p ON p.id=a.project_id WHERE "
+                       "(? IS NULL OR a.act_no=?) AND (? IS NULL OR p.title=?) "
+                       "AND (? IS NULL OR a.revision=?) ORDER BY p.title,a.act_no,a.revision",
+                       (args.act,args.act,args.project,args.project,args.revision,args.revision)).fetchall()
+    if args.act is not None and len(acts) != 1:
+        raise SystemExit("act ambiguous/not found; specify --project and --revision")
     total = collections.Counter()
-    for aid, act_no in acts:
+    for aid, act_no, project_title, revision in acts:
         rows = con.execute("SELECT id, shot_no, shot_spec_json FROM shot WHERE act_id=?"
                            " ORDER BY shot_no", (aid,)).fetchall()
         errs, warns, seen_at = [], [], collections.defaultdict(list)
-        plan = plans.get(act_no)
+        plan = plans.get((project_title, act_no, revision))
         lines = []
         if not plan:
             warns.append((0, "", "khong co file plan local -> khong doi chieu duoc prompt file"))
@@ -85,6 +95,10 @@ def main(argv=None):
                 if miss:
                     warns.append((0, "", "negative thieu %s" % ", ".join(miss)))
 
+        sequence_issues = story_logic.validate_specs([(n, json.loads(spec)) for _sid, n, spec in rows])
+        for issue in sequence_issues:
+            item = (issue.shot, "story", "%s: %s" % (issue.code, issue.detail))
+            (errs if issue.level == "ERROR" else warns).append(item)
         sig_seq = []
         for i, (shot_id, shot_no, spec_json) in enumerate(rows):
             spec = json.loads(spec_json)
@@ -155,8 +169,8 @@ def main(argv=None):
                 want = {"%dboys" % boys} if boys else set()
             if want and not (want & words):
                 warns.append((shot_no, phase, "thieu dong so nguoi (%s)" % "/".join(sorted(want))))
-            if not spec.get("action"):
-                warns.append((shot_no, phase, "ACTION_UNRESOLVED"))
+            if not spec.get("action") and spec.get("purpose") not in story_logic.NO_ACTION_OK:
+                errs.append((shot_no, phase, "ACTION_UNRESOLVED"))
             if not spec.get("expression"):
                 warns.append((shot_no, phase, "EXPRESSION_UNRESOLVED"))
             if not spec.get("pose"):
@@ -175,8 +189,10 @@ def main(argv=None):
                 "SELECT s.shot_no, st.axis, st.value_tag_id, st.severity, st.source FROM shot_state st"
                 " JOIN shot s ON s.id=st.shot_id WHERE s.act_id=?"
                 " AND st.source IN ('qa:v1', 'qa:llm:v1')", (aid,)):
-            if src.endswith("llm:v1"):      # soat cua LLM = y kien tham khao, phai kiem chung -> WARN
-                warns.append((shot_no, "", "%s sev %.1f" % (axis, sev)))
+            if src.endswith("llm:v1"):
+                # High-confidence reviewer findings require resolution before rendering.
+                (errs if sev >= 0.85 else warns).append(
+                    (shot_no, "", "%s sev %.1f" % (axis, sev)))
                 continue
             name = con.execute("SELECT canonical_name FROM tag WHERE id=?", (tid,)).fetchone()
             row = (shot_no, "", "%s (%s, sev %.1f)" % (axis, name[0] if name else tid, sev))

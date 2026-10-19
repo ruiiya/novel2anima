@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 ---
 name: novel2anima-shot-pipeline
 description: "Plan Novel2Anima V4 acts and action/expression-first ShotSpecs, including high-intensity, multi-participant adult NSFW scene intent metadata, with full SQLite catalog retrieval, project memory, and render QC. The LLM selects contextually and the backend compiles model-supported Anima Base 2B + Turbo 4-step LoRA prompts."
@@ -18,6 +19,27 @@ Dress, stance and prompt hygiene are enforced at seed time by `etl/wardrobe.py` 
 [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md).
 The catalog skill owns ETL/table semantics. Inspect the actual SQLite schema; skill
 references are not evidence that a populated DB or production backend exists.
+
+## Story quality P0/P1 contract (solo and 1girl/1boy)
+
+- Plan semantic beat progression **before** retrieving tags. Never independently randomize action,
+  expression and caption merely to fill a shot quota. Use `etl/build_story_plan.py` with
+  author-defined `beats[].shots[]`, or author a seed-compatible plan directly.
+- For a meaningful action shot, specify `sequence.purpose`, `actor`, optional `target`,
+  `primaryAction`, `poseBefore` / `poseAfter`, optional `object` holders, and `eventId`.
+  `sequence` is semantic metadata: it is **not** a Danbooru tag nor an invented catalog ID.
+- Use optional per-character `character_actions`, `character_poses`, `character_gaze`,
+  `character_targets` maps for duo. A global action tag is not proof of who performed it.
+- Check `stateBefore -> action -> stateAfter`, pose bridge, prop ownership, and important
+  reactions. Explicit scene/time cuts can justify skipping micro-actions. Do not turn
+  each small movement into a separate shot if a single composition clearly shows it.
+- `python etl/plan_actions.py --plan <plan>` lists missing bridges; then run
+  `python etl/check_story.py --plan <plan>` **before** `seed_plan.py`.
+  `etl/check_prompts.py` now gates severe narrative and action-resolution errors.
+- Existing plan JSONs without `sequence` remain accepted for backwards compatibility,
+  but those plans have **lower QA coverage**: a zero-error check does not certify story clarity.
+- Preserve previous generation records; if a generated/approved shot changes, **increment
+  act.revision** rather than reseeding over its image history.
 
 ## Invariants
 
@@ -44,8 +66,7 @@ references are not evidence that a populated DB or production backend exists.
   cue): the seed swaps the base garment for the colour variant recorded in
   `visual_concept WC_*` / `data/wardrobe/colour_choice.json`, and underwear follows the set.
   A garment without a colour decision is reported (`chua chon mau`, QA axis `mau_thieu`) —
-  never silently repainted. Inside a phase the stance only escalates
-  (standing -> kneeling -> sitting -> lying).
+  never silently repainted. Stance can change in either direction when an action or declared cut explains the transition.
 - Problems are *reported* before they are *fixed*: `etl/qa_shots.py --apply` writes flagged
   shots (missing/mismatched colour, conflicting tags, stance step-back, blocked content) into
   `shot_state` with a severity hint. Read them, decide, then change the plan or the catalog —

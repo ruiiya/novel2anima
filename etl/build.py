@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 #!/usr/bin/env python3
 """Novel2Anima SQLite build: P0 schema + P1 pinned-source import. No PostgreSQL.
 
@@ -123,6 +124,10 @@ def cmd_schema(args):
         ddl = fh.read()
     con = connect(DB_PATH, wal=True)
     con.executescript(ddl)
+    # The continuity/QA tables must exist on a fresh build too.
+    with open(os.path.join(os.path.dirname(SCHEMA_PATH), "migrations", "002_shot_state.sql"),
+              encoding="utf-8") as fh:
+        con.executescript(fh.read())
     con.commit()
     tables = [r[0] for r in con.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]

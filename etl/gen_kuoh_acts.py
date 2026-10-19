@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 # -*- coding: utf-8 -*-
 """Generate the 12 Kuoh cosplay acts (act13..act24) -> data/plans/actNN_kuoh_<slug>.json
 
@@ -665,6 +666,11 @@ def check_plan(plan):
         raise SystemExit("plan hong:\n  " + "\n  ".join(bad[:20]))
 
 def main():
+    if "--allow-legacy-random" not in sys.argv:
+        raise SystemExit("Unsafe legacy generator: action/expression are randomly combined with fixed captions. "
+                         "Use etl/build_story_plan.py (beats -> shots), or explicitly pass "
+                         "--allow-legacy-random for historical reproduction; review resulting plans.")
+    sys.argv.remove("--allow-legacy-random")
     for code, *rest in ACTS:
         path, plan = PATHS[code]
         new = build((code, *rest), path, plan)

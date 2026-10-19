@@ -1,4 +1,5 @@
-﻿"""Seed a plan JSON into the runtime tables and emit the prompt file.
+# novel2anima P0P1 upgrade
+"""Seed a plan JSON into the runtime tables and emit the prompt file.
 
 Usage: python etl/seed_plan.py data/plans/act02_yuri_raiden_yae.json
 Idempotent per (project title, character code, act_no, revision, shot_no).
@@ -12,7 +13,8 @@ import argparse, json, re, sqlite3, sys, pathlib
 from datetime import datetime, timezone
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import wardrobe   # quy tac chung: khoa mau do + thang tu the (xem etl/wardrobe.py)
+import wardrobe
+import story_db, story_logic
 
 GROUPS = ("outfit", "action", "expression", "pose", "motion", "camera", "cast")
 
@@ -48,14 +50,23 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("plan")
     ap.add_argument("--db", default="db/novel_anima.db")
-    ap.add_argument("--fix-pose", dest="fix_pose", action="store_true", default=True,
-                    help="keo tu the lui thang ve tu the shot truoc (mac dinh bat)")
+    ap.add_argument("--fix-pose", dest="fix_pose", action="store_true", default=False,
+                    help="legacy read-only pose diagnostic; never rewrites actions")
     ap.add_argument("--no-fix-pose", dest="fix_pose", action="store_false",
                     help="giu nguyen tu the tac gia viet, chi bao cao lech thang")
     args = ap.parse_args()
     fix_pose = args.fix_pose
 
     plan = json.loads(pathlib.Path(args.plan).read_text(encoding="utf-8-sig"))
+    issues = story_logic.validate_plan(plan)
+    for issue in issues:
+        if issue.level == "ERROR":
+            print("STORY_ERROR shot %s %s: %s" % (issue.shot, issue.code, issue.detail), file=sys.stderr)
+    if any(i.level == "ERROR" for i in issues):
+        return 1
+    if issues:
+        print("story plan: %d warning(s); run etl/plan_actions.py for suggestions" %
+              sum(i.level == "WARN" for i in issues))
     chars = plan.get("characters") or [plan["character"]]
     con = sqlite3.connect(args.db)
     con.execute("PRAGMA foreign_keys=ON")
@@ -103,6 +114,14 @@ def main():
         else:
             p["expression"] = tagged(cur, shot["n"], "expression", shot.get("expression", []), unknown, mismatched)
         p["participants"] = shot.get("participants") or [chars[0]["code"]]
+        p["character_actions"] = {code: tagged(cur, shot["n"], "action:" + code, refs, unknown, mismatched)
+                                  for code, refs in (shot.get("character_actions") or {}).items()}
+        p["character_poses"] = {code: tagged(cur, shot["n"], "pose:" + code, refs, unknown, mismatched)
+                                for code, refs in (shot.get("character_poses") or {}).items()}
+        p["character_gaze"] = shot.get("character_gaze") or {}
+        p["character_targets"] = shot.get("character_targets") or {}
+        p["action"] = list(dict.fromkeys(p["action"] + [v for refs in p["character_actions"].values() for v in refs]))
+        p["pose"] = list(dict.fromkeys(p["pose"] + [v for refs in p["character_poses"].values() for v in refs]))
         p["phase"] = shot.get("phase", "")
         p["caption"] = shot["caption"]
         p["beat"] = shot.get("beat", "")
@@ -244,7 +263,7 @@ def main():
                     (pid, ac["act_no"], ac["title"], ac["outline"], ac.get("revision", 1), ac["status"]))
         aid = cur.lastrowid
 
-    cur.execute("DELETE FROM shot WHERE act_id=?", (aid,))   # re-seed replaces this act's shot rows
+    ## UPSERT shots below; do not delete historical generation rows
 
     multi = any(len(p["participants"]) > 1 for _, p in parsed)
     lines, pose_hits, pruned_total = [], 0, 0
@@ -335,19 +354,38 @@ def main():
                   plan.get("background_line", "white background, simple background"),
                   p["caption"]]
         prompt = ", ".join(x for x in parts if x)
+        # Keep actor-specific action/pose/gaze in prose so 1girl/1boy is not flattened.
+        role_clauses = []
+        for c in p["participants"]:
+            scoped = [n.replace("_", " ") for n, _ in p["character_actions"].get(c, [])]
+            scoped += [n.replace("_", " ") for n, _ in p["character_poses"].get(c, [])]
+            gaze = p["character_gaze"].get(c)
+            if gaze:
+                scoped.append("looking toward " + str(gaze))
+            target = p["character_targets"].get(c)
+            if target:
+                scoped.append("interacting with " + str(target))
+            if scoped:
+                role_clauses.append("%s: %s" % (char_name.get(c, c), ", ".join(scoped)))
+        if role_clauses:
+            prompt += ". " + "; ".join(role_clauses)
         if plan.get("nl"):
             prompt += ". " + " ".join(nl_block())
 
         signature = "%s|%s|%s" % (
             ",".join(n for n, _ in p["action"]),
             ",".join(dict.fromkeys(n for n, _ in p["expression"])),
-            ",".join(n for n, _ in p["camera"]))
+            ",".join(n for n, _ in p["pose"]) + "|" + str(shot.get("sequence", {}).get("eventId", "")))
 
         spec = {
             "phase": p["phase"],
             "participants": [{"code": c, "role": "participant",
-                              "expression": [{"name": n, "tagId": t} for n, t in p.get("expressions", {}).get(c, p["expression"])]}
-                             for c in p["participants"]],
+                               "expression": [{"name": n, "tagId": t} for n, t in p.get("expressions", {}).get(c, p["expression"])],
+                               "action": [{"name": n, "tagId": t} for n, t in p["character_actions"].get(c, [])],
+                               "pose": [{"name": n, "tagId": t} for n, t in p["character_poses"].get(c, [])],
+                               "gazeTarget": p["character_gaze"].get(c),
+                               "target": p["character_targets"].get(c)}
+                              for c in p["participants"]],
             "cast": [{"name": n, "tagId": t} for n, t in p["cast"]],
             "outfit": [{"name": n, "tagId": t} for n, t in p["outfit"]],
             "action": [{"name": n, "tagId": t} for n, t in p["action"]],
@@ -358,20 +396,23 @@ def main():
             "background": "white",
             "caption": p["caption"],
             "beat": p["beat"],
+            "purpose": (shot.get("sequence") or {}).get("purpose", shot.get("purpose", "")),
+            "sequence": shot.get("sequence") or {},
+            "character_actions": {c: [{"name": n, "tagId": t} for n, t in refs]
+                                  for c, refs in p["character_actions"].items()},
+            "character_poses": {c: [{"name": n, "tagId": t} for n, t in refs]
+                                for c, refs in p["character_poses"].items()},
+            "signature": signature,
             "prompt": prompt,
             "flags": flags,
             "contentProfile": "NSFW",
         }
 
-        cur.execute(
-            "INSERT INTO shot(act_id, shot_no, character_id, action_concept_id, expression_concept_id,"
-            " pose_concept_id, camera_concept_id, signature, shot_spec_json, content_mode, status, created_at)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-            (aid, shot["n"], char_ids[p["participants"][0]], None, None, pose_cid, None, signature,
-             json.dumps(spec, ensure_ascii=False), "nsfw", "planned",
-             datetime.now(timezone.utc).isoformat(timespec="seconds")))
+        story_db.upsert_shot(cur, aid, shot["n"], char_ids[p["participants"][0]],
+                             pose_cid, signature, spec, "nsfw")
         lines.append(prompt)
 
+    story_db.prune_missing_shots(cur, aid, [shot["n"] for shot, _ in parsed])
     out = pathlib.Path(plan["prompt_file"])
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n\n".join(lines) + "\n", encoding="utf-8", newline="\n")

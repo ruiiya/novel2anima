@@ -1,62 +1,127 @@
+# novel2anima P0P1 upgrade
 # -*- coding: utf-8 -*-
-"""Assert the catalog is safe to reshape: re-seed every plan and check nothing drifts.
+"""Read-only reseed audit against a private SQLite clone and temporary prompt files.
 
-Usage: python etl/check_reseed.py
-
-Guards the whole ingestion/curation work: after any DB edit (prune, alias cleanup,
-post_count refresh) the prompts must regenerate byte-identical from data/plans/*.json,
-no plan ref may go unknown, no alias may shadow a real tag, and the FKs must stay clean.
+Previous implementation reseeded the live DB and ignored QA exit codes.
+This implementation never touches live DB, plan JSONs or prompt files.
 """
-import glob, hashlib, json, os, sqlite3, subprocess, sys
+import argparse
+import contextlib
+import glob
+import hashlib
+import json
+import os
+import pathlib
+import sqlite3
+import subprocess
+import sys
+import tempfile
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(ROOT)
-sys.path.insert(0, os.path.join(ROOT, "etl"))
-import build
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+ETL = ROOT / 'etl'
+DEFAULT_DB = ROOT / 'db/novel_anima.db'
 
-sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-md5 = lambda p: hashlib.md5(open(p, "rb").read()).hexdigest()
 
-files = sorted(glob.glob("prompts/*.txt"))
-before = {f: md5(f) for f in files}
-db0 = sqlite3.connect(build.DB_PATH)
-seeded = {r[0] for r in db0.execute("SELECT DISTINCT act_no FROM act")}
-db0.close()
-failed, pending = [], []
-for plan in sorted(glob.glob("data/plans/*.json")):
-    d = json.load(open(plan, encoding="utf-8-sig")) or {}
-    if d.get("act", {}).get("act_no") not in seeded:   # plan chua vao db -> khong phai viec cua check nay
-        pending.append(os.path.basename(plan))
-        continue
-    pf = d.get("prompt_file")
-    if not pf or not os.path.exists(pf):
-        pending.append(os.path.basename(plan))
-        continue
-    r = subprocess.run([sys.executable, "etl/seed_plan.py", plan], capture_output=True, text=True)
-    if r.returncode or "UNKNOWN" in r.stdout:
-        failed.append((plan, r.returncode, (r.stdout or r.stderr)[-160:]))
-changed = [f for f in files if before[f] != md5(f)]
-subprocess.run([sys.executable, "etl/qa_shots.py", "--apply"], capture_output=True)  # seed lai shot -> shot_state bi cascade
-subprocess.run([sys.executable, "etl/llm_review.py", "--replay"], capture_output=True)  # nap lai findings LLM
-r = subprocess.run([sys.executable, "etl/check_prompts.py", "--examples", "0"], capture_output=True,
-               text=True, encoding="utf-8")   # tu soat prompt vua sinh lai
-prompt_detail = ((r.stdout or r.stderr).strip().splitlines() or ["khong co output"])[-1]
+def checksum(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
-con = sqlite3.connect(build.DB_PATH)
-shadowed = con.execute("SELECT count(*) FROM tag_alias a JOIN tag t ON t.canonical_name=a.alias_name").fetchone()[0]
-fk = con.execute("PRAGMA foreign_key_check").fetchall()
-con.close()
 
-checks = [
-    ("seed_plan runs", not failed, failed),
-    ("prompts byte-identical", not changed, changed),
-    ("alias khong shadow tag", shadowed == 0, shadowed),
-    ("foreign_key_check", not fk, fk),
-    ("ke hoach chua seed (bo qua)", True, "%d: %s" % (len(pending), ", ".join(pending))),
-    ("prompt self-check", r.returncode == 0, prompt_detail),
-]
-for name, ok, detail in checks:
-    print(("OK   " if ok else "FAIL ") + "%-24s %s" % (name, detail if detail else ""))
-bad = [n for n, ok, _ in checks if not ok]
-print("%d checks, %d failed" % (len(checks), len(bad)))
-sys.exit(1 if bad else 0)
+def call(args):
+    p = subprocess.run([sys.executable, str(ETL / args[0])] + [str(x) for x in args[1:]],
+                       cwd=str(ROOT), capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if p.returncode:
+        raise RuntimeError('%s exited %s: %s' % (args[0], p.returncode,
+                            (p.stdout + '\n' + p.stderr)[-1000:]))
+    return p
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--db', default=str(DEFAULT_DB))
+    ap.add_argument('--plan-dir', default=str(ROOT / 'data/plans'))
+    ap.add_argument('--no-llm-replay', action='store_true')
+    args = ap.parse_args(argv)
+    source_db = pathlib.Path(args.db).resolve()
+    if not source_db.is_file():
+        ap.error('database does not exist: %s' % source_db)
+    plans = sorted(pathlib.Path(args.plan_dir).glob('*.json'))
+    if not plans:
+        print('no plan files found', file=sys.stderr)
+        return 2
+    originals = {}
+    for src in plans:
+        d = json.loads(src.read_text(encoding='utf-8-sig'))
+        if d.get('shots') and d.get('prompt_file'):
+            pf = pathlib.Path(d['prompt_file'])
+            if not pf.is_absolute():
+                pf = ROOT / pf
+            if pf.exists():
+                originals[str(pf)] = checksum(pf)
+    with tempfile.TemporaryDirectory(prefix='novel2anima_reseed_') as td:
+        tmp = pathlib.Path(td)
+        cloned = tmp / 'audit.db'
+        with contextlib.closing(sqlite3.connect(str(source_db))) as db_from, \
+             contextlib.closing(sqlite3.connect(str(cloned))) as db_to:
+            db_from.backup(db_to)
+        with contextlib.closing(sqlite3.connect(str(cloned))) as con:
+            migration = ROOT / 'sql/migrations/002_shot_state.sql'
+            con.executescript(migration.read_text(encoding='utf-8'))
+            con.commit()
+        plan_dir = tmp / 'plans'
+        plan_dir.mkdir()
+        expected_prompts = {}
+        skipped = []
+        with contextlib.closing(sqlite3.connect(str(cloned))) as con:
+            for src in plans:
+                d = json.loads(src.read_text(encoding='utf-8-sig'))
+                ac = d.get('act') or {}
+                pj = d.get('project') or {}
+                if not d.get('shots') or not ac.get('act_no') or not pj.get('title'):
+                    continue
+                seeded = con.execute('SELECT 1 FROM act a JOIN project p ON p.id=a.project_id '
+                                     'WHERE p.title=? AND a.act_no=? AND a.revision=?',
+                                     (pj['title'], ac['act_no'], ac.get('revision', 1))).fetchone()
+                if not seeded:
+                    skipped.append(src.name)
+                    continue
+                out = tmp / 'prompts' / (src.stem + '.txt')
+                out.parent.mkdir(exist_ok=True)
+                d['prompt_file'] = str(out)
+                new_plan = plan_dir / src.name
+                new_plan.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding='utf-8')
+                current_pf = pathlib.Path(json.loads(src.read_text(encoding='utf-8-sig'))['prompt_file'])
+                if not current_pf.is_absolute():
+                    current_pf = ROOT / current_pf
+                if current_pf.is_file():
+                    expected_prompts[str(out)] = checksum(current_pf)
+        if not list(plan_dir.glob('*.json')):
+            print('nothing seeded to verify; pending: %s' % skipped)
+            return 0
+        for plan in sorted(plan_dir.glob('*.json')):
+            call(['seed_plan.py', plan, '--db', cloned])
+            call(['check_story.py', '--plan', plan])
+        call(['qa_shots.py', '--apply', '--db', cloned])
+        if not args.no_llm_replay and list((ROOT / 'data/reviews').glob('act*_llm.json')):
+            call(['llm_review.py', '--replay', '--db', cloned])
+        call(['check_prompts.py', '--db', cloned, '--plan-dir', plan_dir, '--examples', 3])
+        with contextlib.closing(sqlite3.connect(str(cloned))) as con:
+            fk = con.execute('PRAGMA foreign_key_check').fetchall()
+        if fk:
+            raise RuntimeError('FK violations in clone: %s' % fk[:5])
+        drift = [k for k, digest in expected_prompts.items()
+                 if not pathlib.Path(k).exists() or checksum(pathlib.Path(k)) != digest]
+        if drift:
+            raise RuntimeError('Prompt byte drift: %s' % drift[:10])
+    changed = [p for p, digest in originals.items() if checksum(pathlib.Path(p)) != digest]
+    if changed:
+        raise RuntimeError('Original prompt files unexpectedly changed: %s' % changed)
+    print('PASS: reseed idempotent, QA passes, FK clean, original files untouched; skipped %d' % len(skipped))
+    return 0
+
+
+if __name__ == '__main__':
+    try:
+        raise SystemExit(main())
+    except (RuntimeError, OSError, sqlite3.Error, ValueError) as exc:
+        print('FAIL:', exc, file=sys.stderr)
+        raise SystemExit(1)

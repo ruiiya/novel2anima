@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 """Infer experimental continuity state (v0.3) and load shot_state / act_continuity.
 
 v0.3 adds decay: a state that is not refreshed by the current shot loses severity and is
@@ -144,6 +145,12 @@ def main():
     for act_id, act_no in acts:
         shots = cur.execute("SELECT shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no",
                             (act_id,)).fetchall()
+        # Experimental counters are act-scoped, not character-scoped: disable for duo
+        # rather than silently applying inferred state to both participants.
+        if any(len(json.loads(spec_json).get("participants") or []) != 1
+               for _no, spec_json in shots):
+            print("skip inferred act continuity %s: multi-character state must be per participant" % act_no)
+            continue
         counts = {k: 0 for k in ("genital", "fingers", "strong", "ejac", "sweat", "saliva", "kiss",
                                  "bite", "scratch", "tremble", "toy", "rope", "ownership",
                                  "semen", "pregnancy", "lactation", "impact", "spank", "whip", "pierced")}

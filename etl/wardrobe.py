@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 # -*- coding: utf-8 -*-
 """Quy tac dien anh ap cho MOI plan - khong con bang mau hard-code, du lieu nam trong catalog.
 
@@ -119,26 +120,16 @@ NEUTRAL_POSE = {"bending_over", "legs_up", "knees_up", "spread_legs", "hugging_l
                 "all_fours", "on_stomach", "top-down_bottom-up"}
 
 def lock_poses(parsed, id_of):
-    """parsed: [(shot_json, p)] voi p["pose"]/p["action"] = [(ten, tag_id)].
-    Tra ve danh sach (shot_no, phase, tu the cu, tu the moi) cua nhung shot bi keo ve thang."""
-    changes, phase, floor = [], None, -1
+    """DEPRECATED read-only compatibility checker. Never mutate actions or poses.
+
+    Previous implementation applied an irreversible standing->lying ladder and
+    silently removed action tags. Return only warnings for contradictory stances
+    in the SAME frame. Consecutive posture changes are valid narrative events.
+    """
+    changes = []
     for shot, p in parsed:
-        if p["phase"] != phase:
-            phase, floor = p["phase"], -1
-        ranked = {n for n, _ in p["pose"] if n in STANCE_ORDER}
-        if not ranked:
-            continue
-        here = max(STANCE_ORDER[n] for n in ranked)
-        want = max(here, floor)
-        floor = want
-        if want == here and len(ranked) == 1:
-            continue
-        target = LADDER[want]
-        tid = id_of(target)
-        if tid is None:
-            continue
-        if want > here:
-            changes.append((shot["n"], phase, ",".join(sorted(ranked)), target))
-        p["pose"] = [(n, i) for n, i in p["pose"] if n not in STANCE_ORDER] + [(target, tid)]
-        p["action"] = [(n, i) for n, i in p["action"] if STANCE_ORDER.get(n, want) >= want]
+        ranked = {n for n, _ in p.get("pose", []) if n in STANCE_ORDER}
+        if len({STANCE_ORDER[n] for n in ranked}) > 1:
+            changes.append((shot["n"], p.get("phase", ""), ",".join(sorted(ranked)),
+                            "multiple conflicting stances; review manually"))
     return changes

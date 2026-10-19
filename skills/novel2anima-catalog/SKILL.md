@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 ---
 name: novel2anima-catalog
 description: "Maintain and query Novel2Anima V4 local SQLite: all 16 data tables plus FTS5, five Danbooru/Anima source families, raw and curated tags including adult sexual NSFW metadata, aliases, roles, relations, history and render feedback. Use for ETL, complete catalog coverage, retrieval, curation and audits; not for writing final image prompts."
@@ -106,6 +107,15 @@ When no curated concept exists, return raw-tag, alias or role candidates and rep
   one primary writer, no shared WAL across hosts via NFS/SMB; migrations and backups.
 - Store image paths/metadata, not image bytes. Preserve generation revision/history; QC
   rejections are diagnostic evidence and are not approved-history repetitions.
+
+## Runtime story-quality safety
+
+Catalog retrieval does not create story events. Preserve real action/expression tag IDs,
+match each action to the intended participant and reaction, and leave missing semantic
+mappings explicitly unresolved. No random tag pool can replace a beat -> micro-action
+plan. On rebuild, create `sql/migrations/002_shot_state.sql` with base schema and run
+`etl/check_reseed.py` (private SQLite clone) rather than destructive live reseeding.
+Do not overwrite generation rows when a plan revision changes.
 
 ## Done criteria
 

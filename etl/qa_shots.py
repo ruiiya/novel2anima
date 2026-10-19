@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+# novel2anima P0P1 upgrade
+# -*- coding: utf-8 -*-
 """Xac dinh van de cua tung shot bang du lieu trong catalog (khong tu sua prompt).
 
 Usage:
@@ -15,7 +16,7 @@ de model/nguoi doc roi quyet dinh - day la phan "xac dinh van de" thay cho viec 
 import argparse, collections, json, pathlib, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import build, wardrobe
+import build, wardrobe, story_db
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 SOURCE = "qa:v1"
@@ -31,10 +32,13 @@ def shot_refs(spec):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--act", type=int)
+    ap.add_argument("--project")
+    ap.add_argument("--revision", type=int)
+    ap.add_argument("--db", default=build.DB_PATH)
     ap.add_argument("--apply", action="store_true")
     args = ap.parse_args(argv)
 
-    con = build.connect(build.DB_PATH)
+    con = build.connect(args.db)
     con.isolation_level = None
     table = wardrobe.colour_table(con)
     conflicts = collections.defaultdict(set)
@@ -45,8 +49,12 @@ def main(argv=None):
         conflicts[b].add((a, sev))
     blocked = {r[0] for r in con.execute("SELECT tag_id FROM tag_content_label WHERE scope='blocked'")}
 
-    acts = con.execute("SELECT id, act_no FROM act%s ORDER BY act_no"
-                       % (" WHERE act_no=%d" % args.act if args.act else "")).fetchall()
+    acts = con.execute("SELECT a.id, a.act_no FROM act a JOIN project p ON p.id=a.project_id "
+                       "WHERE (? IS NULL OR a.act_no=?) AND (? IS NULL OR p.title=?) "
+                       "AND (? IS NULL OR a.revision=?) ORDER BY p.title, a.act_no",
+                       (args.act, args.act, args.project, args.project, args.revision, args.revision)).fetchall()
+    if args.act is not None and len(acts) != 1:
+        raise SystemExit("act ambiguous/not found; specify --project and --revision")
     found = collections.Counter()
     rows = []
     for aid, act_no in acts:
@@ -84,18 +92,9 @@ def main(argv=None):
                     if t in blocked:
                         rows.append((shot_id, "noi_dung_chan", t, SEV["noi_dung_chan"], shot_no, shot_no))
                         found["noi_dung_chan"] += 1
-            # thang tu the
-            if spec.get("phase") != phase:
-                phase, floor, cause = spec.get("phase"), -1, shot_no
-            ranked = [wardrobe.STANCE_ORDER[n] for n, _t in refs.get("pose", []) if n in wardrobe.STANCE_ORDER]
-            if ranked:
-                here = max(ranked)
-                if here < floor:
-                    back = [t for n, t in refs.get("pose", []) if n in wardrobe.STANCE_ORDER]
-                    rows.append((shot_id, "tu_the_lech", back[0], SEV["tu_the_lech"], shot_no, cause))
-                    found["tu_the_lech"] += 1
-                else:
-                    floor = here
+            # The old monotone pose ladder is invalid for normal narratives.
+            # Missing bridges are validated conservatively in story_logic/check_story,
+            # without treating sitting -> standing as an intrinsically invalid pose.
     print("van de tim thay: %s" % dict(found or {"khong co": 0}))
     if rows:
         print("vi du:")
@@ -107,7 +106,8 @@ def main(argv=None):
         con.close()
         return
     con.execute("BEGIN")
-    con.execute("DELETE FROM shot_state WHERE source=?", (SOURCE,))
+    for aid, _act_no in acts:
+        story_db.clear_findings_for_act(con, SOURCE, aid)
     for r in rows:
         if len(r) == 6:
             sid, axis, tid, sev, since, cause_ = r

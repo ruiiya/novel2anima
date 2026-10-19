@@ -1,3 +1,4 @@
+# novel2anima P0P1 upgrade
 # -*- coding: utf-8 -*-
 """LLM self-check cho prompt cua mot act: gui tung batch shot cho mot LLM qua stdin,
 doc JSON tra ve va (tuy chon) ghi vao shot_state source='qa:llm:v1'.
@@ -14,7 +15,7 @@ Doi bang --cmd "lenh doc stdin, tra JSON ra stdout".
 import argparse, collections, json, pathlib, re, subprocess, sys, tempfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import build
+import build, story_db
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 SOURCE = "qa:llm:v1"
@@ -47,15 +48,21 @@ Tra ve DUY NHAT JSON, dung 4 khoa: {"findings":[{"shot":<so shot>,"axis":"<axis>
 Du lieu mot act (moi dong: shot | phase | participants | beat | caption | tags):
 """ % "/".join(AXES)
 
-def payload(con, act_no, batch):
-    aid, = con.execute("SELECT id FROM act WHERE act_no=?", (act_no,)).fetchone() or (None,)
-    if not aid:
-        sys.exit("khong co act %s" % act_no)
+def payload(con, act_no, batch, project=None, revision=None):
+    aid = story_db.resolve_act(con, act_no, project, revision)
     rows = con.execute("SELECT shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no",
                        (aid,)).fetchall()
     out = []
     for i in range(0, len(rows), batch):
         lines = []
+        # Two-shot context overlap; findings must only target CURRENT batch.
+        context = rows[max(0, i - 2):i]
+        if context:
+            lines.append("CONTEXT ONLY (do not report findings for these shots):")
+            for ctx_no, ctx_json in context:
+                ctx = json.loads(ctx_json)
+                lines.append("CONTEXT %d | %s | %s" % (ctx_no, ctx.get("caption", ""), ctx.get("beat", "")))
+            lines.append("CURRENT BATCH:")
         for shot_no, spec_json in rows[i:i + batch]:
             spec = json.loads(spec_json)
             tags = [x["name"] for g in ("identity", "outfit", "action", "expression", "pose",
@@ -84,6 +91,9 @@ def ask(cmd, text, timeout):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--act", type=int)
+    ap.add_argument("--project")
+    ap.add_argument("--revision", type=int)
+    ap.add_argument("--db", default=build.DB_PATH)
     ap.add_argument("--replay", action="store_true",
                     help="nap lai findings tu data/reviews/*.json (khong goi LLM)")
     ap.add_argument("--batch", type=int, default=20, help="so shot moi lan goi LLM")
@@ -94,23 +104,34 @@ def main(argv=None):
     ap.add_argument("--apply", action="store_true", help="ghi vao shot_state")
     args = ap.parse_args(argv)
 
-    con = build.connect(build.DB_PATH)
+    con = build.connect(args.db)
     if args.replay:                      # seed lai act -> cascade xoa shot_state: nap lai tu report
         if args.act:
-            files = [REVIEW_DIR / ("act%02d_llm.json" % args.act)]
+            files = sorted(REVIEW_DIR.glob("act%02d_id*_llm.json" % args.act))
+            if not files:
+                files = [REVIEW_DIR / ("act%02d_llm.json" % args.act)]
         else:
-            files = sorted(REVIEW_DIR.glob("act*_llm.json"))
+            files = sorted(REVIEW_DIR.glob("act*_id*_llm.json"))
+            seen_no = {f.name.split("_id")[0] for f in files}
+            files += [f for f in sorted(REVIEW_DIR.glob("act*_llm.json"))
+                      if f.name.removesuffix("_llm.json") not in seen_no]
         con.isolation_level = None
         con.execute("BEGIN")
-        con.execute("DELETE FROM shot_state WHERE source=?", (SOURCE,))
+        # Clear per act only, after resolving the exact act for every replay file.
         total = 0
         for f in files:
             d = json.loads(f.read_text(encoding="utf-8"))
             act_no = d["act"]
-            row = con.execute("SELECT id FROM act WHERE act_no=?", (act_no,)).fetchone()
+            try:
+                replay_id = int(d.get("act_id")) if d.get("act_id") is not None else story_db.resolve_act(
+                    con, act_no, args.project, args.revision)
+                row = con.execute("SELECT id FROM act WHERE id=? AND act_no=?", (replay_id, act_no)).fetchone()
+            except ValueError as exc:
+                raise SystemExit(str(exc))
             if not row:
                 print("bo qua %s: act %s khong co trong db" % (f.name, act_no))
                 continue
+            story_db.clear_findings_for_act(con, SOURCE, row[0])
             shots = {r[0]: r[1] for r in con.execute("SELECT shot_no, id FROM shot WHERE act_id=?",
                                                      (row[0],))}
             for x in d["findings"]:
@@ -127,7 +148,7 @@ def main(argv=None):
         return 0
     if not args.act:
         ap.error("can --act hoac --replay")
-    aid, chunks = payload(con, args.act, args.batch)
+    aid, chunks = payload(con, args.act, args.batch, args.project, args.revision)
     if args.payload:
         for _first, text in chunks:
             print(text + "\n" + "=" * 70)
@@ -155,8 +176,8 @@ def main(argv=None):
         print("  shot %-4s sev %.1f  %-10s %s" % (f["shot"], f["severity"], f["axis"], f["why"][:110]))
     REPORT_DIR = REVIEW_DIR
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    raw = REPORT_DIR / ("act%02d_llm.json" % args.act)
-    raw.write_text(json.dumps({"act": args.act, "findings": findings}, ensure_ascii=False, indent=1),
+    raw = REPORT_DIR / ("act%02d_id%d_llm.json" % (args.act, aid))
+    raw.write_text(json.dumps({"act": args.act, "act_id": aid, "findings": findings}, ensure_ascii=False, indent=1),
                    encoding="utf-8", newline="\n")
     print("luu: %s" % raw)
     if not args.apply:
@@ -164,7 +185,7 @@ def main(argv=None):
         return 0
     con.isolation_level = None
     con.execute("BEGIN")
-    con.execute("DELETE FROM shot_state WHERE source=?", (SOURCE,))
+    story_db.clear_findings_for_act(con, SOURCE, aid)
     for f in findings:
         con.execute("INSERT OR REPLACE INTO shot_state(shot_id, axis, value_tag_id, severity,"
                     " since_shot_no, cause_shot_no, source) VALUES(?,?,?,?,?,?,?)",
