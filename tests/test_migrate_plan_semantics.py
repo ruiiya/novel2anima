@@ -4,6 +4,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "etl"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "act_tools"))
 import migrate_plan_semantics as mig
 
 
@@ -28,10 +29,17 @@ class Migrate(unittest.TestCase):
         mig.migrate(p)
         self.assertEqual(mig.migrate(p), {})
 
-    def test_standing_floor_action_repaired(self):
+    def test_standing_floor_action_is_report_only_by_default(self):
         p = plan([{"n": 1, "outfit": [], "pose": ["standing"],
                    "action": ["missionary"], "expression": [], "caption": ""}])
-        mig.migrate(p)
+        counts = mig.migrate(p)
+        self.assertEqual(p["shots"][0]["pose"], ["standing"])
+        self.assertEqual(counts.get("suggest:pose"), 1)
+
+    def test_standing_floor_action_repaired_when_approved(self):
+        p = plan([{"n": 1, "outfit": [], "pose": ["standing"],
+                   "action": ["missionary"], "expression": [], "caption": ""}])
+        mig.migrate(p, apply_semantic=True)
         self.assertEqual(p["shots"][0]["pose"], ["lying"])
 
     def test_nsfw_sets_adult(self):

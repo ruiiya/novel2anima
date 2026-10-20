@@ -1,4 +1,13 @@
-import json, pathlib, sqlite3
+import argparse, json, pathlib, sqlite3
+
+import pathlib as _p, sys as _s
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[2] / "etl"))
+OUT_DIR = pathlib.Path("data/plans")
+DRY_RUN = False
+
+def plan_path(name):
+    return OUT_DIR / name
 
 import act_quality as aq
 
@@ -197,8 +206,9 @@ def check(p):
  miss=[n for n in sorted(names) if not con.execute("select 1 from tag where canonical_name=?",(n,)).fetchone()]
  con.close(); return miss
 
-def md(a,p):
- out=pathlib.Path("data/plans/act%d_%s_maid_60.md"%(a["no"],a["slug"]))
+def md(a, p):
+ if DRY_RUN: return
+ out=plan_path("act%d_%s_maid_60.md"%(a["no"],a["slug"]))
  lines=["# "+p["project"]["title"],"","- Plan: `data/plans/act%d_%s_maid_60.json`"%(a["no"],a["slug"]),
   "- Prompt: `%s`"%p["prompt_file"],"- So shot: **60**","- Nhan vat: **%s** (`%s`), adult AU"%(a["name"],a["tag"]),
   "- Trang phuc: chi co detached collar va detached sleeves; toan than lo, co pubic hair",
@@ -210,9 +220,26 @@ def md(a,p):
   lines.append("| %d | %s | %s | %s | %s | %s |"%(s["n"],s["phase"],", ".join(s["pose"]),", ".join(s["action"]),", ".join(s["expression"]),s["caption"]))
  out.write_text("\n".join(lines)+"\n",encoding="utf-8")
 
-for a in ACTS:
- p=build(a); miss=check(p)
- if miss: raise SystemExit("act%d missing tags: %s"%(a["no"],miss))
- out=pathlib.Path("data/plans/act%d_%s_maid_60.json"%(a["no"],a["slug"]))
- out.write_text(json.dumps(p,ensure_ascii=False,indent=2),encoding="utf-8")
- md(a,p); print("wrote %s (%d shots)"%(out,len(p["shots"])))
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--output")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args(argv)
+    global OUT_DIR, DRY_RUN
+    if args.output:
+        OUT_DIR = pathlib.Path(args.output)
+    DRY_RUN = args.dry_run
+    for a in ACTS:
+        p = build(a)
+        miss = check(p)
+        if miss:
+            raise SystemExit("act%d missing tags: %s" % (a["no"], miss))
+        out = plan_path("act%d_%s_maid_60.json" % (a["no"], a["slug"]))
+        if not DRY_RUN:
+            out.write_text(json.dumps(p, ensure_ascii=False, indent=2), encoding="utf-8")
+            md(a, p)
+        print(("would write " if DRY_RUN else "wrote ") + "%s (%d shots)" % (out, len(p["shots"])))
+
+if __name__ == "__main__":
+    main()

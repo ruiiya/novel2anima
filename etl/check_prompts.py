@@ -109,9 +109,7 @@ def main(argv=None):
             if plan:
                 shot_plan = next((x for x in plan.get("shots") or []
                                   if x.get("n") == shot_no), {})
-                expected_bg = (shot_plan.get("background_line")
-                               or plan.get("background_line")
-                               or (plan.get("style_json") or {}).get("background") or "")
+                expected_bg = story_logic.scene_line(shot_plan, plan)
                 if expected_bg and spec.get("background") != expected_bg:
                     errs.append((shot_no, phase, "SCENE_METADATA_PARITY: background %r != plan %r"
                                  % (spec.get("background"), expected_bg)))
@@ -197,9 +195,9 @@ def main(argv=None):
                 warns.append((shot_no, phase, "action lap 4 shot lien tiep"))
 
         for shot_no, axis, tid, sev, src in con.execute(
-                "SELECT s.shot_no, st.axis, st.value_tag_id, st.severity, st.source FROM shot_state st"
-                " JOIN shot s ON s.id=st.shot_id WHERE s.act_id=?"
-                " AND st.source IN ('qa:v1', 'qa:llm:v1')", (aid,)):
+                "SELECT s.shot_no, f.rule_id, f.value_tag_id, f.severity, f.source FROM shot_finding f"
+                " JOIN shot s ON s.id=f.shot_id WHERE s.act_id=?"
+                " AND f.source IN ('qa:v1', 'qa:llm:v1')", (aid,)):
             if src.endswith("llm:v1"):
                 # High-confidence reviewer findings require resolution before rendering.
                 (errs if sev >= 0.85 else warns).append(

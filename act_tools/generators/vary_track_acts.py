@@ -1,11 +1,14 @@
 """Give the five track acts distinct primary actions and pose sequences.
 
 Run after the plan generators:
-  python etl/vary_track_acts.py
+  python act_tools/generators/vary_track_acts.py
 """
 import json
 import pathlib
 
+import pathlib as _p, sys as _s
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[2] / "etl"))
 import act_quality as aq
 
 ACTS = [
@@ -175,7 +178,7 @@ def caption(name, primary, phase):
     return "%s %s %s." % (name, phrase, STYLE[name])
 
 
-def apply_act(item):
+def apply_act(item, write=True):
     path = pathlib.Path(item["path"])
     plan = json.loads(path.read_text(encoding="utf-8"))
     seq = item["actions"].split()
@@ -215,6 +218,8 @@ def apply_act(item):
         shot["beat"] = "%s: %s" % (shot["phase"], shot["caption"])
         state = shot["delta"].split("; state: ", 1)[1] if "; state: " in shot["delta"] else ""
         shot["delta"] = "action: %s; state: %s" % (primary, state)
+    if not write:
+        return
     path.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
 
     md_path = path.with_suffix(".md")
@@ -234,9 +239,16 @@ def apply_act(item):
     print("updated %s" % path)
 
 
-def main():
+def main(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--plan-dir", default="data/plans")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args(argv)
     for item in ACTS:
-        apply_act(item)
+        item = dict(item, path=str(pathlib.Path(args.plan_dir) / pathlib.Path(item["path"]).name))
+        apply_act(item, write=not args.dry_run)
+        print(("would update " if args.dry_run else "updated ") + item["path"])
 
 
 if __name__ == "__main__":

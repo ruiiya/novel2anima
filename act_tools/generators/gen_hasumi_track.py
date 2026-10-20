@@ -1,13 +1,17 @@
 """Generate Hasumi's 60-shot sunrise track plan.
 
-Usage: python etl/gen_hasumi_track.py
+Usage: python act_tools/generators/gen_hasumi_track.py
 Writes data/plans/act30_hasumi_track_60.json and .md.
 No database writes; run seed_plan.py separately after review.
 """
+import argparse
 import json
 import pathlib
 import sqlite3
 
+import pathlib as _p, sys as _s
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[2] / "etl"))
 import act_quality as aq
 
 DB = "db/novel_anima.db"
@@ -645,11 +649,21 @@ def write_md(plan):
     MD.write_text("\n".join(lines), encoding="utf-8")
 
 
-def main():
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--output", default="data/plans")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args(argv)
+    global OUT, MD
+    OUT = pathlib.Path(args.output) / "act30_hasumi_track_60.json"
+    MD = OUT.with_suffix(".md")
     plan = sexualize(build())
     missing = check_tags(plan)
     if missing:
         raise SystemExit("MISSING TAGS: %s" % ", ".join(missing))
+    if args.dry_run:
+        print("dry-run: would write %s (%d shots)" % (OUT, len(plan["shots"])))
+        return
     OUT.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
     write_md(plan)
     print("wrote %s (%d shots)" % (OUT, len(plan["shots"])))

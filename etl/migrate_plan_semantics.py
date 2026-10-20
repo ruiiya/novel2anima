@@ -1,11 +1,12 @@
-"""Move body tags out of outfit and repair unambiguous pose/gaze conflicts.
+"""Move body tags out of outfit; report pose/prop/gaze guesses by default.
 
 Usage:
   python etl/migrate_plan_semantics.py                 # all data/plans/*.json
   python etl/migrate_plan_semantics.py plan1.json ...  # specific plans
   python etl/migrate_plan_semantics.py --dry-run
 
-Idempotent. Only changes fields where the fix is mechanical and lossless.
+Idempotent. body/outfit category moves are mechanical; pose/prop/gaze changes
+need explicit --apply-semantic because they can alter the intended image.
 """
 import argparse
 import json
@@ -13,6 +14,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "act_tools"))
 import act_quality as aq
 import story_logic as sl
 
@@ -21,8 +23,8 @@ def name_of(ref):
     return str(ref).rpartition(":")[0] or str(ref)
 
 
-def fix_shot(shot):
-    changes = []
+def fix_shot(shot, apply_semantic=False):
+    changes, suggestions = [], []
     outfit = list(shot.get("outfit") or [])
     body = list(shot.get("body_state") or [])
     keep = []
@@ -38,7 +40,14 @@ def fix_shot(shot):
     floor = set(actions) & sl.FLOOR_ACTIONS
     stances = {sl.STANCE[name_of(p)] for p in poses if name_of(p) in sl.STANCE}
     if len(stances) > 1 or (stances == {"standing"} and floor):
-        target = aq.pose_for(next(iter(floor))) if floor else None
+        if not apply_semantic:
+            suggestions.append("pose")
+            target = None
+        else:
+            target = aq.pose_for(next(iter(floor))) if floor else None
+    else:
+        target = None
+    if target is not None or (apply_semantic and (len(stances) > 1 or floor)):
         chosen = next((p for p in poses
                        if sl.STANCE.get(name_of(p)) == target), None)
         if chosen is None and len(stances) > 1:
@@ -49,23 +58,27 @@ def fix_shot(shot):
             shot["pose"] = [chosen]
             changes.append("pose")
 
-    caption = str(shot.get("caption") or "").lower()
-    props = list(shot.get("props") or [])
-    for prop in sorted(sl.PROP_WORDS):
-        if prop in caption and prop not in [name_of(x) for x in props] and prop not in actions:
-            props.append(prop)
-            changes.append("props")
-    shot["props"] = list(dict.fromkeys(props))
+    known = [name_of(x) for x in shot.get("props") or []]
+    implied = [t for t in aq.props_for(shot.get("caption")) if t not in known and t not in actions]
+    if implied and apply_semantic:
+        shot["props"] = list(dict.fromkeys(known + implied))
+        changes.append("props")
+    elif implied:
+        suggestions.append("props")
 
     expr = [name_of(e) for e in shot.get("expression") or []]
     if "closed_eyes" in expr and (set(actions) & sl.LOOKING_ACTIONS):
-        shot["expression"] = [e for e in shot["expression"]
-                              if name_of(e) != "closed_eyes"]
-        changes.append("gaze")
+        if apply_semantic:
+            shot["expression"] = [e for e in shot["expression"]
+                                  if name_of(e) != "closed_eyes"]
+            changes.append("gaze")
+        else:
+            suggestions.append("gaze")
+    changes.extend("suggest:" + x for x in suggestions)
     return changes
 
 
-def migrate(plan):
+def migrate(plan, apply_semantic=False):
     counts = {}
     if str((plan.get("project") or {}).get("content_profile", "")).lower() in ("nsfw", "explicit"):
         for ch in plan.get("characters") or []:
@@ -74,7 +87,7 @@ def migrate(plan):
                 ident["adult"] = True
                 counts["adult"] = counts.get("adult", 0) + 1
     for shot in plan.get("shots") or []:
-        for change in fix_shot(shot):
+        for change in fix_shot(shot, apply_semantic):
             counts[change] = counts.get(change, 0) + 1
     return counts
 
@@ -83,6 +96,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("plans", nargs="*")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--apply-semantic", action="store_true",
+                    help="also apply pose/prop guesses; default is report-only")
     args = ap.parse_args()
     paths = [pathlib.Path(p) for p in args.plans] or sorted(
         pathlib.Path("data/plans").glob("*.json"))
@@ -90,7 +105,7 @@ def main():
         plan = json.loads(path.read_text(encoding="utf-8"))
         if "shots" not in plan:
             continue
-        counts = migrate(plan)
+        counts = migrate(plan, args.apply_semantic)
         if not counts:
             continue
         summary = ", ".join("%s:%d" % kv for kv in sorted(counts.items()))

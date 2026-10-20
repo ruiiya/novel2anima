@@ -142,7 +142,7 @@ hang tram GB trong `.git/lfs/tmp`.
 
     sql/schema_v1.sql      DDL (16 tables + FTS5 + triggers), from the V1 schema-only db
     data/characters/       character roster (dxd_roster.json) -> character_profile
-    etl/gen_kuoh_acts.py   regenerates the 12 Kuoh cosplay acts (act13..act24) from the roster
+    act_tools/generators/gen_kuoh_acts.py   legacy generator for the 12 Kuoh acts (requires --allow-legacy-random)
     etl/sources.json       pinned source list
     etl/build.py           schema / fetch / load / verify
     db/novel_anima.db      built catalog (gitignored, khong track)

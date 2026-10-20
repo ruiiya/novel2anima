@@ -137,14 +137,13 @@ def main(argv=None):
             for x in d["findings"]:
                 if x["shot"] not in shots:
                     continue
-                con.execute("INSERT OR REPLACE INTO shot_state(shot_id, axis, value_tag_id, severity,"
-                            " since_shot_no, cause_shot_no, source) VALUES(?,?,?,?,?,?,?)",
-                            (shots[x["shot"]], "llm:" + x["axis"], None, x["severity"], x["shot"],
-                             x["shot"], SOURCE))
+                story_db.record_finding(con, shots[x["shot"]], "llm:" + x["axis"], SOURCE,
+                                        x["severity"], axis="llm:" + x["axis"],
+                                        evidence={"shot": x["shot"], "why": x.get("why", "")})
                 total += 1
             print("act %02d: %d dong" % (act_no, len(d["findings"])))
         con.commit()
-        print("shot_state: %d dong (source=%s)" % (total, SOURCE))
+        print("shot_finding: %d dong (source=%s)" % (total, SOURCE))
         return 0
     if not args.act:
         ap.error("can --act hoac --replay")
@@ -181,18 +180,17 @@ def main(argv=None):
                    encoding="utf-8", newline="\n")
     print("luu: %s" % raw)
     if not args.apply:
-        print("dry-run: them --apply de ghi shot_state")
+        print("dry-run: them --apply de ghi shot_finding")
         return 0
     con.isolation_level = None
     con.execute("BEGIN")
     story_db.clear_findings_for_act(con, SOURCE, aid)
     for f in findings:
-        con.execute("INSERT OR REPLACE INTO shot_state(shot_id, axis, value_tag_id, severity,"
-                    " since_shot_no, cause_shot_no, source) VALUES(?,?,?,?,?,?,?)",
-                    (shots[f["shot"]], "llm:" + f["axis"], None, f["severity"],
-                     f["shot"], f["shot"], SOURCE))
+        story_db.record_finding(con, shots[f["shot"]], "llm:" + f["axis"], SOURCE,
+                                f["severity"], axis="llm:" + f["axis"],
+                                evidence={"shot": f["shot"], "why": f.get("why", "")})
     con.commit()
-    print("shot_state: %d dong (source=%s)" % (len(findings), SOURCE))
+    print("shot_finding: %d dong (source=%s)" % (len(findings), SOURCE))
     con.close()
     return 0
 

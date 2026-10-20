@@ -125,23 +125,20 @@ def main(argv=None):
             name = con.execute("SELECT canonical_name FROM tag WHERE id=?", (r[2],)).fetchone()
             print("  shot_id=%s %-14s tag=%-24s sev=%s" % (r[0], r[1], name[0] if name else r[2], r[3]))
     if not args.apply:
-        print("dry-run: them --apply de ghi vao shot_state")
+        print("dry-run: them --apply de ghi vao shot_finding")
         con.close()
         return
     con.execute("BEGIN")
     for aid, _act_no, _title, _rev in acts:
         story_db.clear_findings_for_act(con, SOURCE, aid)
     for r in rows:
-        if len(r) == 6:
-            sid, axis, tid, sev, since, cause_ = r
-        else:
-            sid, axis, tid, sev = r[:4]
-            since = cause_ = None
-        con.execute("INSERT OR REPLACE INTO shot_state(shot_id, axis, value_tag_id, severity,"
-                    " since_shot_no, cause_shot_no, source) VALUES(?,?,?,?,?,?,?)",
-                    (sid, axis, tid, sev, since or 1, cause_ or 1, SOURCE))
+        sid, axis, tid, sev = r[:4]
+        since, cause_ = (r[4], r[5]) if len(r) == 6 else (None, None)
+        story_db.record_finding(con, sid, axis, SOURCE, sev,
+                                axis=axis, value_tag_id=tid,
+                                evidence={"since": since, "cause": cause_})
     con.commit()
-    print("shot_state: %d dong (source=%s)" % (len(rows), SOURCE))
+    print("shot_finding: %d dong (source=%s)" % (len(rows), SOURCE))
     con.close()
 
 if __name__ == "__main__":

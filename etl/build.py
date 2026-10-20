@@ -138,10 +138,12 @@ def cmd_schema(args):
         ddl = fh.read()
     con = connect(DB_PATH, wal=True)
     con.executescript(ddl)
-    # The continuity/QA tables must exist on a fresh build too.
-    with open(os.path.join(os.path.dirname(SCHEMA_PATH), "migrations", "002_shot_state.sql"),
-              encoding="utf-8") as fh:
-        con.executescript(fh.read())
+    # Migrations must exist on a fresh build too, in filename order.
+    migration_dir = os.path.join(os.path.dirname(SCHEMA_PATH), "migrations")
+    for name in sorted(os.listdir(migration_dir)):
+        if name.endswith(".sql"):
+            with open(os.path.join(migration_dir, name), encoding="utf-8") as fh:
+                con.executescript(fh.read())
     con.commit()
     tables = [r[0] for r in con.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
@@ -503,6 +505,7 @@ MINIMUMS = {
     "visual_concept": 200,
 }
 CHECKS = []
+NOTES = []
 
 
 def check(name, ok, detail):
@@ -512,7 +515,7 @@ def check(name, ok, detail):
 
 
 def cmd_verify(args):
-    del CHECKS[:]
+    del CHECKS[:], NOTES[:]
     con = connect(DB_PATH)
     check("integrity_check",
           con.execute("PRAGMA integrity_check").fetchone()[0] == "ok",
@@ -540,12 +543,13 @@ def cmd_verify(args):
     unscoped = con.execute(
         "SELECT count(*) FROM visual_concept WHERE content_scope='contextual' AND review_status='draft'"
     ).fetchone()[0]
-    check("content_review_pending", True,
-          "%d/%d draft concepts still 'contextual' (P2 review gate, not an import failure)"
-          % (unscoped, concepts))
+    NOTES.append({"note": "content_review_pending",
+                  "detail": "%d/%d draft concepts still 'contextual' (P2 review gate, not an import failure)"
+                  % (unscoped, concepts)})
     con.close()
 
     report = {"db": os.path.relpath(DB_PATH, ROOT), "tables": rows, "checks": CHECKS,
+              "notes": NOTES,
               "sources": {r[0]: {"revision": r[1], "sha256": r[2]}
                           for r in _snapshot_rows(DB_PATH)}}
     with open(REPORT_PATH, "w", encoding="utf-8", newline="\n") as fh:

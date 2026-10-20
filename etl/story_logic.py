@@ -348,7 +348,7 @@ def validate_shot_semantics(shots, cast=None, phase_contract=None, blocked_ids=N
         if phase:
             phase_id = phase.get('id')
             if phase_id and shot.get('phase') and phase_id != shot.get('phase'):
-                issues.append(Issue('WARN', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
+                issues.append(Issue('ERROR', 'PHASE_CONTRACT_MISMATCH', n,
                                     'phase=%s but contract says %s' % (shot.get('phase'), phase_id)))
             if phase.get('allow_sensitive') is False and actions & SENSITIVE_ACTIONS:
                 issues.append(Issue('ERROR', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
@@ -367,6 +367,72 @@ def validate_shot_semantics(shots, cast=None, phase_contract=None, blocked_ids=N
                                     % ', '.join(sorted(outfit & CLOTHING_HINTS))))
     return issues
 
+
+def scene_line(shot, plan):
+    """Compiled background line. One precedence order for compiler and QA.
+
+    `scene.location` stays a logical place name; only render/background sources
+    feed the prompt line.
+    """
+    shot = shot or {}
+    plan = plan or {}
+    scene = shot.get('scene') or plan.get('scene') or {}
+    render = shot.get('render_style') or plan.get('render_style') or {}
+    if not isinstance(scene, dict):
+        scene = {}
+    if not isinstance(render, dict):
+        render = {}
+    return (render.get('background_style')
+            or shot.get('background_line')
+            or scene.get('background_line')
+            or plan.get('background_line')
+            or (plan.get('style_json') or {}).get('background')
+            or 'plain background')
+
+def validate_phase_contract(shots, contract):
+    """Contract must be ordered, contiguous, gap-free and cover every shot."""
+    issues = []
+    if not contract:
+        return issues
+    rows = []
+    for row in contract:
+        try:
+            start, end = int(row.get('start', 0)), int(row.get('end', 0))
+        except (TypeError, ValueError):
+            issues.append(Issue('ERROR', 'PHASE_CONTRACT_INVALID', 0,
+                                'unreadable range: %r' % (row,)))
+            continue
+        if start < 1 or end < start:
+            issues.append(Issue('ERROR', 'PHASE_CONTRACT_INVALID', 0,
+                                '%s: bad range %d..%d' % (row.get('id'), start, end)))
+            continue
+        rows.append((start, end, row.get('id'), row.get('wardrobe')))
+    rows.sort()
+    if rows:
+        if rows[0][0] != 1:
+            issues.append(Issue('ERROR', 'PHASE_CONTRACT_GAP', 0,
+                                'contract starts at shot %d, expected 1' % rows[0][0]))
+        for (s1, e1, id1, _w1), (s2, e2, id2, _w2) in zip(rows, rows[1:]):
+            if s2 <= e1:
+                issues.append(Issue('ERROR', 'PHASE_CONTRACT_OVERLAP', 0,
+                                    '%s %d..%d overlaps %s %d..%d' % (id1, s1, e1, id2, s2, e2)))
+            elif s2 != e1 + 1:
+                issues.append(Issue('ERROR', 'PHASE_CONTRACT_GAP', 0,
+                                    'gap between %s (ends %d) and %s (starts %d)'
+                                    % (id1, e1, id2, s2)))
+        covered = set()
+        for start, end, _id, _w in rows:
+            covered.update(range(start, end + 1))
+        nums = sorted(int(x.get('n', x.get('shot_no', 0))) for x in shots)
+        missing = [n for n in nums if n not in covered]
+        extra = [n for n in sorted(covered) if n > (nums[-1] if nums else 0)]
+        if missing:
+            issues.append(Issue('ERROR', 'PHASE_CONTRACT_GAP', missing[0],
+                                'shots outside every phase: %s' % missing[:8]))
+        if extra:
+            issues.append(Issue('ERROR', 'PHASE_CONTRACT_GAP', 0,
+                                'contract covers shots past the end: %s' % extra[:8]))
+    return issues
 
 def validate_act_level(shots):
     """Act-level progression checks. Kept separate so synthetic unit tests can
@@ -426,6 +492,7 @@ def validate_plan(plan, phase_contract=None):
     shots = plan.get('shots') or []
     pc = phase_contract if phase_contract is not None else (plan.get('act') or {}).get('phase_contract')
     issues = validate(shots, cast)
+    issues += validate_phase_contract(shots, pc)
     issues += validate_shot_semantics(shots, cast=cast, phase_contract=pc)
     issues += validate_act_level(shots)
     content = str((plan.get('project') or {}).get('content_profile', '')).lower()
@@ -446,6 +513,7 @@ def validate_specs(specs, phase_contract=None, blocked_ids=None):
         d['n'] = n
         shots.append(d)
     return (validate(shots)
+            + validate_phase_contract(shots, phase_contract)
             + validate_shot_semantics(shots, phase_contract=phase_contract, blocked_ids=blocked_ids)
             + validate_act_level(shots))
 

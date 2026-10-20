@@ -95,7 +95,7 @@ PROP_WORDS = ("door", "earpiece", "gun", "rifle", "knife", "microphone",
 
 def props_for(caption):
     text = str(caption or "").lower()
-    return [t for t in PROP_WORDS if t in text]
+    return [t for t in PROP_WORDS if re.search(r"\b%s\b" % re.escape(t), text)]
 
 def split_garments(tags):
     outfit, body = [], []

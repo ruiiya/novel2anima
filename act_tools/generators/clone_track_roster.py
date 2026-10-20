@@ -1,10 +1,13 @@
 """Clone the Hasumi track plan for three more Kivotos characters.
 
 Colors: Yuuka purple, Mika white, Asuna pink. Adult AU, explicit solo.
-Usage: python etl/clone_track_roster.py
+Usage: python act_tools/generators/clone_track_roster.py
 """
 import json
 import pathlib
+import pathlib as _p, sys as _s
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[2] / "etl"))
 import sqlite3
 
 SRC = pathlib.Path("data/plans/act30_hasumi_track_60.json")
@@ -66,7 +69,7 @@ def swap_text(value, item):
     return out
 
 
-def build(item):
+def build(item, write=True, out_dir="data/plans"):
     plan = json.loads(SRC.read_text(encoding="utf-8"))
     plan["project"]["title"] = item["title"]
     plan["project"]["idea"] = swap_text(plan["project"]["idea"], item)
@@ -96,13 +99,15 @@ def build(item):
         shot["delta"] = swap_text(shot["delta"], item)
         shot["participants"] = [item["code"]]
         shot["sequence"]["actor"] = item["code"]
-    out = pathlib.Path("data/plans/act%d_%s_track_60.json" % (item["act"], item["slug"]))
-    out.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+    out = pathlib.Path(out_dir) / ("act%d_%s_track_60.json" % (item["act"], item["slug"]))
+    if write:
+        out.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
     md_src = SRC.with_suffix(".md").read_text(encoding="utf-8")
     md = swap_text(md_src, item)
     md = md.replace("data/plans/act30_hasumi_track_60.json", str(out).replace("\\", "/"))
     md = md.replace("prompts/act30_hasumi_track_60.txt", plan["prompt_file"])
-    out.with_suffix(".md").write_text(md, encoding="utf-8")
+    if write:
+        out.with_suffix(".md").write_text(md, encoding="utf-8")
     return out, plan
 
 
@@ -125,14 +130,20 @@ def check_tags(plan):
     return missing
 
 
-def main():
+def main(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--plan-dir", default="data/plans")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args(argv)
+    global SRC
+    SRC = pathlib.Path(args.plan_dir) / SRC.name
     for item in ROSTER:
-        out, plan = build(item)
+        out, plan = build(item, write=not args.dry_run, out_dir=args.plan_dir)
         missing = check_tags(plan)
         if missing:
             raise SystemExit("%s missing tags: %s" % (out, ", ".join(missing)))
-        print("wrote %s (%d shots)" % (out, len(plan["shots"])))
-        print("wrote %s" % out.with_suffix(".md"))
+        print(("would write " if args.dry_run else "wrote ") + "%s (%d shots)" % (out, len(plan["shots"])))
 
 
 if __name__ == "__main__":

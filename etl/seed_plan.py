@@ -56,6 +56,31 @@ def tagged(cur, shot_no, group, refs, unknown, mismatched):
 def as_refs(items):
     return [{"name": n, "tagId": t} for n, t in items]
 
+def publish_files(files):
+    """Publish (path, text) pairs after the DB commit, all-or-nothing.
+
+    Each file is replaced atomically. If a later replace fails, earlier files are
+    restored from their previous bytes so the published set never keeps a partial
+    update from this run.
+    """
+    prior = {path: (path.read_bytes() if path.exists() else None) for path, _ in files}
+    done = []
+    try:
+        for path, text in files:
+            atomic_write(path, text)
+            done.append(path)
+    except BaseException:
+        for path in done:
+            old = prior[path]
+            if old is None:
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+            else:
+                atomic_write(path, old.decode("utf-8"))
+        raise
+
 def atomic_write(path, text):
     path = pathlib.Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -71,6 +96,13 @@ def atomic_write(path, text):
             pass
         raise
 
+def blocked_by(issues, strict=False):
+    """ERROR always blocks; WARN blocks only under --strict (P1-09 CI gate)."""
+    errors = [i for i in issues if i.level == "ERROR"]
+    if errors:
+        return errors
+    return [i for i in issues if i.level == "WARN"] if strict else []
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("plan")
@@ -83,22 +115,21 @@ def main():
     args = ap.parse_args()
 
     plan = json.loads(pathlib.Path(args.plan).read_text(encoding="utf-8-sig"))
-    if not isinstance(plan.get("shots"), list) or not plan.get("act"):
+    roster_only = bool(plan.get("characters")) and "shots" not in plan
+    if not roster_only and (not isinstance(plan.get("shots"), list) or not plan.get("act")):
         print("not a story plan: %s" % args.plan, file=sys.stderr)
         return 2
     issues = story_logic.validate_plan(plan)
     for issue in issues:
         if issue.level == "ERROR":
             print("STORY_ERROR shot %s %s: %s" % (issue.shot, issue.code, issue.detail), file=sys.stderr)
-    if any(i.level == "ERROR" for i in issues):
-        print("aborting before write: %d P0 issue(s)" % sum(i.level == "ERROR" for i in issues),
+    blocking = blocked_by(issues, args.strict)
+    if blocking:
+        for issue in blocking:
+            print("%s shot %s %s: %s" % (issue.level, issue.shot, issue.code, issue.detail),
+                  file=sys.stderr)
+        print("aborting before write: %d %s issue(s)" % (len(blocking), "strict" if args.strict else "P0"),
               file=sys.stderr)
-        return 1
-    if args.strict and any(i.level == "WARN" for i in issues):
-        for issue in issues:
-            if issue.level == "WARN":
-                print("STRICT_WARN shot %s %s: %s" % (issue.shot, issue.code, issue.detail),
-                      file=sys.stderr)
         return 1
     if issues:
         print("story plan: %d warning(s); run etl/plan_actions.py for suggestions" %
@@ -252,15 +283,10 @@ def main():
         scene = shot.get("scene") or plan.get("scene") or {}
         if not isinstance(scene, dict):
             scene = {}
-        render = shot.get("render_style") or plan.get("render_style") or {}
-        if not isinstance(render, dict):
-            render = {}
-        style_bg = (plan.get("style_json") or {}).get("background")
-        line = (render.get("background_style") or shot.get("background_line")
-                or scene.get("background_line") or plan.get("background_line")
-                or style_bg or "plain background")
+        line = story_logic.scene_line(shot, plan)
         out = dict(scene)
-        out.setdefault("location", scene.get("location") or style_bg or line)
+        out.setdefault("location", scene.get("location")
+                       or (plan.get("style_json") or {}).get("background") or "")
         out.setdefault("tags", [x.strip() for x in re.split(r"[,;]", line) if x.strip()])
         return out, line
 
@@ -420,20 +446,21 @@ def main():
     semantic = story_logic.validate_specs(
         [(item["shot"]["n"], item["spec"]) for item in built],
         phase_contract=phase_contract, blocked_ids=blocked_ids)
-    semantic_errors = [i for i in semantic if i.level == "ERROR"]
     for issue in semantic:
         print("%s shot %s %s: %s" % (issue.level, issue.shot, issue.code, issue.detail),
               file=(sys.stderr if issue.level == "ERROR" else sys.stdout))
-    if semantic_errors:
-        print("aborting before write: %d semantic P0 issue(s)" % len(semantic_errors), file=sys.stderr)
-        return 1
-    if args.strict and semantic:
-        print("strict: semantic warnings block seed; rerun without --strict", file=sys.stderr)
+    if blocked_by(semantic, args.strict):
+        print("aborting before write: semantic issues block seed%s" % (" under --strict" if args.strict else ""),
+              file=sys.stderr)
         return 1
 
     if args.dry_run:
-        print("dry-run: project=%r act_no=%s revision=%s shots=%d (no writes)"
-              % (pj["title"], plan["act"]["act_no"], plan["act"].get("revision", 1), len(built)))
+        if "shots" not in plan:
+            print("dry-run roster: project=%r characters=%d (no writes)"
+                  % (pj["title"], len(chars)))
+        else:
+            print("dry-run: project=%r act_no=%s revision=%s shots=%d (no writes)"
+                  % (pj["title"], plan["act"]["act_no"], plan["act"].get("revision", 1), len(built)))
         con.close()
         return 0
 
@@ -487,20 +514,28 @@ def main():
                         (pid, ac["act_no"], ac["title"], ac["outline"], ac.get("revision", 1), ac["status"]))
             aid = cur.lastrowid
 
+        content_mode = "sfw" if str(pj.get("content_profile", "")).lower() == "sfw" else "nsfw"
         multi = False
         for item in built:
             shot, p, spec = item["shot"], item["p"], item["spec"]
             multi = multi or len(p["participants"]) > 1
             story_db.upsert_shot(cur, aid, shot["n"], char_ids[p["participants"][0]],
-                                 item["pose_cid"], spec["signature"], spec, "nsfw")
+                                 item["pose_cid"], spec["signature"], spec, content_mode)
             lines.append(item["prompt"])
 
         story_db.prune_missing_shots(cur, aid, [item["shot"]["n"] for item in built])
-        out = pathlib.Path(plan["prompt_file"])
-        atomic_write(out, "\n\n".join(lines) + "\n")
-        negative = plan.get("negative_line", DEFAULT_NEGATIVE)
-        atomic_write(out.with_name(out.stem + ".neg.txt"), negative + "\n")
         con.commit()
+        out = pathlib.Path(plan["prompt_file"])
+        negative = plan.get("negative_line", DEFAULT_NEGATIVE)
+        try:
+            publish_files([
+                (out, "\n\n".join(lines) + "\n"),
+                (out.with_name(out.stem + ".neg.txt"), negative + "\n"),
+            ])
+        except OSError as exc:
+            print("prompt publish failed after DB commit: %s; rerun this plan to reconcile" % exc,
+                  file=sys.stderr)
+            raise
     except BaseException:
         con.rollback()
         raise

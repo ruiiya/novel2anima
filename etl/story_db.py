@@ -28,8 +28,7 @@ def upsert_shot(cur, aid, shot_no, char_id, pose_id, signature, spec, content_mo
         raise ReseedConflict('Shot %s of act %s has render history/status=%s and content changed; '
                              'increment act.revision to protect original image decisions' % (shot_no, aid, status))
     # Invalidate old findings for a changed unrendered shot; do not leave stale QA data.
-    if cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='shot_state'").fetchone():
-        cur.execute('DELETE FROM shot_state WHERE shot_id=?', (sid,))
+    cur.execute('DELETE FROM shot_finding WHERE shot_id=?', (sid,))
     cur.execute('UPDATE shot SET character_id=?, pose_concept_id=?, signature=?, '
                 'shot_spec_json=?, content_mode=? WHERE id=?',
                 (char_id, pose_id, signature, encoded, content_mode, sid))
@@ -70,5 +69,16 @@ def resolve_act(con, act_no, project=None, revision=None):
 
 
 def clear_findings_for_act(con, source, act_id):
-    return con.execute('DELETE FROM shot_state WHERE source=? '
+    return con.execute('DELETE FROM shot_finding WHERE source=? '
                        'AND shot_id IN (SELECT id FROM shot WHERE act_id=?)', (source, act_id))
+
+def record_finding(cur, shot_id, rule_id, source, severity=0.5, axis=None,
+                   value_tag_id=None, evidence=None):
+    cur.execute('INSERT INTO shot_finding(shot_id, rule_id, source, axis, value_tag_id,'
+                ' severity, evidence_json) VALUES(?,?,?,?,?,?,?)'
+                ' ON CONFLICT(shot_id, rule_id, source) DO UPDATE SET'
+                ' axis=excluded.axis, value_tag_id=excluded.value_tag_id,'
+                ' severity=excluded.severity, evidence_json=excluded.evidence_json,'
+                " status='open'",
+                (shot_id, rule_id, source, axis, value_tag_id, severity,
+                 json.dumps(evidence or {}, ensure_ascii=False)))

@@ -13,12 +13,15 @@ Rules baked in:
   * every block ends undressed: bra / panties stated (or explicitly no_bra / no_panties)
   * act ends nude -> masturbation block (base + style + climax + afterglow)
 
-Usage: python etl/gen_kuoh_acts.py   then   python etl/seed_plan.py <each plan>
+Usage: python act_tools/generators/gen_kuoh_acts.py   then   python etl/seed_plan.py <each plan>
 """
 import itertools, json, pathlib, random, sqlite3, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import story_logic
+import pathlib as _p, sys as _s
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+_s.path.insert(0, str(_p.Path(__file__).resolve().parents[2] / "etl"))
 import wardrobe   # bang mau + thang tu the nam trong catalog/db, xem etl/wardrobe.py
 
 DB = "db/novel_anima.db"

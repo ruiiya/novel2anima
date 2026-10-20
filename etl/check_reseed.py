@@ -66,8 +66,8 @@ def main(argv=None):
              contextlib.closing(sqlite3.connect(str(cloned))) as db_to:
             db_from.backup(db_to)
         with contextlib.closing(sqlite3.connect(str(cloned))) as con:
-            migration = ROOT / 'sql/migrations/002_shot_state.sql'
-            con.executescript(migration.read_text(encoding='utf-8'))
+            for migration in sorted((ROOT / 'sql/migrations').glob('*.sql')):
+                con.executescript(migration.read_text(encoding='utf-8'))
             con.commit()
         plan_dir = tmp / 'plans'
         plan_dir.mkdir()
