@@ -391,8 +391,6 @@ def main():
         if len(p["participants"]) > 1:
             parts.append(cast_line(p["participants"], bool(p["cast"])))
         parts += [join_tags(ident_tokens)]
-        for code, toks in scoped_ident.items():
-            parts.append("%s: %s" % (char_name.get(code, code), join_tags(toks)))
         if plan.get("artist_line"):
             parts.append(plan["artist_line"])
         pooled = [t for g in GROUPS for t in p[g]]
@@ -458,7 +456,8 @@ def main():
 
         role_clauses = []
         for c in p["participants"]:
-            scoped = [n.replace("_", " ") for n, _ in p["character_actions"].get(c, [])]
+            scoped = [n.replace("_", " ") for n in scoped_ident.get(c, [])]
+            scoped += [n.replace("_", " ") for n, _ in p["character_actions"].get(c, [])]
             scoped += [n.replace("_", " ") for n, _ in p["character_poses"].get(c, [])]
             gaze = p["character_gaze"].get(c)
             if gaze:
