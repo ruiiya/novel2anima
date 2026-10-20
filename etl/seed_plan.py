@@ -229,8 +229,12 @@ def main():
 
     table = wardrobe.colour_table(cur)
     coloured, undecided = 0, set()
+    act_colours = (plan.get("act") or {}).get("colour_choice") or {}
     for shot, p in parsed:
-        new = wardrobe.under_fix(wardrobe.colorize(p["outfit"], table), table)
+        wanted = dict(act_colours)
+        wanted.update(shot.get("colour_choice") or {})
+        new = wardrobe.under_fix(wardrobe.colorize(p["outfit"], table, wanted=wanted),
+                                 table, explicit=set(wanted))
         if new != p["outfit"]:
             coloured += 1
             p["outfit"] = new

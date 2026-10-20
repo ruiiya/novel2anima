@@ -63,40 +63,62 @@ class StrictGate(unittest.TestCase):
         issues = [sl.Issue("ERROR", "e", 1, "d")]
         self.assertEqual(len(seed_plan.blocked_by(issues)), 1)
 
-def colour_table(entries):
-    table = {}
+def colour_table(entries, chosen=None):
+    table, base_ids = {}, {}
     for base, options in entries:
-        base_id = 1000 + len(table)
+        base_id = 1000 + len(base_ids)
         entry = {"base": base, "base_id": base_id, "options": {}, "chosen": None, "cue": None}
         table[base_id] = entry
+        base_ids[base] = base_id
         for name, tid in options:
             entry["options"][name.split("_")[0]] = (name, tid)
             table[tid] = entry
-    return table
+        if chosen and base in chosen:
+            entry["chosen"] = entry["options"][chosen[base]]
+    return table, base_ids
 
 class WardrobeColour(unittest.TestCase):
     def setUp(self):
-        self.table = colour_table([
+        self.table, self.base = colour_table([
             ("dress", [("black_dress", 1)]),
             ("skirt", [("black_skirt", 2)]),
             ("thighhighs", [("black_thighhighs", 3)]),
             ("panties", [("white_panties", 5), ("black_panties", 6)]),
         ])
 
-    def test_black_set_repaints_underwear(self):
+    def test_heuristic_repaints_undecided_underwear(self):
         refs = [("black_dress", 1), ("black_skirt", 2),
-                ("black_thighhighs", 3), ("white_panties", 5)]
+                ("black_thighhighs", 3), ("panties", self.base["panties"])]
         self.assertEqual(wardrobe.under_fix(refs, self.table)[-1], ("black_panties", 6))
 
+    def test_explicit_colour_is_kept(self):
+        refs = [("black_dress", 1), ("black_skirt", 2),
+                ("black_thighhighs", 3), ("white_panties", 5)]
+        self.assertEqual(wardrobe.under_fix(refs, self.table)[-1], ("white_panties", 5))
+
+    def test_shot_or_act_colour_wins_over_catalog(self):
+        table, base_ids = colour_table([("panties", [("white_panties", 5), ("black_panties", 6)])],
+                                       chosen={"panties": "black"})
+        self.assertEqual(wardrobe.colorize([("panties", base_ids["panties"])], table,
+                                           wanted={"panties": "white"}),
+                         [("white_panties", 5)])
+
+    def test_unknown_explicit_colour_falls_back_to_catalog(self):
+        table, base_ids = colour_table([("panties", [("white_panties", 5), ("black_panties", 6)])],
+                                       chosen={"panties": "black"})
+        self.assertEqual(wardrobe.colorize([("panties", base_ids["panties"])], table,
+                                           wanted={"panties": "purple"}),
+                         [("black_panties", 6)])
+
     def test_no_dominant_colour_keeps_refs(self):
-        refs = [("black_dress", 1), ("white_panties", 5)]
+        refs = [("black_dress", 1), ("panties", self.base["panties"])]
         self.assertEqual(wardrobe.under_fix(refs, self.table), refs)
 
     def test_missing_option_keeps_refs(self):
-        table = colour_table([("dress", [("black_dress", 1)]),
-                              ("skirt", [("black_skirt", 2)]),
-                              ("panties", [("white_panties", 5)])])
-        refs = [("black_dress", 1), ("black_skirt", 2), ("white_panties", 5)]
+        table, base = colour_table([("dress", [("black_dress", 1)]),
+                                    ("skirt", [("black_skirt", 2)]),
+                                    ("panties", [("white_panties", 5)])])
+        refs = [("black_dress", 1), ("black_skirt", 2), ("panties", base["panties"])]
         self.assertEqual(wardrobe.under_fix(refs, table), refs)
 
 

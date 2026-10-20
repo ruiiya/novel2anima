@@ -76,8 +76,12 @@ def dominant(refs, table):
         return "black"
     return "white" if score <= -2 else None
 
-def colorize(refs, table, under=None):
-    """moi mon do -> bien the mau (mau dang dung cua bo; chua chon thi them cue <mau>_clothing)"""
+def colorize(refs, table, under=None, wanted=None):
+    """moi mon do -> bien the mau.
+
+    Priority: explicit shot/act colour (`wanted`) > wardrobe preset/catalog pick >
+    cue <mau>_clothing. `wanted` maps item name ("panties") or full tag to a colour.
+    """
     out = []
     for name, tid in refs:
         e = table.get(tid)
@@ -91,22 +95,31 @@ def colorize(refs, table, under=None):
         if c:
             out.append((name, tid))
             continue
-        want = under if (under and name in UNDER_NAMES) else None
+        want = (wanted or {}).get(name) or (wanted or {}).get(e["base"])
+        if want is None and under and name in UNDER_NAMES:
+            want = under
         pick = colour_pick(e, want)
         out.append(pick)
         if pick == (e["base"], e["base_id"]) and e["cue"]:
             out.append(e["cue"])
     return list(dict.fromkeys(out))
 
-def under_fix(refs, table):
-    """bo do da mau den thi noi y phai den theo (khong de white_panties lot vao set den)"""
+def under_fix(refs, table, explicit=None):
+    """Heuristic only: uncoloured underwear follows the set colour.
+
+    An explicit colour (shot/act), a wardrobe preset or catalog pick always wins, so
+    `white_panties` in a black outfit is kept as authored.
+    """
+    explicit = explicit or set()
     dom = dominant(refs, table)
     if not dom:
         return refs
     out = []
     for name, tid in refs:
         e = table.get(tid)
-        if e and e["base"] in UNDER_NAMES and dom in e["options"] and (name, tid) != e["options"][dom]:
+        decided = e and (colour_of(name)[0] or e.get("chosen") or e["base"] in explicit)
+        if e and not decided and e["base"] in UNDER_NAMES and dom in e["options"] \
+                and (name, tid) != e["options"][dom]:
             out.append(e["options"][dom])
         else:
             out.append((name, tid))
