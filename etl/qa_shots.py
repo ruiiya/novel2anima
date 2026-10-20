@@ -5,7 +5,7 @@
 Usage:
   python etl/qa_shots.py [--act N] [--apply]
 
-Ghi vao bang shot_state (axis, value_tag_id, severity, since_shot_no, cause_shot_no, source)
+ghi vao bang shot_finding (rule_id, axis, value_tag_id, severity, source)
 de model/nguoi doc roi quyet dinh - day la phan "xac dinh van de" thay cho viec sua cung:
   * mau_thieu    - mon do chua co mau nao trong db (chua chuan bi cho phase 1)
   * mau_lech     - mon do co mau trong db nhung shot dung ban khong mau (prompt chua chuan hoa)
@@ -110,6 +110,13 @@ def main(argv=None):
             # Missing bridges are validated conservatively in story_logic/check_story,
             # without treating sitting -> standing as an intrinsically invalid pose.
         phase_contract = (plan or {}).get("act", {}).get("phase_contract")
+        if not phase_contract:
+            print("phase_contract missing for %s act %s: phase coverage NOT checked"
+                  % (project_title, act_no))
+            if args.apply and shot_ids:
+                first = min(shot_ids)
+                story_db.record_finding(con, shot_ids[first], "phase_contract_missing",
+                                        SOURCE, 0.3, evidence={"reason": "no plan/phase_contract"})
         for issue in story_logic.validate_specs(
                 specs, phase_contract=phase_contract, blocked_ids=blocked):
             sev = SEV["xung_dot"] if issue.level == "ERROR" else 0.4

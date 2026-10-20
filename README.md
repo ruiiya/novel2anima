@@ -105,8 +105,10 @@ gom 6 buoc dau va tra ve 0 error.
   `mau_thieu`, `mau_lech`, `xung_dot`, `tu_the_lech`, `noi_dung_chan`; `source='qa:v1'`).
   Day la lop bao cao de model/nguoi doc roi quyet dinh: khong sua prompt, khong chan seed.
   Moi `(shot, rule, source)` la mot row rieng nen QA va LLM review khong ghi de nhau.
-  `infer_state.py` ghi continuity vao `shot_state` va chi xoa dong `inferred:*` cua chinh no;
-  mac dinh chi report, them `--apply` moi ghi.
+  `infer_state.py` ghi continuity suy luan vao `shot_observation`/`act_observation`
+  (migration 004), khong bao gio sua `shot_state`/`act_continuity` da duoc chot;
+  mac dinh chi report, them `--apply` moi ghi va chi xoa dong `inferred:*` cua act no xu ly.
+  `act_publication` la outbox: `pending=1` giua commit DB va publish file; rerun plan de reconcile.
 - `python etl/suggest_tags.py --tag black_thighhighs` (hoac `--shot ID` / `--act 13`): goi y tag
   ngoai tag goc tu `tag_relation` + `concept_tag optional/alternative` + `tag_role`.
 - Plan chi can dung *ten* tag: id cu trong plan duoc thay bang id trong catalog (bao

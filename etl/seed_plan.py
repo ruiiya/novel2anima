@@ -11,6 +11,7 @@ temporary file + atomic replace; SQLite writes run in one transaction. Existing
 shot/render history is still protected by story_db.upsert_shot/prune_missing_shots.
 """
 import argparse
+import hashlib
 import json
 import os
 import pathlib
@@ -102,6 +103,33 @@ def blocked_by(issues, strict=False):
     if errors:
         return errors
     return [i for i in issues if i.level == "WARN"] if strict else []
+
+MIGRATIONS = pathlib.Path(__file__).resolve().parent.parent / "sql" / "migrations"
+
+def ensure_runtime_tables(con):
+    """Create observation/publication tables on older DBs (idempotent DDL)."""
+    con.executescript((MIGRATIONS / "004_observation_publication.sql").read_text(encoding="utf-8"))
+
+def _now():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+def record_publication(cur, act_id, revision, files):
+    """Write the publication outbox row as pending before touching the filesystem."""
+    prompt_path, prompt_text = files[0]
+    neg_path, neg_text = files[1] if len(files) > 1 else (None, "")
+    cur.execute(
+        "INSERT INTO act_publication(act_id, revision, prompt_path, prompt_sha256,"
+        " negative_path, negative_sha256, pending, updated_at) VALUES(?,?,?,?,?,?,1,?)"
+        " ON CONFLICT(act_id, revision) DO UPDATE SET prompt_path=excluded.prompt_path,"
+        " prompt_sha256=excluded.prompt_sha256, negative_path=excluded.negative_path,"
+        " negative_sha256=excluded.negative_sha256, pending=1, updated_at=excluded.updated_at",
+        (act_id, revision, str(prompt_path), hashlib.sha256(prompt_text.encode("utf-8")).hexdigest(),
+         str(neg_path) if neg_path else None,
+         hashlib.sha256(neg_text.encode("utf-8")).hexdigest() if neg_path else None, _now()))
+
+def mark_published(cur, act_id, revision):
+    cur.execute("UPDATE act_publication SET pending=0, updated_at=? WHERE act_id=? AND revision=?",
+                (_now(), act_id, revision))
 
 def main():
     ap = argparse.ArgumentParser()
@@ -464,6 +492,7 @@ def main():
         con.close()
         return 0
 
+    ensure_runtime_tables(con)
     con.isolation_level = None
     try:
         con.execute("BEGIN IMMEDIATE")
@@ -527,15 +556,20 @@ def main():
         con.commit()
         out = pathlib.Path(plan["prompt_file"])
         negative = plan.get("negative_line", DEFAULT_NEGATIVE)
+        files = [
+            (out, "\n\n".join(lines) + "\n"),
+            (out.with_name(out.stem + ".neg.txt"), negative + "\n"),
+        ]
+        record_publication(cur, aid, ac.get("revision", 1), files)
+        con.commit()
         try:
-            publish_files([
-                (out, "\n\n".join(lines) + "\n"),
-                (out.with_name(out.stem + ".neg.txt"), negative + "\n"),
-            ])
+            publish_files(files)
         except OSError as exc:
             print("prompt publish failed after DB commit: %s; rerun this plan to reconcile" % exc,
                   file=sys.stderr)
             raise
+        mark_published(cur, aid, ac.get("revision", 1))
+        con.commit()
     except BaseException:
         con.rollback()
         raise

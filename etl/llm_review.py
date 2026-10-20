@@ -1,11 +1,11 @@
 # novel2anima P0P1 upgrade
 # -*- coding: utf-8 -*-
 """LLM self-check cho prompt cua mot act: gui tung batch shot cho mot LLM qua stdin,
-doc JSON tra ve va (tuy chon) ghi vao shot_state source='qa:llm:v1'.
+doc JSON tra ve va (tuy chon) ghi vao shot_finding source='qa:llm:v1'.
 
 Usage:
   python etl/llm_review.py --act 13                  # chay + in ket qua (dry-run)
-  python etl/llm_review.py --act 13 --apply          # ghi shot_state + data/reviews/
+  python etl/llm_review.py --act 13 --apply          # ghi shot_finding + data/reviews/
   python etl/llm_review.py --act 13 --payload        # chi in payload (agent/nguoi tu review)
   python etl/llm_review.py --act 13 --from-json f.json --apply
 
@@ -101,7 +101,7 @@ def main(argv=None):
     ap.add_argument("--timeout", type=int, default=600)
     ap.add_argument("--payload", action="store_true", help="chi in payload")
     ap.add_argument("--from-json", help="doc findings tu file thay vi goi LLM")
-    ap.add_argument("--apply", action="store_true", help="ghi vao shot_state")
+    ap.add_argument("--apply", action="store_true", help="ghi vao shot_finding")
     args = ap.parse_args(argv)
 
     con = build.connect(args.db)

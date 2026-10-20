@@ -7,7 +7,7 @@ hypothesis; see skills/novel2anima-shot-pipeline/references/continuity-state.md
 
 Default is REPORT-ONLY: it prints what would be written. Pass --apply to write.
 """
-import argparse, json, sqlite3, sys
+import argparse, json, pathlib, sqlite3, sys
 
 from state_rules import *
 from state_rules import RULES_VERSION
@@ -20,6 +20,10 @@ def main():
     args = ap.parse_args()
     con = sqlite3.connect(args.db)
     con.execute("PRAGMA foreign_keys=ON")
+    if args.apply:  # older DBs may predate the observation tables
+        con.executescript((pathlib.Path(__file__).resolve().parent.parent
+                           / "sql" / "migrations" / "004_observation_publication.sql"
+                           ).read_text(encoding="utf-8"))
     cur = con.cursor()
 
     def tid(name):
@@ -32,10 +36,7 @@ def main():
     ladder_ids = {ax: [(lvl, tid(v), pred) for lvl, v, pred in steps] for ax, steps in LADDERS.items()}
     stage_ids = {lvl: (tid(v) if v else None) for lvl, v, _ in OUTFIT_STAGE}
 
-    if args.apply:
-        cur.execute("DELETE FROM shot_state WHERE source LIKE 'inferred:%'")  # khong xoa qa:*
-        cur.execute("DELETE FROM act_continuity")
-
+    SRC = "inferred:" + RULES_VERSION
     acts = cur.execute("SELECT id, act_no FROM act ORDER BY act_no").fetchall()
     rows, removals = 0, 0
     for act_id, act_no in acts:
@@ -47,6 +48,10 @@ def main():
                for _no, spec_json in shots):
             print("skip inferred act continuity %s: multi-character state must be per participant" % act_no)
             continue
+        if args.apply:  # only rows owned by this pipeline; manual shot_state/act_continuity stay intact
+            cur.execute("DELETE FROM shot_observation WHERE source LIKE 'inferred:%'"
+                        " AND shot_id IN (SELECT id FROM shot WHERE act_id=?)", (act_id,))
+            cur.execute("DELETE FROM act_observation WHERE source LIKE 'inferred:%' AND act_id=?", (act_id,))
         counts = {k: 0 for k in ("genital", "fingers", "strong", "ejac", "sweat", "saliva", "kiss",
                                  "bite", "scratch", "tremble", "toy", "rope", "ownership",
                                  "semen", "pregnancy", "lactation", "impact", "spank", "whip", "pierced")}
@@ -56,7 +61,7 @@ def main():
         def write(shot_no, axis, vtid, sev, since, cause, source):
             if not args.apply:
                 return
-            cur.execute("INSERT INTO shot_state(shot_id, axis, value_tag_id, severity, since_shot_no,"
+            cur.execute("INSERT OR REPLACE INTO shot_observation(shot_id, axis, value_tag_id, severity, since_shot_no,"
                         " cause_shot_no, source) VALUES((SELECT id FROM shot WHERE act_id=? AND shot_no=?),"
                         "?,?,?,?,?,?)", (act_id, shot_no, axis, vtid, sev, since, cause, source))
 
@@ -122,21 +127,21 @@ def main():
                     live["outfit:soaked"] = [tid("wet_clothes"), 1, shot_no, shot_no, 0.5]
             elif "outfit:soaked" in live:
                 _, _, since, _, sev = live.pop("outfit:soaked")
-                write(shot_no, "outfit:soaked", None, 0.0, since, shot_no, "inferred:v0.3:removed")
+                write(shot_no, "outfit:soaked", None, 0.0, since, shot_no, SRC + ":removed")
                 removals += 1
 
             for axis in sorted(live):
                 vtid, lvl, since, cause, sev = live[axis]
                 if axis.startswith("outfit:"):
-                    write(shot_no, axis, vtid, sev, since, cause, "inferred:v0.3")
+                    write(shot_no, axis, vtid, sev, since, cause, SRC)
                     rows += 1
                     continue
                 if sev <= 1e-9:      # float drift: 0.6 - 0.12*5 is not exactly 0
-                    write(shot_no, axis, None, 0.0, since, shot_no, "inferred:v0.3:decayed")
+                    write(shot_no, axis, None, 0.0, since, shot_no, SRC + ":decayed")
                     del live[axis]
                     removals += 1
                     continue
-                write(shot_no, axis, vtid, round(sev, 3), since, cause, "inferred:v0.3")
+                write(shot_no, axis, vtid, round(sev, 3), since, cause, SRC)
                 rows += 1
 
         props = sorted(opening & {"choker", "rope", "crotch_rope", "shackles", "handcuffs", "chain_leash",
@@ -152,11 +157,11 @@ def main():
                            ("environment", "opening set: " + first_bg if first_bg
                             else "no background recorded in opening shot")):
             if args.apply:
-                cur.execute("INSERT INTO act_continuity(act_id, axis, initial_tag_id, notes) VALUES(?,?,NULL,?)",
-                            (act_id, axis, note))
+                cur.execute("INSERT OR REPLACE INTO act_observation(act_id, axis, initial_tag_id, notes, source)"
+                            " VALUES(?,?,NULL,?,?)", (act_id, axis, note, SRC))
     if args.apply:
         con.commit()
-    print("%s (rules %s): shot_state rows: %d | removals (decay/end of state): %d | acts: %d"
+    print("%s (rules %s): shot_observation rows: %d | removals (decay/end of state): %d | acts: %d"
           % ("applied" if args.apply else "report-only, pass --apply to write", RULES_VERSION,
              rows, removals, len(acts)))
     con.close()

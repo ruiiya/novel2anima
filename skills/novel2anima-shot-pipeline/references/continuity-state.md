@@ -63,28 +63,31 @@ schema gap, not a claim that the current DB has been migrated.
 
 ## Current implementation (trial, inferred data)
 
-Migration `sql/migrations/002_shot_state.sql` creates two tables **outside** `schema_v1.sql`:
+Migration `sql/migrations/002_shot_state.sql` creates the authoritative tables outside
+`schema_v1.sql`; `sql/migrations/004_observation_publication.sql` adds inference
+observation tables so experiments can never overwrite curated continuity:
 
 ```text
-shot_state(shot_id, axis, value_tag_id, severity, since_shot_no, cause_shot_no, source)
-act_continuity(act_id, axis, initial_tag_id, notes)
+shot_state(shot_id, axis, value_tag_id, severity, since_shot_no, cause_shot_no, source)   -- curated
+act_continuity(act_id, axis, initial_tag_id, notes)                                        -- curated
+shot_observation(shot_id, axis, value_tag_id, severity, since_shot_no, cause_shot_no, source)
+act_observation(act_id, axis, initial_tag_id, notes, source)
 ```
 
-`etl/infer_state.py` (v0.3) walks each act in shot order and fills them. The rows are
+`etl/infer_state.py` (`state_rules.RULES_VERSION`) walks each act in shot order and fills the
+observation tables; it is report-only unless `--apply` is passed, and then deletes only its own
+`inferred:<version>` rows for acts it processes. The rows are
 **inferred placeholders**: they are searchable, grep-able trial data, not editorial fact.
 A missing row does not prove a state element is absent, and `value_tag_id IS NULL` means
 either "initial state" (`outfit:stage` level 0 = dressed) or a catalog gap.
 
 Harvested from `tag_relation(relation='implies')` - the same source also drives prompt
 pruning, see below.
-`shot_state` has two independent producers, separated by the `source` column:
-`etl/infer_state.py` writes `inferred:*` (this continuity model) and `etl/qa_shots.py` writes
-`source='qa:v1'` report rows with the axes `mau_thieu` / `mau_lech` / `xung_dot` /
-`tu_the_lech` / `noi_dung_chan` (see
-[wardrobe-and-pose.md](wardrobe-and-pose.md)). `infer_state` deletes only its own rows
-(`WHERE source LIKE 'inferred:%'`); reseeding a plan cascades a shot's rows away, so run
-`etl/qa_shots.py --apply` again after any reseed. A `qa:` row is a flagged problem with a
-severity hint, not a verdict, and not part of the continuity ladders below.
+QA findings live in `shot_finding` (migration `003_shot_finding.sql`), keyed by
+`(shot_id, rule_id, source)`, so `qa:v1` and `qa:llm:v1` can report the same rule without
+overwriting each other (see [wardrobe-and-pose.md](wardrobe-and-pose.md)). Reseeding a plan
+cascades a shot's findings away, so run `etl/qa_shots.py --apply` again after any reseed.
+A finding is a flagged problem with a severity hint, not a verdict.
 
 
 ### Value ladders (v0.3)
