@@ -155,7 +155,7 @@ def main():
                                  "bite", "scratch", "tremble", "toy", "rope", "ownership",
                                  "semen", "pregnancy", "lactation", "impact", "spank", "whip", "pierced")}
         flags = {"blush": 0, "bare": 0, "motion": 0, "after": 0, "shoulder": 0}
-        live, stage, opening = {}, 0, set()
+        live, stage, opening, first_bg = {}, 0, set(), ""
 
         def write(shot_no, axis, vtid, sev, since, cause, source):
             cur.execute("INSERT INTO shot_state(shot_id, axis, value_tag_id, severity, since_shot_no,"
@@ -165,11 +165,12 @@ def main():
         for shot_no, spec_json in shots:
             spec = json.loads(spec_json)
             names = set()
-            for g in ("outfit", "action", "expression", "pose", "motion", "camera"):
+            for g in ("outfit", "body_state", "props", "action", "expression", "pose", "motion", "camera"):
                 names |= {t["name"] for t in spec.get(g, [])}
             caption = (spec.get("caption", "") + " " + spec.get("beat", "")).lower()
             if shot_no == shots[0][0]:
                 opening = set(names)
+                first_bg = spec.get("background") or ""
             for key, watch in (("genital", GENITAL), ("fingers", FINGERS), ("strong", STRONG), ("ejac", EJAC),
                                ("sweat", SWEAT), ("saliva", SALIVA), ("kiss", KISS), ("bite", BITE),
                                ("scratch", SCRATCH), ("tremble", TREMBLE), ("toy", TOY),
@@ -250,7 +251,8 @@ def main():
                             else "act starts clean: no marks"),
                            ("outfit", "opening frame: " + ", ".join(sorted(set(props) | set(body))) if props or body
                             else "act starts fully dressed"),
-                           ("environment", "white background, no set state tracked yet")):
+                           ("environment", "opening set: " + first_bg if first_bg
+                            else "no background recorded in opening shot")):
             cur.execute("INSERT INTO act_continuity(act_id, axis, initial_tag_id, notes) VALUES(?,?,NULL,?)",
                         (act_id, axis, note))
     con.commit()

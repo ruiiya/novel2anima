@@ -69,6 +69,20 @@ ROLE_BY_SLOT = {
     "creature:animal": ("other",),
 }
 
+# Anatomy / nudity tags must never become outfit or pose roles. Import sources
+# (attire slots, pose groups, wardrobe presets) occasionally list them there.
+BODY_TAGS = {
+    "nude", "completely_nude", "topless", "bottomless", "nipples",
+    "pussy", "pubic_hair", "pussy_juice", "pussy_juice_drip",
+    "pussy_juice_trail", "pussy_juice_stain", "pussy_juice_puddle",
+    "afterglow",
+}
+
+def role_for(name, role):
+    if role in ("outfit", "pose", "interaction") and name in BODY_TAGS:
+        return "body_state"
+    return role
+
 TABLES = ("source_snapshot", "tag", "tag_source", "tag_alias", "tag_role",
           "tag_relation", "tag_content_label", "visual_concept", "concept_tag",
           "concept_relation")
@@ -309,7 +323,7 @@ def load_taxonomy(con, snap_id, writer):
                                 {"category": row["category"], "subcategory": row["subcategory"],
                                  "slot": slot, "confidence": confidence, "status": row["status"]})
             for role in ROLE_BY_SLOT.get(slot, ()):
-                writer.role(tid, role, confidence, snap_id)
+                writer.role(tid, role_for(row["tag"], role), confidence, snap_id)
                 stats["roles"] += 1
             for alias in (a.strip() for a in row["aliases"].split(",")):
                 if alias:
@@ -373,7 +387,7 @@ def load_wardrobe(con, snap_id, writer):
         for name in names:
             tid = writer.ensure(name, "general", None, None, snap_id, "attire_slots.json",
                                 {"attire_slot": slot})
-            writer.role(tid, "outfit", 0.9, snap_id)
+            writer.role(tid, role_for(name, "outfit"), 0.9, snap_id)
             stats["roles"] += 1
 
     # Presets are vocabulary + slot rules for the wardrobe layer: they seed tag_role
@@ -392,7 +406,7 @@ def load_wardrobe(con, snap_id, writer):
                                         {"section": section, "group": group["group"],
                                          "label": item["label"]})
                     if role:
-                        writer.role(tid, role, 0.8, snap_id)
+                        writer.role(tid, role_for(tag, role), 0.8, snap_id)
                         stats["roles"] += 1
     return stats
 
@@ -409,7 +423,7 @@ def load_pose_tools(con, snap_id, writer):
         for tag in tags:
             tid = writer.ensure(tag, None, None, None, snap_id, "js/pose_data.js",
                                 {"pose_id": item["id"], "categories": item["categories"]})
-            writer.role(tid, kind, 0.8, snap_id)
+            writer.role(tid, role_for(tag, kind), 0.8, snap_id)
             stats["roles"] += 1
         code = "POSE_%s" % slug(item["name"])
         _, created = add_concept(

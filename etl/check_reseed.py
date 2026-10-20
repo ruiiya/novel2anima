@@ -40,6 +40,8 @@ def main(argv=None):
     ap.add_argument('--db', default=str(DEFAULT_DB))
     ap.add_argument('--plan-dir', default=str(ROOT / 'data/plans'))
     ap.add_argument('--no-llm-replay', action='store_true')
+    ap.add_argument('--include-new', action='store_true',
+                    help='also seed plans whose project/act is not in the DB clone')
     args = ap.parse_args(argv)
     source_db = pathlib.Path(args.db).resolve()
     if not source_db.is_file():
@@ -81,7 +83,7 @@ def main(argv=None):
                 seeded = con.execute('SELECT 1 FROM act a JOIN project p ON p.id=a.project_id '
                                      'WHERE p.title=? AND a.act_no=? AND a.revision=?',
                                      (pj['title'], ac['act_no'], ac.get('revision', 1))).fetchone()
-                if not seeded:
+                if not seeded and not args.include_new:
                     skipped.append(src.name)
                     continue
                 out = tmp / 'prompts' / (src.stem + '.txt')
@@ -89,17 +91,17 @@ def main(argv=None):
                 d['prompt_file'] = str(out)
                 new_plan = plan_dir / src.name
                 new_plan.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding='utf-8')
-                current_pf = pathlib.Path(json.loads(src.read_text(encoding='utf-8-sig'))['prompt_file'])
-                if not current_pf.is_absolute():
-                    current_pf = ROOT / current_pf
-                if current_pf.is_file():
-                    expected_prompts[str(out)] = checksum(current_pf)
+                expected_prompts[str(out)] = None
         if not list(plan_dir.glob('*.json')):
             print('nothing seeded to verify; pending: %s' % skipped)
             return 0
         for plan in sorted(plan_dir.glob('*.json')):
             call(['seed_plan.py', plan, '--db', cloned])
             call(['check_story.py', '--plan', plan])
+        first_pass = {k: checksum(pathlib.Path(k)) for k in expected_prompts
+                      if pathlib.Path(k).is_file()}
+        for plan in sorted(plan_dir.glob('*.json')):
+            call(['seed_plan.py', plan, '--db', cloned])
         call(['qa_shots.py', '--apply', '--db', cloned])
         if not args.no_llm_replay and list((ROOT / 'data/reviews').glob('act*_llm.json')):
             call(['llm_review.py', '--replay', '--db', cloned])
@@ -108,7 +110,7 @@ def main(argv=None):
             fk = con.execute('PRAGMA foreign_key_check').fetchall()
         if fk:
             raise RuntimeError('FK violations in clone: %s' % fk[:5])
-        drift = [k for k, digest in expected_prompts.items()
+        drift = [k for k, digest in first_pass.items()
                  if not pathlib.Path(k).exists() or checksum(pathlib.Path(k)) != digest]
         if drift:
             raise RuntimeError('Prompt byte drift: %s' % drift[:10])

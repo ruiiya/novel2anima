@@ -95,7 +95,9 @@ def main(argv=None):
                 if miss:
                     warns.append((0, "", "negative thieu %s" % ", ".join(miss)))
 
-        sequence_issues = story_logic.validate_specs([(n, json.loads(spec)) for _sid, n, spec in rows])
+        sequence_issues = story_logic.validate_specs(
+            [(n, json.loads(spec)) for _sid, n, spec in rows],
+            phase_contract=(plan or {}).get("act", {}).get("phase_contract"))
         for issue in sequence_issues:
             item = (issue.shot, "story", "%s: %s" % (issue.code, issue.detail))
             (errs if issue.level == "ERROR" else warns).append(item)
@@ -104,6 +106,15 @@ def main(argv=None):
             spec = json.loads(spec_json)
             phase = spec.get("phase", "")
             text = spec.get("prompt", "")
+            if plan:
+                shot_plan = next((x for x in plan.get("shots") or []
+                                  if x.get("n") == shot_no), {})
+                expected_bg = (shot_plan.get("background_line")
+                               or plan.get("background_line")
+                               or (plan.get("style_json") or {}).get("background") or "")
+                if expected_bg and spec.get("background") != expected_bg:
+                    errs.append((shot_no, phase, "SCENE_METADATA_PARITY: background %r != plan %r"
+                                 % (spec.get("background"), expected_bg)))
             if i < len(lines) and lines[i] != text:
                 errs.append((shot_no, phase, "prompt trong file khac shot_spec_json (drift)"))
             caption = spec.get("caption") or ""
@@ -207,6 +218,9 @@ def main(argv=None):
                 print("  %-5s shot %-4s %-16s %s" % (tag, shot_no, phase[:16], msg))
             if len(bucket) > args.examples:
                 print("  %-5s ... con %d %s" % (tag, len(bucket) - args.examples, tag))
+    for issue in story_logic.validate_batch_plans(plans):
+        total["warn"] += 1
+        print("WARN batch %-24s %s" % (issue.code, issue.detail))
     print("\n%d act, %d error, %d warn" % (total["act"], total["err"], total["warn"]))
     con.close()
     return 1 if total["err"] else 0

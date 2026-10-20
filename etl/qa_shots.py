@@ -16,7 +16,7 @@ de model/nguoi doc roi quyet dinh - day la phan "xac dinh van de" thay cho viec 
 import argparse, collections, json, pathlib, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import build, wardrobe, story_db
+import build, wardrobe, story_db, story_logic
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 SOURCE = "qa:v1"
@@ -24,7 +24,8 @@ SEV = {"mau_thieu": 0.4, "mau_lech": 0.5, "xung_dot": 0.6, "tu_the_lech": 0.5, "
 
 def shot_refs(spec):
     out = {}
-    for group in ("identity", "outfit", "action", "expression", "pose", "motion", "camera"):
+    for group in ("identity", "outfit", "body_state", "props", "cast",
+                  "action", "expression", "pose", "motion", "camera"):
         for x in spec.get(group) or []:
             out.setdefault(group, []).append((x["name"], x["tagId"]))
     return out
@@ -49,7 +50,16 @@ def main(argv=None):
         conflicts[b].add((a, sev))
     blocked = {r[0] for r in con.execute("SELECT tag_id FROM tag_content_label WHERE scope='blocked'")}
 
-    acts = con.execute("SELECT a.id, a.act_no FROM act a JOIN project p ON p.id=a.project_id "
+    plans = {}
+    for path in pathlib.Path("data/plans").glob("*.json"):
+        try:
+            d = json.loads(path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            continue
+        ac = d.get("act") or {}
+        if d.get("shots") and (d.get("project") or {}).get("title") and ac.get("act_no"):
+            plans[((d["project"]["title"]), ac["act_no"], ac.get("revision", 1))] = d
+    acts = con.execute("SELECT a.id, a.act_no, p.title, a.revision FROM act a JOIN project p ON p.id=a.project_id "
                        "WHERE (? IS NULL OR a.act_no=?) AND (? IS NULL OR p.title=?) "
                        "AND (? IS NULL OR a.revision=?) ORDER BY p.title, a.act_no",
                        (args.act, args.act, args.project, args.project, args.revision, args.revision)).fetchall()
@@ -57,11 +67,15 @@ def main(argv=None):
         raise SystemExit("act ambiguous/not found; specify --project and --revision")
     found = collections.Counter()
     rows = []
-    for aid, act_no in acts:
+    for aid, act_no, project_title, revision in acts:
+        plan = plans.get((project_title, act_no, revision))
         floor, cause, phase = -1, 0, None
+        specs, shot_ids = [], {}
         for shot_id, shot_no, spec_json in con.execute(
                 "SELECT id, shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no", (aid,)):
             spec = json.loads(spec_json)
+            specs.append((shot_no, spec))
+            shot_ids[shot_no] = shot_id
             refs = shot_refs(spec)
             worn = refs.get("outfit", [])
             ids = {t for _n, t in worn}
@@ -95,6 +109,15 @@ def main(argv=None):
             # The old monotone pose ladder is invalid for normal narratives.
             # Missing bridges are validated conservatively in story_logic/check_story,
             # without treating sitting -> standing as an intrinsically invalid pose.
+        phase_contract = (plan or {}).get("act", {}).get("phase_contract")
+        for issue in story_logic.validate_specs(
+                specs, phase_contract=phase_contract, blocked_ids=blocked):
+            sev = SEV["xung_dot"] if issue.level == "ERROR" else 0.4
+            sid = shot_ids.get(issue.shot)
+            if sid is None:
+                continue
+            rows.append((sid, "semantic:" + issue.code, None, sev, issue.shot, issue.shot))
+            found["semantic"] += 1
     print("van de tim thay: %s" % dict(found or {"khong co": 0}))
     if rows:
         print("vi du:")
@@ -106,7 +129,7 @@ def main(argv=None):
         con.close()
         return
     con.execute("BEGIN")
-    for aid, _act_no in acts:
+    for aid, _act_no, _title, _rev in acts:
         story_db.clear_findings_for_act(con, SOURCE, aid)
     for r in rows:
         if len(r) == 6:

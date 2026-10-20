@@ -1,23 +1,30 @@
 # novel2anima P0P1 upgrade
 """Seed a plan JSON into the runtime tables and emit the prompt file.
 
-Usage: python etl/seed_plan.py data/plans/act02_yuri_raiden_yae.json
-Idempotent per (project title, character code, act_no, revision, shot_no).
-Validates every "name:id" against `tag`; refuses to invent catalog IDs.
-Multi-character: plan["characters"][] + shot["participants"][] + optional
-shot["expressions"]{code:[refs]}. shot.character_id holds the primary participant
-(schema has one FK column) - the full cast goes into shot_spec_json.participants
-and is reported as SCHEMA_GAP.
+Usage:
+  python etl/seed_plan.py data/plans/act02_yuri_raiden_yae.json
+  python etl/seed_plan.py data/plans/foo.json --dry-run
+  python etl/seed_plan.py data/plans/foo.json --strict
+
+The whole act is validated before any write. Prompt files are written with a
+temporary file + atomic replace; SQLite writes run in one transaction. Existing
+shot/render history is still protected by story_db.upsert_shot/prune_missing_shots.
 """
-import argparse, json, re, sqlite3, sys, pathlib
+import argparse
+import json
+import os
+import pathlib
+import re
+import sqlite3
+import sys
+import tempfile
 from datetime import datetime, timezone
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import wardrobe
 import story_db, story_logic
 
-GROUPS = ("outfit", "action", "expression", "pose", "motion", "camera", "cast")
-
+GROUPS = ("outfit", "body_state", "action", "expression", "pose", "motion", "camera", "cast", "props")
 DEFAULT_NEGATIVE = ("worst quality, low quality, score_1, score_2, score_3, artist name, "
                     "blurry, jpeg artifacts, chromatic aberration")
 
@@ -32,7 +39,7 @@ TAG_CACHE = {}   # ten -> (id, post_count): mot plan tra lai cung vai nghin tag
 
 def tagged(cur, shot_no, group, refs, unknown, mismatched):
     out = []
-    for ref in refs:
+    for ref in refs or []:
         name, tid = parse_ref(ref)
         row = TAG_CACHE.get(name)
         if row is None:
@@ -42,34 +49,65 @@ def tagged(cur, shot_no, group, refs, unknown, mismatched):
             unknown.append((shot_no, group, ref))
             continue
         if tid is not None and row[0] != tid:
-            mismatched.append((shot_no, group, ref, row[0]))   # id cu -> ten la chuan, lay id theo ten
+            mismatched.append((shot_no, group, ref, row[0]))
         out.append((name, row[0]))
     return out
+
+def as_refs(items):
+    return [{"name": n, "tagId": t} for n, t in items]
+
+def atomic_write(path, text):
+    path = pathlib.Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=".%s." % path.name, dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("plan")
     ap.add_argument("--db", default="db/novel_anima.db")
+    ap.add_argument("--dry-run", action="store_true", help="validate and compile, write nothing")
+    ap.add_argument("--strict", action="store_true", help="also block warnings")
     ap.add_argument("--fix-pose", dest="fix_pose", action="store_true", default=False,
                     help="legacy read-only pose diagnostic; never rewrites actions")
-    ap.add_argument("--no-fix-pose", dest="fix_pose", action="store_false",
-                    help="giu nguyen tu the tac gia viet, chi bao cao lech thang")
+    ap.add_argument("--no-fix-pose", dest="fix_pose", action="store_false")
     args = ap.parse_args()
-    fix_pose = args.fix_pose
 
     plan = json.loads(pathlib.Path(args.plan).read_text(encoding="utf-8-sig"))
+    if not isinstance(plan.get("shots"), list) or not plan.get("act"):
+        print("not a story plan: %s" % args.plan, file=sys.stderr)
+        return 2
     issues = story_logic.validate_plan(plan)
     for issue in issues:
         if issue.level == "ERROR":
             print("STORY_ERROR shot %s %s: %s" % (issue.shot, issue.code, issue.detail), file=sys.stderr)
     if any(i.level == "ERROR" for i in issues):
+        print("aborting before write: %d P0 issue(s)" % sum(i.level == "ERROR" for i in issues),
+              file=sys.stderr)
+        return 1
+    if args.strict and any(i.level == "WARN" for i in issues):
+        for issue in issues:
+            if issue.level == "WARN":
+                print("STRICT_WARN shot %s %s: %s" % (issue.shot, issue.code, issue.detail),
+                      file=sys.stderr)
         return 1
     if issues:
         print("story plan: %d warning(s); run etl/plan_actions.py for suggestions" %
               sum(i.level == "WARN" for i in issues))
+
     chars = plan.get("characters") or [plan["character"]]
     con = sqlite3.connect(args.db)
     con.execute("PRAGMA foreign_keys=ON")
+    con.execute("PRAGMA busy_timeout=5000")
     cur = con.cursor()
 
     edges = {}
@@ -78,13 +116,11 @@ def main():
     closure_cache = {}
 
     def implied_by(tid):
-        """ids this tid transitively implies (what may be dropped when tid is present)"""
         if tid in closure_cache:
             return closure_cache[tid]
         seen, stack = set(), [tid]
         while stack:
-            n = stack.pop()
-            for m in edges.get(n, []):
+            for m in edges.get(stack.pop(), ()):
                 if m not in seen:
                     seen.add(m)
                     stack.append(m)
@@ -92,14 +128,15 @@ def main():
         return seen
 
     unknown, mismatched = [], []
-    for ch in chars:   # character identity refs go into the prompt too - validate them
-        ident = ch.get("identity_json") or {}   # gang/extra participants may only carry code+name
+    for ch in chars:
+        ident = ch.get("identity_json") or {}
         outfit = ch.get("outfit_json") or {}
         for group, refs in (("identity_tag", ident.get("identity_tags", [])),
                             ("attribute", ident.get("attributes", [])),
-                            *[("outfit:" + k, v) for k, v in outfit.items()]):
+                            *[("outfit:" + k, v) for k, v in outfit.items() if isinstance(v, list)]):
             tagged(cur, ch["code"], group, refs, unknown, mismatched)
-    parsed = []   # a characters-only roster has no shots: skip prompt parsing
+
+    parsed = []
     for shot in plan.get("shots", []):
         p = {}
         for g in GROUPS:
@@ -127,12 +164,10 @@ def main():
         p["beat"] = shot.get("beat", "")
         parsed.append((shot, p))
 
-    # ---- quy tac chung: moi tag do phai co mau, tu the khong duoc lui thang trong phase
     def id_of(name):
         row = cur.execute("SELECT id FROM tag WHERE canonical_name=?", (name,)).fetchone()
         return row[0] if row else None
 
-    # bang mau doc tu catalog (visual_concept WC_* + concept_tag) - xem etl/import_colour_sets.py
     table = wardrobe.colour_table(cur)
     coloured, undecided = 0, set()
     for shot, p in parsed:
@@ -144,10 +179,10 @@ def main():
             e = table.get(tid)
             if e and tid == e["base_id"] and not e["chosen"] and not e["cue"]:
                 undecided.add(name)
-    pose_fix = wardrobe.lock_poses(parsed, id_of) if fix_pose else []
+    pose_fix = wardrobe.lock_poses(parsed, id_of) if args.fix_pose else []
     print("khoa mau: +mau cho %d/%d shot | chua chon mau: %s | thang tu the: %s"
           % (coloured, len(parsed), sorted(undecided) or "du",
-             ("keo %d shot" % len(pose_fix)) if fix_pose else "tat (--fix-pose de bat)"))
+             ("keo %d shot" % len(pose_fix)) if args.fix_pose else "tat (--fix-pose de bat)"))
     for n, phase, old, new in pose_fix[:12]:
         print("  shot %s (%s): %s -> %s" % (n, phase, old, new))
     if len(pose_fix) > 12:
@@ -167,46 +202,11 @@ def main():
         return 1
 
     pj = plan["project"]
-    cur.execute("SELECT id FROM project WHERE title=?", (pj["title"],))
-    r = cur.fetchone()
-    if r:
-        pid = r[0]
-        if plan.get("shots"):   # a roster-only file (no shots) never rewrites the project row
-            cur.execute("UPDATE project SET idea=?, content_profile=?, style_json=? WHERE id=?",
-                        (pj["idea"], pj["content_profile"], json.dumps(pj["style_json"], ensure_ascii=False), pid))
-    else:
-        cur.execute("INSERT INTO project(title, idea, content_profile, style_json, created_at) VALUES(?,?,?,?,?)",
-                    (pj["title"], pj["idea"], pj["content_profile"],
-                     json.dumps(pj["style_json"], ensure_ascii=False),
-                     datetime.now(timezone.utc).isoformat(timespec="seconds")))
-        pid = cur.lastrowid
-
-    char_ids = {}
-    for ch in chars:
-        cur.execute("SELECT id FROM character_profile WHERE project_id=? AND code=?", (pid, ch["code"]))
-        r = cur.fetchone()
-        payload = (json.dumps(ch.get("identity_json") or {}, ensure_ascii=False),
-                   json.dumps(ch.get("outfit_json") or {}, ensure_ascii=False))
-        if r:
-            char_ids[ch["code"]] = r[0]
-            cur.execute("UPDATE character_profile SET identity_json=?, outfit_json=? WHERE id=?", payload + (r[0],))
-        else:
-            cur.execute("INSERT INTO character_profile(project_id, code, identity_json, outfit_json) VALUES(?,?,?,?)",
-                        (pid, ch["code"], payload[0], payload[1]))
-            char_ids[ch["code"]] = cur.lastrowid
-    if "shots" not in plan:   # characters-only roster: no act/shot/prompt to build
-        con.commit()
-        print("project id=%s characters=%s" % (pid, char_ids))
-        print("roster mode: %d character_profile rows upserted, no shots written" % len(chars))
-        con.close()
-        return 0
-
     char_name = {ch["code"]: ch.get("name", ch["code"]) for ch in chars}
     attr_names = {ch["code"]: [parse_ref(r)[0] for r in (ch.get("identity_json") or {}).get("attributes", [])]
                   for ch in chars}
+
     def identity_line(ch):
-        """identity_line, nhung character/copyright tags tu identity_json luon co mat
-        (chen ngay sau 1girl/1boy de giu danbooru count line o dau)."""
         line = ch.get("identity_line", "")
         ident = ch.get("identity_json") or {}
         extra = [parse_ref(r)[0] for r in ident.get("identity_tags", [])] + \
@@ -225,7 +225,6 @@ def main():
     gender = {ch["code"]: ch.get("gender", "girl") for ch in chars}
 
     def tag_text(name):
-        """Anima tag syntax: lowercase, spaces instead of underscores; score_* keeps its underscore."""
         name = name.strip()
         return name if name.startswith("score_") else name.replace("_", " ")
 
@@ -233,10 +232,9 @@ def main():
         return ", ".join(tag_text(n) for n in names if n)
 
     def cast_line(codes, explicit_counts=False):
-        """danbooru count line for a multi-participant shot; 1girl/1boy live in identity_line."""
         girls = sum(1 for c in codes if gender.get(c, "girl") == "girl")
         boys = len(codes) - girls
-        if explicit_counts:                   # the plan carries its own boy count (4boys/5boys/...)
+        if explicit_counts:
             return "%dgirl%s" % (girls, "s" if girls > 1 else "")
         if boys == 0:
             return "%dgirls, yuri" % girls
@@ -245,27 +243,28 @@ def main():
         if girls > 1:
             return "%dgirls, %dboys" % (girls, boys)
         if girls == 1 and boys >= 3:
-            return "1girl, multiple boys"      # Anima tag syntax: spaces, not underscores
+            return "1girl, multiple boys"
         if boys == 1:
             return "1girl, 1boy"
         return "1girl, %dboys" % boys
 
-    ac = plan["act"]
-    cur.execute("SELECT id FROM act WHERE project_id=? AND act_no=? AND revision=?",
-                (pid, ac["act_no"], ac.get("revision", 1)))
-    r = cur.fetchone()
-    if r:
-        aid = r[0]
-        cur.execute("UPDATE act SET title=?, outline=?, status=? WHERE id=?",
-                    (ac["title"], ac["outline"], ac["status"], aid))
-    else:
-        cur.execute("INSERT INTO act(project_id, act_no, title, outline, revision, status) VALUES(?,?,?,?,?,?)",
-                    (pid, ac["act_no"], ac["title"], ac["outline"], ac.get("revision", 1), ac["status"]))
-        aid = cur.lastrowid
+    def scene_for(shot):
+        scene = shot.get("scene") or plan.get("scene") or {}
+        if not isinstance(scene, dict):
+            scene = {}
+        render = shot.get("render_style") or plan.get("render_style") or {}
+        if not isinstance(render, dict):
+            render = {}
+        style_bg = (plan.get("style_json") or {}).get("background")
+        line = (render.get("background_style") or shot.get("background_line")
+                or scene.get("background_line") or plan.get("background_line")
+                or style_bg or "plain background")
+        out = dict(scene)
+        out.setdefault("location", scene.get("location") or style_bg or line)
+        out.setdefault("tags", [x.strip() for x in re.split(r"[,;]", line) if x.strip()])
+        return out, line
 
-    ## UPSERT shots below; do not delete historical generation rows
-
-    multi = any(len(p["participants"]) > 1 for _, p in parsed)
+    built = []
     lines, pose_hits, pruned_total = [], 0, 0
     for shot, p in parsed:
         pose_cid = None
@@ -322,11 +321,13 @@ def main():
         action_names = {n for n, _ in p["action"]}
         outfit_tokens = [n for n, tid in p["outfit"]
                          if n not in ident_tokens and n not in action_names and tid not in redundant]
+        body_tokens = [n for n, tid in p["body_state"]
+                       if n not in ident_tokens and n not in action_names and tid not in redundant]
+
         def nl_block():
-            """Two natural-language sentences; the model is trained on tags + captions + mixes."""
             who = char_name.get(p["participants"][0], p["participants"][0])
             attrs = [tag_text(n) for n in attr_names.get(p["participants"][0], [])][:4]
-            state_names = [n for n, _ in p["outfit"]] + [n for n, _ in p["cast"]]
+            state_names = [n for n, _ in p["outfit"]] + [n for n, _ in p["body_state"]] + [n for n, _ in p["cast"]]
             state = [tag_text(n) for n in dict.fromkeys(state_names)
                      if re.search(r"piercing|chain|gag|pregnan|belly|welts|bruise|mark", n)][:3]
             men = len(p["participants"]) - 1
@@ -344,17 +345,20 @@ def main():
                 join_tags([n for n, _ in p["camera"]]) or "a full shot")
             return [first, second]
 
+        scene, background_line = scene_for(shot)
         parts += [clean("cast"),
                   take(outfit_tokens),
+                  take(body_tokens),
+                  clean("props"),
                   clean("action"),
                   clean("expression"),
                   clean("pose"),
                   clean("motion"),
                   clean("camera"),
-                  plan.get("background_line", "white background, simple background"),
+                  background_line.replace("_", " "),
                   p["caption"]]
         prompt = ", ".join(x for x in parts if x)
-        # Keep actor-specific action/pose/gaze in prose so 1girl/1boy is not flattened.
+
         role_clauses = []
         for c in p["participants"]:
             scoped = [n.replace("_", " ") for n, _ in p["character_actions"].get(c, [])]
@@ -380,58 +384,137 @@ def main():
         spec = {
             "phase": p["phase"],
             "participants": [{"code": c, "role": "participant",
-                               "expression": [{"name": n, "tagId": t} for n, t in p.get("expressions", {}).get(c, p["expression"])],
-                               "action": [{"name": n, "tagId": t} for n, t in p["character_actions"].get(c, [])],
-                               "pose": [{"name": n, "tagId": t} for n, t in p["character_poses"].get(c, [])],
+                               "expression": as_refs(p.get("expressions", {}).get(c, p["expression"])),
+                               "action": as_refs(p["character_actions"].get(c, [])),
+                               "pose": as_refs(p["character_poses"].get(c, [])),
                                "gazeTarget": p["character_gaze"].get(c),
                                "target": p["character_targets"].get(c)}
                               for c in p["participants"]],
-            "cast": [{"name": n, "tagId": t} for n, t in p["cast"]],
-            "outfit": [{"name": n, "tagId": t} for n, t in p["outfit"]],
-            "action": [{"name": n, "tagId": t} for n, t in p["action"]],
-            "expression": [{"name": n, "tagId": t} for n, t in p["expression"]],
-            "pose": [{"name": n, "tagId": t} for n, t in p["pose"]],
-            "motion": [{"name": n, "tagId": t} for n, t in p["motion"]],
-            "camera": [{"name": n, "tagId": t} for n, t in p["camera"]],
-            "background": "white",
+            "cast": as_refs(p["cast"]),
+            "outfit": as_refs(p["outfit"]),
+            "body_state": as_refs(p["body_state"]),
+            "props": as_refs(p["props"]),
+            "action": as_refs(p["action"]),
+            "expression": as_refs(p["expression"]),
+            "pose": as_refs(p["pose"]),
+            "motion": as_refs(p["motion"]),
+            "camera": as_refs(p["camera"]),
+            "background": background_line,
+            "scene": scene,
+            "render_style": {"background_style": background_line},
             "caption": p["caption"],
             "beat": p["beat"],
             "purpose": (shot.get("sequence") or {}).get("purpose", shot.get("purpose", "")),
             "sequence": shot.get("sequence") or {},
-            "character_actions": {c: [{"name": n, "tagId": t} for n, t in refs]
-                                  for c, refs in p["character_actions"].items()},
-            "character_poses": {c: [{"name": n, "tagId": t} for n, t in refs]
-                                for c, refs in p["character_poses"].items()},
+            "character_actions": {c: as_refs(refs) for c, refs in p["character_actions"].items()},
+            "character_poses": {c: as_refs(refs) for c, refs in p["character_poses"].items()},
             "signature": signature,
             "prompt": prompt,
             "flags": flags,
-            "contentProfile": "NSFW",
+            "contentProfile": str(pj.get("content_profile", "nsfw")).upper(),
         }
+        built.append({"shot": shot, "p": p, "pose_cid": pose_cid, "spec": spec, "prompt": prompt})
 
-        story_db.upsert_shot(cur, aid, shot["n"], char_ids[p["participants"][0]],
-                             pose_cid, signature, spec, "nsfw")
-        lines.append(prompt)
+    blocked_ids = {r[0] for r in cur.execute("SELECT tag_id FROM tag_content_label WHERE scope='blocked'")}
+    phase_contract = (plan.get("act") or {}).get("phase_contract")
+    semantic = story_logic.validate_specs(
+        [(item["shot"]["n"], item["spec"]) for item in built],
+        phase_contract=phase_contract, blocked_ids=blocked_ids)
+    semantic_errors = [i for i in semantic if i.level == "ERROR"]
+    for issue in semantic:
+        print("%s shot %s %s: %s" % (issue.level, issue.shot, issue.code, issue.detail),
+              file=(sys.stderr if issue.level == "ERROR" else sys.stdout))
+    if semantic_errors:
+        print("aborting before write: %d semantic P0 issue(s)" % len(semantic_errors), file=sys.stderr)
+        return 1
+    if args.strict and semantic:
+        print("strict: semantic warnings block seed; rerun without --strict", file=sys.stderr)
+        return 1
 
-    story_db.prune_missing_shots(cur, aid, [shot["n"] for shot, _ in parsed])
-    out = pathlib.Path(plan["prompt_file"])
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text("\n\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    if args.dry_run:
+        print("dry-run: project=%r act_no=%s revision=%s shots=%d (no writes)"
+              % (pj["title"], plan["act"]["act_no"], plan["act"].get("revision", 1), len(built)))
+        con.close()
+        return 0
 
-    negative = plan.get("negative_line", DEFAULT_NEGATIVE)
-    neg_out = out.with_name(out.stem + ".neg.txt")
-    neg_out.write_text(negative + "\n", encoding="utf-8", newline="\n")
+    con.isolation_level = None
+    try:
+        con.execute("BEGIN IMMEDIATE")
+        cur.execute("SELECT id FROM project WHERE title=?", (pj["title"],))
+        r = cur.fetchone()
+        if r:
+            pid = r[0]
+            if plan.get("shots"):
+                cur.execute("UPDATE project SET idea=?, content_profile=?, style_json=? WHERE id=?",
+                            (pj["idea"], pj["content_profile"], json.dumps(pj["style_json"], ensure_ascii=False), pid))
+        else:
+            cur.execute("INSERT INTO project(title, idea, content_profile, style_json, created_at) VALUES(?,?,?,?,?)",
+                        (pj["title"], pj["idea"], pj["content_profile"],
+                         json.dumps(pj["style_json"], ensure_ascii=False),
+                         datetime.now(timezone.utc).isoformat(timespec="seconds")))
+            pid = cur.lastrowid
 
-    con.commit()
+        char_ids = {}
+        for ch in chars:
+            cur.execute("SELECT id FROM character_profile WHERE project_id=? AND code=?", (pid, ch["code"]))
+            r = cur.fetchone()
+            payload = (json.dumps(ch.get("identity_json") or {}, ensure_ascii=False),
+                       json.dumps(ch.get("outfit_json") or {}, ensure_ascii=False))
+            if r:
+                char_ids[ch["code"]] = r[0]
+                cur.execute("UPDATE character_profile SET identity_json=?, outfit_json=? WHERE id=?", payload + (r[0],))
+            else:
+                cur.execute("INSERT INTO character_profile(project_id, code, identity_json, outfit_json) VALUES(?,?,?,?)",
+                            (pid, ch["code"], payload[0], payload[1]))
+                char_ids[ch["code"]] = cur.lastrowid
+
+        if "shots" not in plan:
+            con.commit()
+            print("project id=%s characters=%s" % (pid, char_ids))
+            print("roster mode: %d character_profile rows upserted, no shots written" % len(chars))
+            return 0
+
+        ac = plan["act"]
+        cur.execute("SELECT id FROM act WHERE project_id=? AND act_no=? AND revision=?",
+                    (pid, ac["act_no"], ac.get("revision", 1)))
+        r = cur.fetchone()
+        if r:
+            aid = r[0]
+            cur.execute("UPDATE act SET title=?, outline=?, status=? WHERE id=?",
+                        (ac["title"], ac["outline"], ac["status"], aid))
+        else:
+            cur.execute("INSERT INTO act(project_id, act_no, title, outline, revision, status) VALUES(?,?,?,?,?,?)",
+                        (pid, ac["act_no"], ac["title"], ac["outline"], ac.get("revision", 1), ac["status"]))
+            aid = cur.lastrowid
+
+        multi = False
+        for item in built:
+            shot, p, spec = item["shot"], item["p"], item["spec"]
+            multi = multi or len(p["participants"]) > 1
+            story_db.upsert_shot(cur, aid, shot["n"], char_ids[p["participants"][0]],
+                                 item["pose_cid"], spec["signature"], spec, "nsfw")
+            lines.append(item["prompt"])
+
+        story_db.prune_missing_shots(cur, aid, [item["shot"]["n"] for item in built])
+        out = pathlib.Path(plan["prompt_file"])
+        atomic_write(out, "\n\n".join(lines) + "\n")
+        negative = plan.get("negative_line", DEFAULT_NEGATIVE)
+        atomic_write(out.with_name(out.stem + ".neg.txt"), negative + "\n")
+        con.commit()
+    except BaseException:
+        con.rollback()
+        raise
+    finally:
+        con.close()
+
     print("project id=%s act id=%s shots=%d characters=%s" % (pid, aid, len(lines), char_ids))
     print("prompt file: %s (%d prompts)" % (out, len(lines)))
-    print("negative file: %s" % neg_out)
+    print("negative file: %s" % out.with_name(out.stem + ".neg.txt"))
     print("pose concept resolved: %d/%d" % (pose_hits, len(parsed)))
     print("implied-redundant tags pruned from prompts: %d" % pruned_total)
     if multi:
         print("SCHEMA_GAP: multi-character shots keep the whole cast in shot_spec_json.participants")
-    con.close()
     return 0
 
 if __name__ == "__main__":
     sys.exit(main())
-

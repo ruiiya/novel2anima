@@ -18,6 +18,7 @@ Usage: python etl/gen_kuoh_acts.py   then   python etl/seed_plan.py <each plan>
 import itertools, json, pathlib, random, sqlite3, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import story_logic
 import wardrobe   # bang mau + thang tu the nam trong catalog/db, xem etl/wardrobe.py
 
 DB = "db/novel_anima.db"
@@ -539,8 +540,11 @@ def build(act, path, plan):
     used, shots = set(), []
 
     def add(phase, outfit, action, expr, cam, caption, pose=None, motion=None):
+        refs = wear(outfit)
+        body = [r for r in refs if r.rpartition(":")[0] in story_logic.BODY_STATE_IN_OUTFIT]
         shots.append(dict(n=len(shots) + 1, phase=phase, participants=[code],
-                          outfit=wear(outfit), action=[T(a) for a in action],
+                          outfit=[r for r in refs if r not in body], body_state=body,
+                          action=[T(a) for a in action],
                           expression=[T(e) for e in expr],
                           pose=[T(pose or pose_for(action, st["pose"]))],
                           motion=[T(m) for m in (motion or [])],

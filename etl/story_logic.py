@@ -7,6 +7,7 @@ Python 3.9+ stdlib only.
 from dataclasses import dataclass, asdict
 from typing import Optional
 import json
+import re
 
 STANCE = {
     'standing': 'standing', 'standing_up': 'standing', 'sitting': 'sitting',
@@ -26,6 +27,47 @@ CUTS = {'time_cut', 'scene_cut', 'montage', 'offscreen_transition'}
 PURPOSES = {'setup', 'action', 'interaction', 'reaction', 'result', 'transition',
             'establishing', 'hold', 'reaction_hold', 'quiet_pause', 'montage'}
 NO_ACTION_OK = {'establishing', 'hold', 'reaction_hold', 'quiet_pause', 'montage', 'setup'}
+
+# Semantic sets used by the compiler gate. These are intentionally small and
+# deterministic; catalog role rows are noisy and must not be the only source.
+NUDE_STATE = {'nude', 'completely_nude', 'topless', 'bottomless'}
+FULL_NUDITY = {'nude', 'completely_nude'}
+BODY_STATE_IN_OUTFIT = NUDE_STATE | {
+    'nipples', 'pussy', 'pubic_hair', 'pussy_juice', 'pussy_juice_drip',
+    'pussy_juice_trail', 'pussy_juice_stain', 'pussy_juice_puddle',
+    'wet', 'afterglow',
+}
+CLOTHING_HINTS = {
+    'school_uniform', 'idol_clothes', 'maid', 'maid_outfit',
+    'apron', 'white_apron', 'black_dress', 'white_shirt', 'black_blazer',
+    'black_skirt', 'black_pleated_skirt', 'black_thighhighs', 'thighhighs',
+    'bikini', 'white_bikini', 'micro_bikini', 'string_bikini', 'side-tie_bikini',
+    'shirt', 'skirt', 'dress', 'blazer', 'gym_uniform', 'buruma', 'blue_buruma',
+    'white_buruma', 'purple_buruma', 'black_buruma', 'pink_buruma', 'panties',
+    'bra', 'loafers', 'sneakers', 'black_boots', 'boots',
+}
+FLOOR_ACTIONS = {
+    'sitting', 'sitting_on_ground', 'sitting_on_desk', 'kneeling', 'crouching',
+    'lying', 'lying_on_back', 'missionary', 'prone_bone', 'mating_press',
+    'cowgirl_position', 'reverse_cowgirl_position', 'upright_straddle',
+    'doggystyle', 'spooning', 'full_nelson', 'lotus_position', 'fellatio',
+    'deepthroat', 'cunnilingus', 'tribadism', 'sex', 'vaginal',
+}
+NONSTANDING_ACTIONS = FLOOR_ACTIONS
+SENSITIVE_ACTIONS = {
+    'fingering', 'masturbation', 'spread_pussy', 'presenting', 'presenting_pussy',
+    'clitoral_stimulation', 'object_insertion', 'vibrator', 'dildo', 'sex',
+    'vaginal', 'missionary', 'cowgirl_position', 'reverse_cowgirl_position',
+    'prone_bone', 'mating_press', 'standing_sex', 'fellatio', 'deepthroat',
+    'cunnilingus',
+}
+LOOKING_ACTIONS = {'looking_around', 'looking_back', 'looking_at_viewer', 'looking_down',
+                   'looking_up', 'looking_away', 'looking_to_the_side'}
+PROP_WORDS = {'door', 'earpiece', 'gun', 'rifle', 'knife', 'microphone', 'baton',
+              'vibrator', 'dildo', 'rope', 'leash'}
+FILLER_WORDS = {'slowly', 'harder'}
+SPATIAL_CONFLICT_PAIRS = {frozenset(('stage', 'backstage')),
+                          frozenset(('indoors', 'outdoors'))}
 
 @dataclass(frozen=True)
 class Issue:
@@ -203,18 +245,209 @@ def validate(shots, cast=None):
     return issues
 
 
-def validate_plan(plan):
-    cast = [c['code'] for c in plan.get('characters', [plan['character']] if plan.get('character') else [])]
-    return validate(plan.get('shots') or [], cast)
+def _names(shot, group):
+    return set(_refs(shot.get(group) or []))
 
 
-def validate_specs(specs):
+def _tag_ids(shot):
+    out = set()
+    for group in ('identity', 'outfit', 'body_state', 'action', 'expression',
+                  'pose', 'motion', 'camera', 'cast', 'props'):
+        for item in shot.get(group) or []:
+            if isinstance(item, dict) and item.get('tagId') is not None:
+                out.add(item['tagId'])
+    return out
+
+
+def _phase_row(contract, shot_no):
+    for row in contract or []:
+        try:
+            if int(row.get('start', 0)) <= shot_no <= int(row.get('end', 0)):
+                return row
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def validate_shot_semantics(shots, cast=None, phase_contract=None, blocked_ids=None):
+    """Cross-field checks that tag-level QA cannot see.
+
+    The function is deliberately conservative and catalog-independent: callers
+    pass the same shot_spec_json shape used by seed_plan and check_prompts.
+    """
+    blocked_ids = set(blocked_ids or ())
+    issues = []
+    timeline = sorted(shots, key=lambda s: int(s.get('n', s.get('shot_no', 0))))
+    for shot in timeline:
+        n = int(shot.get('n', shot.get('shot_no', 0)))
+        outfit = _names(shot, 'outfit')
+        body = _names(shot, 'body_state')
+        actions = _names(shot, 'action')
+        expression = _names(shot, 'expression')
+        pose = _names(shot, 'pose')
+        props = _names(shot, 'props')
+        all_names = set()
+        for group in ('identity', 'outfit', 'body_state', 'action', 'expression',
+                      'pose', 'motion', 'camera', 'cast', 'props'):
+            all_names |= _names(shot, group)
+        gaze = set((shot.get('character_gaze') or {}).values())
+        gaze |= set(shot.get('gaze') or [])
+
+        if blocked_ids and (_tag_ids(shot) & blocked_ids):
+            issues.append(Issue('ERROR', 'CONTENT_SAFETY_BLOCK', n,
+                                'blocked content tag present in shot'))
+
+        invalid_outfit = outfit & BODY_STATE_IN_OUTFIT
+        if invalid_outfit:
+            issues.append(Issue('ERROR', 'TAG_ROLE_INVALID', n,
+                                'body/anatomy tags in outfit: %s' % ', '.join(sorted(invalid_outfit))))
+
+        nude = (outfit | body) & NUDE_STATE
+        if (outfit | body) & FULL_NUDITY and (outfit & CLOTHING_HINTS):
+            issues.append(Issue('ERROR', 'WARDROBE_STATE_CONFLICT', n,
+                                'nude state with clothing: %s' % ', '.join(sorted(nude | (outfit & CLOTHING_HINTS)))))
+
+        stances = {STANCE[x] for x in pose if x in STANCE}
+        if len(stances) > 1:
+            issues.append(Issue('ERROR', 'POSE_CONFLICT', n,
+                                'multiple stances in one shot: %s' % ', '.join(sorted(stances))))
+        if stances == {'standing'} and actions & NONSTANDING_ACTIONS:
+            issues.append(Issue('ERROR', 'POSE_ACTION_CONFLICT', n,
+                                'standing pose with action requiring another posture: %s'
+                                % ', '.join(sorted(actions & NONSTANDING_ACTIONS))))
+
+        if 'closed_eyes' in expression and (actions & LOOKING_ACTIONS or gaze):
+            issues.append(Issue('ERROR', 'EYE_GAZE_CONFLICT', n,
+                                'closed_eyes with a looking action/gaze target'))
+
+        background = str(shot.get('background') or '')
+        scene_tags = set()
+        scene = shot.get('scene') or {}
+        if isinstance(scene, dict):
+            scene_tags |= set(scene.get('tags') or [])
+        scene_tags |= {x.strip() for x in re.split(r'[,;]', background) if x.strip()}
+        for pair in SPATIAL_CONFLICT_PAIRS:
+            if pair <= scene_tags:
+                issues.append(Issue('WARN', 'SPATIAL_CONFLICT', n,
+                                    'incompatible scene areas: %s' % ' + '.join(sorted(pair))))
+
+        caption = str(shot.get('caption') or '').lower()
+        if any(re.search(r'\b%s\b' % re.escape(word), caption) for word in FILLER_WORDS):
+            issues.append(Issue('WARN', 'CAPTION_TEMPLATE_FILLER', n,
+                                'caption contains template adverb'))
+        if 'during the ' in caption:
+            issues.append(Issue('WARN', 'CAPTION_META_LEAK', n,
+                                'caption contains phase/meta text'))
+        for prop in sorted(PROP_WORDS):
+            implied = any(prop in name for name in all_names)
+            if re.search(r'\b%s\b' % re.escape(prop), caption) and not (prop in props or implied):
+                issues.append(Issue('ERROR', 'PROP_NOT_BOUND', n,
+                                    'caption mentions unbound prop: %s' % prop))
+
+        phase = _phase_row(phase_contract, n)
+        if phase:
+            phase_id = phase.get('id')
+            if phase_id and shot.get('phase') and phase_id != shot.get('phase'):
+                issues.append(Issue('WARN', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
+                                    'phase=%s but contract says %s' % (shot.get('phase'), phase_id)))
+            if phase.get('allow_sensitive') is False and actions & SENSITIVE_ACTIONS:
+                issues.append(Issue('ERROR', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
+                                    'sensitive action outside allowed phase: %s'
+                                    % ', '.join(sorted(actions & SENSITIVE_ACTIONS))))
+            wardrobe = phase.get('wardrobe')
+            if wardrobe == 'dressed' and nude:
+                issues.append(Issue('ERROR', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
+                                    'nude state during dressed phase'))
+            if wardrobe == 'undress' and (outfit | body) & FULL_NUDITY:
+                issues.append(Issue('ERROR', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
+                                    'full nudity during undress phase'))
+            if wardrobe == 'nude' and outfit & CLOTHING_HINTS:
+                issues.append(Issue('ERROR', 'WARDROBE_STATE_CONFLICT', n,
+                                    'clothing remains in nude phase: %s'
+                                    % ', '.join(sorted(outfit & CLOTHING_HINTS))))
+    return issues
+
+
+def validate_act_level(shots):
+    """Act-level progression checks. Kept separate so synthetic unit tests can
+    call it without needing a catalog or a DB."""
+    issues = []
+    timeline = sorted(shots, key=lambda s: int(s.get('n', s.get('shot_no', 0))))
+    if len(timeline) < 5:
+        return issues
+    stances = []
+    action_sets = []
+    floor_actions = set()
+    for shot in timeline:
+        n = int(shot.get('n', shot.get('shot_no', 0)))
+        pose = _names(shot, 'pose')
+        actions = _names(shot, 'action')
+        local = {STANCE[x] for x in pose if x in STANCE}
+        if local:
+            stances.append(next(iter(local)) if len(local) == 1 else 'mixed')
+        action_sets.append(tuple(sorted(actions)))
+        if actions & NONSTANDING_ACTIONS:
+            floor_actions.add(n)
+    detected = [x for x in stances if x != 'mixed']
+    if (detected and len(set(detected)) == 1 and detected[0] == 'standing'
+            and floor_actions and len(detected) >= max(3, len(timeline) // 2)):
+        issues.append(Issue('ERROR', 'POSE_STUCK_DEFAULT', timeline[0].get('n', 1),
+                            'act uses floor/sex actions but every pose is standing'))
+    unique = len(set(action_sets))
+    if len(action_sets) >= 10 and unique < max(6, int(len(action_sets) * 0.5)):
+        issues.append(Issue('WARN', 'LOW_EVENT_PROGRESS', timeline[0].get('n', 1),
+                            '%d unique action sets in %d shots' % (unique, len(action_sets))))
+    return issues
+
+
+def validate_batch_plans(plans):
+    """Flag near-identical action sequences between plans in one batch."""
+    issues = []
+    entries = sorted(plans.items() if isinstance(plans, dict) else enumerate(plans))
+    for i, (name_a, plan_a) in enumerate(entries):
+        shots_a = plan_a.get('shots') or []
+        for name_b, plan_b in entries[i + 1:]:
+            shots_b = plan_b.get('shots') or []
+            if not shots_a or not shots_b:
+                continue
+            same = sum(tuple(sorted(_refs(a.get('action')))) == tuple(sorted(_refs(b.get('action'))))
+                       for a, b in zip(shots_a, shots_b))
+            ratio = same / float(min(len(shots_a), len(shots_b)))
+            if same >= 10 and ratio >= 0.30:
+                issues.append(Issue('WARN', 'BATCH_TEMPLATE_CLONE', 0,
+                                    '%s and %s share %d/%d action shots'
+                                    % (name_a, name_b, same, min(len(shots_a), len(shots_b)))))
+    return issues
+
+
+def validate_plan(plan, phase_contract=None):
+    chars = plan.get('characters', [plan['character']] if plan.get('character') else [])
+    cast = [c['code'] for c in chars]
+    shots = plan.get('shots') or []
+    pc = phase_contract if phase_contract is not None else (plan.get('act') or {}).get('phase_contract')
+    issues = validate(shots, cast)
+    issues += validate_shot_semantics(shots, cast=cast, phase_contract=pc)
+    issues += validate_act_level(shots)
+    content = str((plan.get('project') or {}).get('content_profile', '')).lower()
+    if content in ('nsfw', 'explicit'):
+        missing = [c.get('code') for c in chars
+                   if c.get('adult') is not True
+                   and (c.get('identity_json') or {}).get('adult') is not True]
+        if missing:
+            issues.append(Issue('ERROR', 'CONTENT_SAFETY_BLOCK', 0,
+                                'NSFW plan requires explicit adult=true: %s' % ', '.join(map(str, missing))))
+    return issues
+
+
+def validate_specs(specs, phase_contract=None, blocked_ids=None):
     shots = []
     for n, spec in specs:
         d = dict(spec)
         d['n'] = n
         shots.append(d)
-    return validate(shots)
+    return (validate(shots)
+            + validate_shot_semantics(shots, phase_contract=phase_contract, blocked_ids=blocked_ids)
+            + validate_act_level(shots))
 
 
 def report(issues):
