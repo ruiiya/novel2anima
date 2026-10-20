@@ -28,6 +28,25 @@ def prompt_body(text, caption):
         return text.split(caption, 1)[0].rstrip(" ,")
     return text.rstrip(" ,")
 
+def caption_prompt_issues(caption, words, codes, gender):
+    """Caption says something the tag zone/cast cannot show."""
+    out = []
+    if re.search(r'\bopen (?:blouse|shirt)\b', caption, re.I):
+        if not ({'open clothes', 'open shirt', 'open blouse', 'unbuttoned'} & words):
+            out.append('CAPTION_OPEN_CLOTHES_UNBOUND: caption says open blouse/shirt')
+    if re.search(r'\b(?:crowd|onlookers)\b', caption, re.I) and \
+            not ({'crowd', 'onlookers'} & words):
+        out.append('CAPTION_CROWD_UNBOUND: caption mentions a crowd')
+    if len(codes) > 1:
+        others = codes[1:]
+        if re.search(r'\b(?:a|another|the) (?:woman|girl)\b', caption, re.I) and \
+                all(gender.get(c, 'girl') != 'girl' for c in others):
+            out.append('CAPTION_CAST_GENDER: caption says woman but secondary cast is male')
+        if re.search(r'\b(?:a|another|the) (?:man|boy)\b', caption, re.I) and \
+                all(gender.get(c, 'girl') == 'girl' for c in others):
+            out.append('CAPTION_CAST_GENDER: caption says man but secondary cast is female')
+    return out
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--act", type=int)
@@ -188,6 +207,8 @@ def main(argv=None):
                 want = {"%dboys" % boys} if boys else set()
             if want and not (want & words):
                 warns.append((shot_no, phase, "thieu dong so nguoi (%s)" % "/".join(sorted(want))))
+            for msg in caption_prompt_issues(caption, words, codes, gender):
+                warns.append((shot_no, phase, msg))
             if not spec.get("action") and spec.get("purpose") not in story_logic.NO_ACTION_OK:
                 errs.append((shot_no, phase, "ACTION_UNRESOLVED"))
             if not spec.get("expression"):

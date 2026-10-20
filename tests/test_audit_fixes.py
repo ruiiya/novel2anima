@@ -205,5 +205,29 @@ class PromptHygiene(unittest.TestCase):
                          ["office"])
 
 
+class CaptionChecks(unittest.TestCase):
+    def test_repeated_caption_warns(self):
+        shots = [{"n": i, "participants": ["GIRL"], "outfit": ["shirt"],
+                  "caption": "She looks back" if i in (2, 5) else "Shot %d" % i}
+                 for i in range(1, 6)]
+        self.assertIn("REPEATED_CAPTION", [i.code for i in sl.validate_act_level(shots)])
+
+    def test_undress_not_reflected_warns(self):
+        shots = [{"n": i, "participants": ["GIRL"], "outfit": ["shirt"],
+                  "caption": "She pulls the top off" if i == 3 else "Shot %d" % i}
+                 for i in range(1, 6)]
+        reached = [(i.code, i.shot) for i in sl.validate_act_level(shots)]
+        self.assertIn(("UNDRESS_NOT_REFLECTED", 3), reached)
+
+    def test_caption_prompt_mismatches(self):
+        self.assertTrue(check_prompts.caption_prompt_issues(
+            "through the open blouse", {"white blouse"}, ["GIRL"], {"GIRL": "girl"}))
+        self.assertTrue(check_prompts.caption_prompt_issues(
+            "The crowd watches", {"1girl", "solo"}, ["GIRL"], {"GIRL": "girl"}))
+        self.assertTrue(check_prompts.caption_prompt_issues(
+            "A woman cups her breast", {"1girl", "1boy"}, ["GIRL", "STRANGER_M"],
+            {"GIRL": "girl", "STRANGER_M": "boy"}))
+
+
 if __name__ == "__main__":
     unittest.main()

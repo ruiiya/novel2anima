@@ -6,6 +6,7 @@ Python 3.9+ stdlib only.
 """
 from dataclasses import dataclass, asdict
 from typing import Optional
+import collections
 import json
 import re
 
@@ -439,6 +440,27 @@ def validate_act_level(shots):
     timeline = sorted(shots, key=lambda s: int(s.get('n', s.get('shot_no', 0))))
     if len(timeline) < 5:
         return issues
+    caps = collections.defaultdict(list)
+    for shot in timeline:
+        cap = str(shot.get('caption') or '').strip().lower()
+        if cap:
+            caps[cap].append(int(shot.get('n', shot.get('shot_no', 0))))
+    for cap, nums in caps.items():
+        if len(nums) > 1:
+            issues.append(Issue('WARN', 'REPEATED_CAPTION', nums[0],
+                                'caption repeated on shots %s: %s'
+                                % (nums[:8], cap[:60])))
+    prev = None
+    for shot in timeline:
+        n = int(shot.get('n', shot.get('shot_no', 0)))
+        cap = str(shot.get('caption') or '').lower()
+        outfit = set(_names(shot, 'outfit'))
+        if prev and outfit == prev and re.search(
+                r'\b(?:pulls?|pulled|takes?|took|slips?|removes?|strips?|unties?)\b'
+                r'.{0,20}\b(?:off|down)\b', cap):
+            issues.append(Issue('WARN', 'UNDRESS_NOT_REFLECTED', n,
+                                'caption removes clothing but outfit is unchanged'))
+        prev = outfit
     stances = []
     action_sets = []
     floor_actions = set()
