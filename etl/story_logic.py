@@ -45,6 +45,10 @@ CLOTHING_HINTS = {
     'white_buruma', 'purple_buruma', 'black_buruma', 'pink_buruma', 'panties',
     'bra', 'loafers', 'sneakers', 'black_boots', 'boots',
 }
+# Footwear, collars and event wristbands are accessories, not a second outfit.
+# A nude phase may keep them on; a blazer/shirt may not.
+NUDE_ACCESSORIES = {'black_boots', 'boots', 'barefoot', 'black_collar',
+                    'orange_wristband', 'white_wristband', 'black_leash'}
 FLOOR_ACTIONS = {
     'sitting', 'sitting_on_ground', 'sitting_on_desk', 'kneeling', 'crouching',
     'lying', 'lying_on_back', 'missionary', 'prone_bone', 'mating_press',
@@ -150,10 +154,14 @@ def validate(shots, cast=None):
             issues.append(Issue('ERROR', 'UNKNOWN_PARTICIPANT', n, str(sorted(set(codes) - cast))))
         if len(set(codes)) != len(codes):
             issues.append(Issue('ERROR', 'DUPLICATE_PARTICIPANT', n, str(codes)))
-        if not codes or len(codes) > 2:
+        if not codes:
             level = 'ERROR' if seq else 'WARN'
             issues.append(Issue(level, 'CAST_SIZE_UNSUPPORTED', n,
-                                'Quality rules are optimized for solo/duo; other casts require manual review'))
+                                'Shot has no participants'))
+        elif len(codes) > 4:
+            level = 'ERROR' if seq else 'WARN'
+            issues.append(Issue(level, 'CAST_SIZE_UNSUPPORTED', n,
+                                'Quality rules support up to four participants'))
         if actor and actor not in codes:
             issues.append(Issue('ERROR', 'ACTOR_MISMATCH', n, f'Actor {actor!r} not present'))
         if target and target not in (cast or set(codes)):
@@ -306,14 +314,40 @@ def validate_shot_semantics(shots, cast=None, phase_contract=None, blocked_ids=N
             issues.append(Issue('ERROR', 'WARDROBE_STATE_CONFLICT', n,
                                 'nude state with clothing: %s' % ', '.join(sorted(nude | (outfit & CLOTHING_HINTS)))))
 
-        stances = {STANCE[x] for x in pose if x in STANCE}
-        if len(stances) > 1:
-            issues.append(Issue('ERROR', 'POSE_CONFLICT', n,
-                                'multiple stances in one shot: %s' % ', '.join(sorted(stances))))
-        if stances == {'standing'} and actions & NONSTANDING_ACTIONS:
-            issues.append(Issue('ERROR', 'POSE_ACTION_CONFLICT', n,
-                                'standing pose with action requiring another posture: %s'
-                                % ', '.join(sorted(actions & NONSTANDING_ACTIONS))))
+        # Check posture per character. Pooling Hoshino's kneeling with a fan's
+        # standing must not look like one body in two poses, and a fan's floor
+        # action must not conflict with Hoshino's standing pose.
+        role_states = []
+        ca = shot.get('character_actions') or {}
+        cp = shot.get('character_poses') or {}
+        for participant in (shot.get('participants') or []):
+            if not isinstance(participant, dict):
+                continue
+            code = participant.get('code')
+            role_actions = set(_refs(ca.get(code))) | set(_refs(participant.get('action')))
+            role_poses = set(_refs(cp.get(code))) | set(_refs(participant.get('pose')))
+            if role_actions or role_poses:
+                role_states.append((code, role_poses, role_actions))
+        if role_states:
+            for code, role_poses, role_actions in role_states:
+                stances = {STANCE[x] for x in role_poses if x in STANCE}
+                if len(stances) > 1:
+                    issues.append(Issue('ERROR', 'POSE_CONFLICT', n,
+                                        '%s has multiple stances: %s' %
+                                        (code, ', '.join(sorted(stances)))))
+                if stances == {'standing'} and role_actions & NONSTANDING_ACTIONS:
+                    issues.append(Issue('ERROR', 'POSE_ACTION_CONFLICT', n,
+                                        '%s: standing pose with action requiring another posture: %s'
+                                        % (code, ', '.join(sorted(role_actions & NONSTANDING_ACTIONS)))))
+        else:
+            stances = {STANCE[x] for x in pose if x in STANCE}
+            if len(stances) > 1:
+                issues.append(Issue('ERROR', 'POSE_CONFLICT', n,
+                                    'multiple stances in one shot: %s' % ', '.join(sorted(stances))))
+            if stances == {'standing'} and actions & NONSTANDING_ACTIONS:
+                issues.append(Issue('ERROR', 'POSE_ACTION_CONFLICT', n,
+                                    'standing pose with action requiring another posture: %s'
+                                    % ', '.join(sorted(actions & NONSTANDING_ACTIONS))))
 
         if 'closed_eyes' in expression and (actions & LOOKING_ACTIONS or gaze):
             issues.append(Issue('ERROR', 'EYE_GAZE_CONFLICT', n,
@@ -360,10 +394,10 @@ def validate_shot_semantics(shots, cast=None, phase_contract=None, blocked_ids=N
             if wardrobe == 'undress' and (outfit | body) & FULL_NUDITY:
                 issues.append(Issue('ERROR', 'PHASE_EVENT_OUT_OF_BOUNDS', n,
                                     'full nudity during undress phase'))
-            if wardrobe == 'nude' and outfit & CLOTHING_HINTS:
+            if wardrobe == 'nude' and (outfit & CLOTHING_HINTS) - NUDE_ACCESSORIES:
                 issues.append(Issue('ERROR', 'WARDROBE_STATE_CONFLICT', n,
                                     'clothing remains in nude phase: %s'
-                                    % ', '.join(sorted(outfit & CLOTHING_HINTS))))
+                                    % ', '.join(sorted((outfit & CLOTHING_HINTS) - NUDE_ACCESSORIES))))
     return issues
 
 
@@ -503,6 +537,115 @@ def validate_batch_plans(plans):
                 issues.append(Issue('WARN', 'BATCH_TEMPLATE_CLONE', 0,
                                     '%s and %s share %d/%d action shots'
                                     % (name_a, name_b, same, min(len(shots_a), len(shots_b)))))
+            # Pose-clone guard: a few shared distinctive pose sets are fine;
+            # heavy reuse across acts is a template smell. Bare single-tag
+            # stances (e.g. plain 'standing') are base postures, not signatures.
+            tuples_a = {tuple(sorted(_refs(a.get('pose')))) for a in shots_a if len(_refs(a.get('pose'))) >= 2}
+            tuples_b = {tuple(sorted(_refs(b.get('pose')))) for b in shots_b if len(_refs(b.get('pose'))) >= 2}
+            shared_poses = tuples_a & tuples_b
+            if len(shared_poses) > 4:
+                issues.append(Issue('WARN', 'BATCH_POSE_CLONE', 0,
+                                    '%s and %s share %d unique pose sets'
+                                    % (name_a, name_b, len(shared_poses))))
+    return issues
+
+
+EXPOSURE_LEVELS = {'L0', 'L1', 'L2'}
+# Direct exposure = clearly unobstructed; partial = slips/peeks only.
+DIRECT_EXPOSURE_TAGS = {'exposed_breasts', 'pussy'}
+PARTIAL_EXPOSURE_TAGS = {'nipple_slip', 'sideboob', 'underboob', 'pussy_peek'}
+# State tags that may only appear with full nudity plans; accepted never here.
+COVERED_STATE_TAGS = {'bottomless', 'topless'}
+# Benign body tags that do not count as exposure.
+SECURE_BODY_TAGS = {'cleavage', 'bare_shoulders', 'navel', 'covered_navel',
+                    'midriff', 'collarbone', 'stomach', 'shoulders'}
+EXPOSURE_TAG_LEVEL = {
+    'exposed_breasts': 'L2', 'pussy': 'L2',
+    'nipple_slip': 'L1', 'sideboob': 'L1', 'underboob': 'L1', 'pussy_peek': 'L1',
+}
+
+
+def validate_exposure_contract(shots, contract):
+    """Optional per-act exposure ratio contract (authoring-time gate).
+
+    Layout (added by act_tools/generators/gen_six_sessions.py):
+        {"levels": {"L0": 8, "L1": 20, "L2": 32},
+         "l0_windows": [[1, 12], [52, 60]],
+         "peak": [46, 55],
+         "peak_min_l2": 8}
+    Shots declare `exposure_level`. L2 requires a direct exposure tag, L1 a
+    partial tag, L0 none of them; all levels must match the declared counts.
+    Legacy plans without the contract are unaffected.
+    """
+    issues = []
+    if not contract:
+        return issues
+    levels = contract.get('levels') or {}
+    if not levels:
+        issues.append(Issue('ERROR', 'EXPOSURE_CONTRACT_INVALID', 0,
+                            'missing levels map'))
+        return issues
+    timeline = sorted(shots, key=lambda s: int(s.get('n', s.get('shot_no', 0))))
+    counts = collections.Counter()
+    direct = DIRECT_EXPOSURE_TAGS | COVERED_STATE_TAGS
+    for shot in timeline:
+        n = int(shot.get('n', shot.get('shot_no', 0)))
+        level = shot.get('exposure_level')
+        if level not in EXPOSURE_LEVELS:
+            issues.append(Issue('ERROR', 'MISSING_EXPOSURE_LEVEL', n,
+                                'exposure_level must be one of L0/L1/L2'))
+            continue
+        counts[level] += 1
+        body = _names(shot, 'body_state') | _names(shot, 'outfit')
+        found = {t for t in body if t in EXPOSURE_TAG_LEVEL}
+        bad = found & direct
+        if level == 'L0' and bad:
+            issues.append(Issue('ERROR', 'EXPOSURE_LEVEL_TAG_MISMATCH', n,
+                                'L0 shot carries exposure tags: %s' % ', '.join(sorted(bad))))
+        if level == 'L1' and bad:
+            issues.append(Issue('ERROR', 'EXPOSURE_LEVEL_TAG_MISMATCH', n,
+                                'L1 shot carries direct exposure tags: %s' % ', '.join(sorted(bad))))
+        if level == 'L1' and not (found & PARTIAL_EXPOSURE_TAGS):
+            issues.append(Issue('ERROR', 'EXPOSURE_LEVEL_TAG_MISMATCH', n,
+                                'L1 shot needs a partial tag (nipple_slip/sideboob/underboob/pussy_peek)'))
+        if level == 'L2' and not (found & DIRECT_EXPOSURE_TAGS):
+            issues.append(Issue('ERROR', 'EXPOSURE_LEVEL_TAG_MISMATCH', n,
+                                'L2 shot needs exposed_breasts or pussy'))
+        if 'pussy' in body and 'pubic_hair' not in body:
+            issues.append(Issue('ERROR', 'PUBIC_HAIR_REQUIRED', n,
+                                'pussy tag requires pubic_hair'))
+    for level in ('L0', 'L1', 'L2'):
+        want = int(levels.get(level, 0))
+        if counts.get(level, 0) != want:
+            issues.append(Issue('ERROR', 'EXPOSURE_RATIO_MISMATCH', 0,
+                                '%s declared %d but plan has %d'
+                                % (level, want, counts.get(level, 0))))
+    windows = contract.get('l0_windows') or []
+    for shot in timeline:
+        n = int(shot.get('n', shot.get('shot_no', 0)))
+        if shot.get('exposure_level') == 'L0' and not any(
+                int(a) <= n <= int(b) for a, b in windows):
+            issues.append(Issue('ERROR', 'EXPOSURE_L0_OUT_OF_WINDOW', n,
+                                'L0 shot outside quiet windows'))
+    peak = contract.get('peak')
+    if peak and len(peak) >= 2:
+        a, b = int(peak[0]), int(peak[1])
+        run = best = 0
+        for shot in timeline:
+            n = int(shot.get('n', shot.get('shot_no', 0)))
+            if not a <= n <= b:
+                continue
+            if shot.get('exposure_level') == 'L2':
+                run += 1
+                best = max(best, run)
+            else:
+                run = 0
+                issues.append(Issue('ERROR', 'EXPOSURE_PEAK_NOT_L2', n,
+                                    'peak window shot is not L2'))
+        required = int(contract.get('peak_min_l2', 8))
+        if best < required:
+            issues.append(Issue('ERROR', 'EXPOSURE_PEAK_RUN', a,
+                                'longest L2 run in peak is %d, need %d' % (best, required)))
     return issues
 
 
@@ -515,6 +658,7 @@ def validate_plan(plan, phase_contract=None):
     issues += validate_phase_contract(shots, pc)
     issues += validate_shot_semantics(shots, cast=cast, phase_contract=pc)
     issues += validate_act_level(shots)
+    issues += validate_exposure_contract(shots, (plan.get('act') or {}).get('exposure_contract'))
     content = str((plan.get('project') or {}).get('content_profile', '')).lower()
     if content in ('nsfw', 'explicit'):
         missing = [c.get('code') for c in chars

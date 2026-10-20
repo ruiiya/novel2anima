@@ -1,4 +1,3 @@
-# novel2anima P0P1 upgrade
 ---
 name: novel2anima-shot-pipeline
 description: "Plan Novel2Anima V4 acts and action/expression-first ShotSpecs, including high-intensity, multi-participant adult NSFW scene intent metadata, with full SQLite catalog retrieval, project memory, and render QC. The LLM selects contextually and the backend compiles model-supported Anima Base 2B + Turbo 4-step LoRA prompts."

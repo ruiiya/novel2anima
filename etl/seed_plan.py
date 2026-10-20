@@ -72,12 +72,17 @@ def split_identities(participants, ident_lines, drop):
             main_tokens.append(tok)
             seen.add(key)
     scoped = {}
+    # "adult" belongs to every participant, not only the lead. Keeping it in
+    # each scoped identity makes multi-character prompts explicit even when the
+    # main character's identity already contains the same tag.
+    scoped_always = {"adult"}
     for code in participants[1:]:
         toks = []
         for tok in ident_lines.get(code, "").split(","):
             tok = tok.strip()
             key = _token_key(tok)
-            if tok and key not in drop and key not in seen and key not in {_token_key(x) for x in toks}:
+            if tok and key not in drop and (key in scoped_always or key not in seen) \
+                    and key not in {_token_key(x) for x in toks}:
                 toks.append(tok)
         if toks:
             scoped[code] = toks
@@ -251,8 +256,17 @@ def main():
                                 for code, refs in (shot.get("character_poses") or {}).items()}
         p["character_gaze"] = shot.get("character_gaze") or {}
         p["character_targets"] = shot.get("character_targets") or {}
-        p["action"] = list(dict.fromkeys(p["action"] + [v for refs in p["character_actions"].values() for v in refs]))
-        p["pose"] = list(dict.fromkeys(p["pose"] + [v for refs in p["character_poses"].values() for v in refs]))
+        # The global prompt describes the lead character only. Secondary
+        # characters keep their actions, poses and expressions in their scoped
+        # role clauses; pooling them here would mix two postures and two people
+        # into one body descriptor.
+        lead = p["participants"][0] if p["participants"] else ""
+        p["action"] = list(dict.fromkeys(
+            p["action"] + [v for v in p["character_actions"].get(lead, [])]))
+        p["pose"] = list(dict.fromkeys(
+            p["pose"] + [v for v in p["character_poses"].get(lead, [])]))
+        if per_char:
+            p["expression"] = list(p["expressions"].get(lead, []))
         p["phase"] = shot.get("phase", "")
         p["caption"] = shot["caption"]
         p["beat"] = shot.get("beat", "")
@@ -461,10 +475,11 @@ def main():
             scoped += [n.replace("_", " ") for n, _ in p["character_poses"].get(c, [])]
             gaze = p["character_gaze"].get(c)
             if gaze:
-                scoped.append("looking toward " + str(gaze))
+                scoped.append("looking toward " + char_name.get(gaze, str(gaze)))
             target = p["character_targets"].get(c)
             if target:
-                scoped.append("interacting with " + str(target))
+                scoped.append("interacting with " + char_name.get(target, str(target)))
+            scoped = list(dict.fromkeys(scoped))
             if scoped:
                 role_clauses.append("%s: %s" % (char_name.get(c, c), ", ".join(scoped)))
         if role_clauses:
@@ -501,6 +516,7 @@ def main():
             "caption": p["caption"],
             "beat": p["beat"],
             "purpose": (shot.get("sequence") or {}).get("purpose", shot.get("purpose", "")),
+            "exposure_level": shot.get("exposure_level", ""),
             "sequence": shot.get("sequence") or {},
             "reactions": shot.get("reactions") or {},
             "character_actions": {c: as_refs(refs) for c, refs in p["character_actions"].items()},

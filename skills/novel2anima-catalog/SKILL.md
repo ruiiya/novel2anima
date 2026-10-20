@@ -1,4 +1,3 @@
-# novel2anima P0P1 upgrade
 ---
 name: novel2anima-catalog
 description: "Maintain and query Novel2Anima V4 local SQLite: all 16 data tables plus FTS5, five Danbooru/Anima source families, raw and curated tags including adult sexual NSFW metadata, aliases, roles, relations, history and render feedback. Use for ETL, complete catalog coverage, retrieval, curation and audits; not for writing final image prompts."
