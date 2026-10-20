@@ -17,7 +17,7 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build
 
-DEFAULT_FILE = "C:/Users/user/Downloads/wiki_pages.csv/wiki_pages.csv"
+DEFAULT_FILE = os.path.join(os.environ.get("N2A_DATA_DIR", "data/imports"), "wiki_pages.csv")
 SOURCE_KEY = "danbooru_dump_wiki_pages"
 LICENSE = "Danbooru official CSV dump; wiki text is Danbooru public data."
 BATCH = 5000

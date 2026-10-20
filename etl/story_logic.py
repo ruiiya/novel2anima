@@ -9,6 +9,8 @@ from typing import Optional
 import json
 import re
 
+from tag_roles import BODY_STATE_TAGS
+
 STANCE = {
     'standing': 'standing', 'standing_up': 'standing', 'sitting': 'sitting',
     'sitting_on_chair': 'sitting', 'sitting_on_desk': 'sitting',
@@ -32,11 +34,7 @@ NO_ACTION_OK = {'establishing', 'hold', 'reaction_hold', 'quiet_pause', 'montage
 # deterministic; catalog role rows are noisy and must not be the only source.
 NUDE_STATE = {'nude', 'completely_nude', 'topless', 'bottomless'}
 FULL_NUDITY = {'nude', 'completely_nude'}
-BODY_STATE_IN_OUTFIT = NUDE_STATE | {
-    'nipples', 'pussy', 'pubic_hair', 'pussy_juice', 'pussy_juice_drip',
-    'pussy_juice_trail', 'pussy_juice_stain', 'pussy_juice_puddle',
-    'wet', 'afterglow',
-}
+BODY_STATE_IN_OUTFIT = NUDE_STATE | set(BODY_STATE_TAGS)
 CLOTHING_HINTS = {
     'school_uniform', 'idol_clothes', 'maid', 'maid_outfit',
     'apron', 'white_apron', 'black_dress', 'white_shirt', 'black_blazer',

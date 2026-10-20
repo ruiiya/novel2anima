@@ -18,7 +18,7 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build
 
-DEFAULT_FILE = "C:/Users/user/Downloads/posts.csv/posts.csv"
+DEFAULT_FILE = os.path.join(os.environ.get("N2A_DATA_DIR", "data/imports"), "posts.csv")
 UNKNOWN_OUT = "data/sources/posts_unknown_tags.txt"
 SOURCE_KEY = "danbooru_dump_posts"
 LICENSE = "Danbooru official posts CSV dump; only derived statistics are stored."

@@ -10,6 +10,7 @@ import act_quality as aq
 import seed_plan
 import story_db
 import story_logic as sl
+import wardrobe
 
 
 def shot(n):
@@ -61,6 +62,42 @@ class StrictGate(unittest.TestCase):
     def test_error_always_blocks(self):
         issues = [sl.Issue("ERROR", "e", 1, "d")]
         self.assertEqual(len(seed_plan.blocked_by(issues)), 1)
+
+def colour_table(entries):
+    table = {}
+    for base, options in entries:
+        base_id = 1000 + len(table)
+        entry = {"base": base, "base_id": base_id, "options": {}, "chosen": None, "cue": None}
+        table[base_id] = entry
+        for name, tid in options:
+            entry["options"][name.split("_")[0]] = (name, tid)
+            table[tid] = entry
+    return table
+
+class WardrobeColour(unittest.TestCase):
+    def setUp(self):
+        self.table = colour_table([
+            ("dress", [("black_dress", 1)]),
+            ("skirt", [("black_skirt", 2)]),
+            ("thighhighs", [("black_thighhighs", 3)]),
+            ("panties", [("white_panties", 5), ("black_panties", 6)]),
+        ])
+
+    def test_black_set_repaints_underwear(self):
+        refs = [("black_dress", 1), ("black_skirt", 2),
+                ("black_thighhighs", 3), ("white_panties", 5)]
+        self.assertEqual(wardrobe.under_fix(refs, self.table)[-1], ("black_panties", 6))
+
+    def test_no_dominant_colour_keeps_refs(self):
+        refs = [("black_dress", 1), ("white_panties", 5)]
+        self.assertEqual(wardrobe.under_fix(refs, self.table), refs)
+
+    def test_missing_option_keeps_refs(self):
+        table = colour_table([("dress", [("black_dress", 1)]),
+                              ("skirt", [("black_skirt", 2)]),
+                              ("panties", [("white_panties", 5)])])
+        refs = [("black_dress", 1), ("black_skirt", 2), ("white_panties", 5)]
+        self.assertEqual(wardrobe.under_fix(refs, table), refs)
 
 
 class Findings(unittest.TestCase):

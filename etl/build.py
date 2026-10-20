@@ -71,17 +71,7 @@ ROLE_BY_SLOT = {
 
 # Anatomy / nudity tags must never become outfit or pose roles. Import sources
 # (attire slots, pose groups, wardrobe presets) occasionally list them there.
-BODY_TAGS = {
-    "nude", "completely_nude", "topless", "bottomless", "nipples",
-    "pussy", "pubic_hair", "pussy_juice", "pussy_juice_drip",
-    "pussy_juice_trail", "pussy_juice_stain", "pussy_juice_puddle",
-    "afterglow",
-}
-
-def role_for(name, role):
-    if role in ("outfit", "pose", "interaction") and name in BODY_TAGS:
-        return "body_state"
-    return role
+from tag_roles import BODY_STATE_TAGS, role_for
 
 TABLES = ("source_snapshot", "tag", "tag_source", "tag_alias", "tag_role",
           "tag_relation", "tag_content_label", "visual_concept", "concept_tag",

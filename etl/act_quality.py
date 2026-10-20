@@ -4,15 +4,12 @@ Keep generator-specific storytelling in its config; keep pose, caption,
 expression and phase rules here so every generator applies the same minimum.
 """
 import re
+from tag_roles import BODY_STATE_TAGS
 
 LOOKING = {"looking_around", "looking_back", "looking_at_viewer", "looking_down",
            "looking_up", "looking_away", "looking_to_the_side"}
 
-BODY_TAGS = {
-    "nude", "completely_nude", "topless", "bottomless", "nipples", "pussy",
-    "pubic_hair", "pussy_juice", "pussy_juice_drip", "pussy_juice_trail",
-    "pussy_juice_stain", "pussy_juice_puddle", "wet", "afterglow",
-}
+BODY_TAGS = set(BODY_STATE_TAGS)
 
 POSE_FOR_ACTION = {
     "sitting": "sitting", "sitting_on_desk": "sitting", "sitting_on_ground": "sitting",

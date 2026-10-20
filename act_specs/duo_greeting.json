@@ -1,0 +1,102 @@
+{
+  "provenance": {
+    "source": "hand-written CI fixture",
+    "version": 1
+  },
+  "project": {
+    "title": "ActSpec duo fixture",
+    "idea": "two girls talk",
+    "content_profile": "sfw",
+    "style_json": {}
+  },
+  "characters": [
+    {
+      "code": "A",
+      "identity_json": {
+        "adult": true
+      },
+      "outfit_json": {}
+    },
+    {
+      "code": "B",
+      "identity_json": {
+        "adult": true
+      },
+      "outfit_json": {}
+    }
+  ],
+  "act": {
+    "act_no": 1,
+    "title": "Talk",
+    "outline": "duo",
+    "status": "draft",
+    "phase_contract": [
+      {
+        "id": "meet",
+        "start": 1,
+        "end": 2
+      }
+    ]
+  },
+  "beats": [
+    {
+      "id": "meet",
+      "description": "A greets B; B answers.",
+      "purpose": "interaction",
+      "shots": [
+        {
+          "participants": [
+            "A",
+            "B"
+          ],
+          "action": [
+            "holding_hands"
+          ],
+          "pose": [
+            "standing"
+          ],
+          "expression": [
+            "smile"
+          ],
+          "caption": "A greets B. B smiles back.",
+          "sequence": {
+            "actor": "A",
+            "target": "B",
+            "reactionRequired": true
+          },
+          "character_actions": {
+            "A": [
+              "holding_hands"
+            ],
+            "B": [
+              "smile"
+            ]
+          },
+          "props": []
+        },
+        {
+          "participants": [
+            "B"
+          ],
+          "action": [
+            "waving"
+          ],
+          "pose": [
+            "standing"
+          ],
+          "expression": [
+            "smile"
+          ],
+          "caption": "B waves back.",
+          "sequence": {
+            "purpose": "reaction",
+            "reactionTo": "meet:1",
+            "actor": "B",
+            "reactionRequired": false
+          },
+          "props": []
+        }
+      ]
+    }
+  ]
+}

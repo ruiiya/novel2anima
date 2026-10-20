@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Import dump CSV chinh thuc cua Danbooru (tags / aliases / implications / artists .csv.gz).
 
-Usage: python etl/import_danbooru_dump.py [--dir C:/Users/user/Downloads] [--only tags,aliases,implications,artists]
+Usage: python etl/import_danbooru_dump.py [--dir DIR] [--only tags,aliases,implications,artists]
+
+--dir defaults to $N2A_DATA_DIR (fallback: data/imports).
 
 Idempotent: chi INSERT OR IGNORE / MAX(post_count); khong doi id tag da co, khong sua schema.
 """
@@ -163,7 +165,8 @@ def stage_tags(con, args, wanted, both_tags):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dir", default="C:/Users/user/Downloads")
+    ap.add_argument("--dir", default=os.environ.get("N2A_DATA_DIR", "data/imports"),
+                    help="directory holding the downloaded Danbooru CSV dumps")
     ap.add_argument("--only", default=",".join(FILES))
     args = ap.parse_args(argv)
     wanted = [w.strip() for w in args.only.split(",") if w.strip()]

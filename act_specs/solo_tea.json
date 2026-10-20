@@ -1,0 +1,12 @@
+{
+  "provenance": {"source": "hand-written CI fixture", "version": 1},
+  "project": {"title": "ActSpec solo fixture", "idea": "one girl drinks tea", "content_profile": "sfw", "style_json": {}},
+  "characters": [{"code": "GIRL", "identity_json": {"adult": true}, "outfit_json": {}}],
+  "act": {"act_no": 1, "title": "Tea", "outline": "solo", "status": "draft",
+          "phase_contract": [{"id": "calm", "start": 1, "end": 1}]},
+  "beats": [
+    {"id": "calm", "description": "She lifts the cup and drinks.", "purpose": "action",
+     "shots": [{"participants": ["GIRL"], "action": ["holding_cup"], "pose": ["sitting"],
+                "expression": ["smile"], "caption": "She lifts the cup and drinks.", "props": []}]}
+  ]
+}
