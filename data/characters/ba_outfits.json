@@ -1,0 +1,782 @@
+{
+ "profiles": 234,
+ "with_outfit": 234,
+ "assumed": 157,
+ "empty": [],
+ "items": {
+  "ba_airi_band_blue_archive": [
+   "band_uniform"
+  ],
+  "ba_airi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_akane_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_akane_bunny_blue_archive": [
+   "playboy_bunny",
+   "glasses"
+  ],
+  "ba_akari_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_akira_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_ako_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_ako_dress_blue_archive": [
+   "dress"
+  ],
+  "ba_aoba_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_aoi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_aris_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_aris_maid_blue_archive": [
+   "maid"
+  ],
+  "ba_arona_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_aru_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_aru_dress_blue_archive": [
+   "dress"
+  ],
+  "ba_asuna_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_asuna_bunny_blue_archive": [
+   "playboy_bunny"
+  ],
+  "ba_asuna_school_uniform_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_atsuko_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_atsuko_swimsuit_blue_archive": [
+   "swimsuit",
+   "hat"
+  ],
+  "ba_ayane_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_ayane_swimsuit_blue_archive": [
+   "swimsuit",
+   "glasses"
+  ],
+  "ba_azusa_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_azusa_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_cherino_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_chiaki_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_chihiro_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_chinatsu_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_chise_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_chise_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_doodle_sensei_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_eimi_blue_archive": [
+   "school_uniform",
+   "goggles_on_head"
+  ],
+  "ba_eimi_swimsuit_blue_archive": [
+   "swimsuit",
+   "goggles_on_head"
+  ],
+  "ba_eri_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_erika_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_fubuki_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_fubuki_swimsuit_blue_archive": [
+   "swimsuit",
+   "visor_cap"
+  ],
+  "ba_fuuka_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hanae_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_hanako_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hanako_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_hare_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_hare_camp_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_haruka_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_haruna_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_haruna_track_blue_archive": [
+   "track_uniform",
+   "eyewear_on_head"
+  ],
+  "ba_hasumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hasumi_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_hasumi_track_blue_archive": [
+   "track_uniform"
+  ],
+  "ba_hibiki_blue_archive": [
+   "school_uniform",
+   "eyewear_on_head"
+  ],
+  "ba_hibiki_cheer_squad_blue_archive": [
+   "cheerleader",
+   "eyewear_on_head"
+  ],
+  "ba_hifumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hifumi_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_highlander_sidelocks_conductor_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_highlander_twintails_conductor_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_hikari_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_himari_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hina_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hina_dress_blue_archive": [
+   "dress"
+  ],
+  "ba_hina_pajamas_blue_archive": [
+   "pajamas"
+  ],
+  "ba_hina_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_hinata_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_hinata_swimsuit_blue_archive": [
+   "swimsuit",
+   "hat"
+  ],
+  "ba_hiyori_blue_archive": [
+   "school_uniform",
+   "sunglasses"
+  ],
+  "ba_hiyori_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_hoshino_armed_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hoshino_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hoshino_first_year_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_hoshino_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_hoshino_young_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_ibuki_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_ichika_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_ichika_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_iori_blue_archive": [
+   "school_uniform",
+   "sunglasses"
+  ],
+  "ba_iori_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_iroha_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_izumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_izuna_blue_archive": [
+   "school_uniform",
+   "visor_cap"
+  ],
+  "ba_izuna_swimsuit_blue_archive": [
+   "swimsuit",
+   "visor_cap"
+  ],
+  "ba_junko_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_juri_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_justice_task_force_member_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_justina_follower_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kaede_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kaguya_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kaho_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kanna_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kanna_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_kanoe_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_karin_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_karin_bunny_blue_archive": [
+   "playboy_bunny"
+  ],
+  "ba_karin_school_uniform_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kasumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kaya_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kayoko_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kayoko_dress_blue_archive": [
+   "dress"
+  ],
+  "ba_kayoko_new_year_blue_archive": [
+   "kimono"
+  ],
+  "ba_kazusa_band_blue_archive": [
+   "band_uniform"
+  ],
+  "ba_kazusa_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kazusa_halloween_blue_archive": [
+   "halloween_costume"
+  ],
+  "ba_kei_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kei_robot_blue_archive": [
+   "mecha"
+  ],
+  "ba_key_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kikyou_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kikyou_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_kirara_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kirino_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_kirino_swimsuit_blue_archive": [
+   "swimsuit",
+   "eyewear_on_head"
+  ],
+  "ba_kisaki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kisaki_kindergarten_uniform_blue_archive": [
+   "kindergarten_uniform",
+   "hat"
+  ],
+  "ba_koharu_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_koharu_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_kokona_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_konoka_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kotama_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_kotori_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kotori_cheer_squad_blue_archive": [
+   "cheerleader"
+  ],
+  "ba_koyuki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_kurumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_maki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_maki_camp_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_makoto_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_mari_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_mari_idol_blue_archive": [
+   "idol_clothes",
+   "hat"
+  ],
+  "ba_mari_track_blue_archive": [
+   "track_uniform"
+  ],
+  "ba_marina_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_mashiro_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_megu_blue_archive": [
+   "school_uniform",
+   "goggles_on_head"
+  ],
+  "ba_michiru_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_midori_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_midori_maid_blue_archive": [
+   "maid"
+  ],
+  "ba_mika_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_mika_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_mimori_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_mina_blue_archive": [
+   "school_uniform",
+   "sunglasses"
+  ],
+  "ba_mine_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_misaki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_misaki_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_miyako_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_miyako_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_miyu_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_miyu_swimsuit_blue_archive": [
+   "swimsuit",
+   "hat"
+  ],
+  "ba_moe_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_moe_swimsuit_blue_archive": [
+   "swimsuit",
+   "glasses"
+  ],
+  "ba_momoi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_momoi_maid_blue_archive": [
+   "maid"
+  ],
+  "ba_momoka_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_mutsuki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_mutsuki_dress_blue_archive": [
+   "dress"
+  ],
+  "ba_mutsuki_new_year_blue_archive": [
+   "kimono"
+  ],
+  "ba_nagisa_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_nagisa_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_nagusa_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_natsu_band_blue_archive": [
+   "band_uniform"
+  ],
+  "ba_natsu_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_neru_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_neru_bunny_blue_archive": [
+   "playboy_bunny"
+  ],
+  "ba_neru_school_uniform_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_niko_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_niya_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_noa_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_noa_pajamas_blue_archive": [
+   "pajamas"
+  ],
+  "ba_nodoka_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_nonomi_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_nonomi_swimsuit_blue_archive": [
+   "swimsuit",
+   "hat"
+  ],
+  "ba_nozomi_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_otogi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_peroro_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_plana_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_professor_niyaniya_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_reijo_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_reisa_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_renge_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_rin_blue_archive": [
+   "school_uniform",
+   "glasses"
+  ],
+  "ba_rio_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_rio_bodysuit_blue_archive": [
+   "bodysuit"
+  ],
+  "ba_rumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_saki_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_saki_swimsuit_blue_archive": [
+   "swimsuit",
+   "hat"
+  ],
+  "ba_sakurako_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_sakurako_idol_blue_archive": [
+   "idol_clothes",
+   "hat"
+  ],
+  "ba_sakurako_justina_uniform_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_saori_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_saori_dress_blue_archive": [
+   "dress"
+  ],
+  "ba_saori_swimsuit_blue_archive": [
+   "swimsuit",
+   "hat"
+  ],
+  "ba_satsuki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_saya_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_seia_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_seia_swimsuit_blue_archive": [
+   "swimsuit",
+   "sunglasses"
+  ],
+  "ba_sena_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_serika_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_serika_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_serina_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_shigure_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shigure_hot_spring_blue_archive": [
+   "yukata"
+  ],
+  "ba_shiroko_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shiroko_cycling_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shiroko_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_shiroko_terror_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shizuko_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shizuko_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_shun_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shun_small_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_shuro_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_skullman_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_sora_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_sumire_blue_archive": [
+   "school_uniform",
+   "sunglasses"
+  ],
+  "ba_suou_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_suzumi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_takane_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_toki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_toki_bunny_blue_archive": [
+   "playboy_bunny"
+  ],
+  "ba_toki_school_uniform_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_tsubaki_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_tsubaki_guide_blue_archive": [
+   "school_uniform",
+   "hat"
+  ],
+  "ba_tsukuyo_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_tsurugi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_tsurugi_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_ui_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_ui_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_umika_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_utaha_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_wakamo_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_wakamo_swimsuit_blue_archive": [
+   "swimsuit"
+  ],
+  "ba_yoshimi_band_blue_archive": [
+   "band_uniform"
+  ],
+  "ba_yoshimi_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_yukari_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_yukino_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_yume_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_yuuka_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_yuuka_pajamas_blue_archive": [
+   "pajamas"
+  ],
+  "ba_yuuka_track_blue_archive": [
+   "track_uniform"
+  ],
+  "ba_yuzu_blue_archive": [
+   "school_uniform"
+  ],
+  "ba_yuzu_maid_blue_archive": [
+   "maid"
+  ]
+ },
+ "unmapped_word": []
+}

@@ -561,10 +561,12 @@ def main():
 
         char_ids = {}
         for ch in chars:
-            cur.execute("SELECT id FROM character_profile WHERE project_id=? AND code=?", (pid, ch["code"]))
+            cur.execute("SELECT id, identity_json, outfit_json FROM character_profile"
+                        " WHERE project_id=? AND code=?", (pid, ch["code"]))
             r = cur.fetchone()
-            payload = (json.dumps(ch.get("identity_json") or {}, ensure_ascii=False),
-                       json.dumps(ch.get("outfit_json") or {}, ensure_ascii=False))
+            ident = ch.get("identity_json") or (json.loads(r[1]) if r and r[1] else {})
+            outfit = ch.get("outfit_json") or (json.loads(r[2]) if r and r[2] else {})
+            payload = (json.dumps(ident, ensure_ascii=False), json.dumps(outfit, ensure_ascii=False))
             if r:
                 char_ids[ch["code"]] = r[0]
                 cur.execute("UPDATE character_profile SET identity_json=?, outfit_json=? WHERE id=?", payload + (r[0],))
