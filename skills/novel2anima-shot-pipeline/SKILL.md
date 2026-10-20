@@ -63,8 +63,8 @@ references are not evidence that a populated DB or production backend exists.
   coherent through acts and revisions; intentional outfit changes are recorded as
   revisions rather than rejected for violating the default.
 - Every garment a shot names carries a colour (or the shot carries its `<colour>_clothing`
-  cue): the seed swaps the base garment for the colour variant recorded in
-  `visual_concept WC_*` / `data/wardrobe/colour_choice.json`, and underwear follows the set.
+  cue): the seed swaps the base garment only for an explicit shot/act colour; catalog
+  `WC_*` presets are used for underwear, which follows the set.
   A garment without a colour decision is reported (`chua chon mau`, QA axis `mau_thieu`) —
   never silently repainted. Stance can change in either direction when an action or declared cut explains the transition.
 - Problems are *reported* before they are *fixed*: `etl/qa_shots.py --apply` writes flagged

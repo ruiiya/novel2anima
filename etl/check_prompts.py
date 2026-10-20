@@ -22,6 +22,12 @@ def tag_text(name):
     name = name.strip()
     return name if name.startswith("score_") else name.replace("_", " ")
 
+def prompt_body(text, caption):
+    """Phan tag cua prompt, bo caption + role clause phia sau caption."""
+    if caption and caption in text:
+        return text.split(caption, 1)[0].rstrip(" ,")
+    return text.rstrip(" ,")
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--act", type=int)
@@ -61,6 +67,10 @@ def main(argv=None):
         no = (d.get("act") or {}).get("act_no")
         if no and d.get("shots"):
             plans[(d["project"]["title"], no, (d.get("act") or {}).get("revision", 1))] = d
+    if args.project or args.act is not None:
+        plans = {k: v for k, v in plans.items()
+                 if (not args.project or k[0] == args.project)
+                 and (args.act is None or k[1] == args.act)}
 
     acts = con.execute("SELECT a.id,a.act_no,p.title,a.revision FROM act a "
                        "JOIN project p ON p.id=a.project_id WHERE "
@@ -186,9 +196,10 @@ def main(argv=None):
                 warns.append((shot_no, phase, "POSE_UNRESOLVED"))
             if len(toks) > MAX_TOKENS:
                 warns.append((shot_no, phase, "prompt dai %d token (>%d)" % (len(toks), MAX_TOKENS)))
-            if text in seen_at:
-                warns.append((shot_no, phase, "prompt trung shot %s" % seen_at[text][0]))
-            seen_at[text].append(shot_no)
+            body = prompt_body(text, caption)
+            if body in seen_at:
+                warns.append((shot_no, phase, "prompt trung tag-zone shot %s" % seen_at[body][0]))
+            seen_at[body].append(shot_no)
             sig_seq.append(spec.get("signature") or
                            ",".join(x["name"] for x in (spec.get("action") or [])))
             if len(sig_seq) >= 4 and len(set(sig_seq[-4:])) == 1:

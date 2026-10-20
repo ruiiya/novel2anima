@@ -7,6 +7,7 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "etl"))
 import act_quality as aq
+import check_prompts
 import seed_plan
 import story_db
 import story_logic as sl
@@ -110,6 +111,11 @@ class WardrobeColour(unittest.TestCase):
                                            wanted={"panties": "purple"}),
                          [("black_panties", 6)])
 
+    def test_outer_garment_needs_explicit_colour(self):
+        table, base_ids = colour_table([("skirt", [("black_skirt", 2)])])
+        self.assertEqual(wardrobe.colorize([("skirt", base_ids["skirt"])], table),
+                         [("skirt", base_ids["skirt"])])
+
     def test_no_dominant_colour_keeps_refs(self):
         refs = [("black_dress", 1), ("panties", self.base["panties"])]
         self.assertEqual(wardrobe.under_fix(refs, self.table), refs)
@@ -168,6 +174,35 @@ class Publish(unittest.TestCase):
                 seed_plan.atomic_write = real
             self.assertEqual(a.read_text(encoding="utf-8"), "old-a\n")
             self.assertEqual(b.read_text(encoding="utf-8"), "old-b\n")
+
+class PromptHygiene(unittest.TestCase):
+    def test_event_id_does_not_hide_repeated_shot(self):
+        shots = [{"n": i, "participants": ["GIRL"], "action": ["walking"],
+                  "expression": ["serious"],
+                  "sequence": {"purpose": "action", "eventId": "e%d" % i}}
+                 for i in range(1, 5)]
+        self.assertIn("NO_STORY_PROGRESS", [i.code for i in sl.validate(shots)])
+
+    def test_act_ends_is_meta_leak(self):
+        issues = sl.validate_shot_semantics(
+            [{"n": 1, "participants": ["GIRL"], "caption": "Act two ends at the elevator."}])
+        self.assertIn("CAPTION_META_LEAK", [i.code for i in issues])
+
+    def test_prompt_body_drops_caption_and_role_clause(self):
+        text = "a, b, She reads.. Hasumi: reading"
+        self.assertEqual(check_prompts.prompt_body(text, "She reads."), "a, b")
+
+    def test_secondary_identity_is_scoped(self):
+        main, scoped = seed_plan.split_identities(
+            ["A", "B"], {"A": "1girl, black_hair", "B": "1boy, white_shirt, black_hair"},
+            {"1girl", "1boy"})
+        self.assertEqual(main, ["black_hair"])
+        self.assertEqual(scoped["B"], ["white_shirt"])
+
+    def test_unique_tokens_dedupes_background(self):
+        emitted = {"desk"}
+        self.assertEqual(seed_plan.take_unique(["desk", "office", "office"], emitted),
+                         ["office"])
 
 
 if __name__ == "__main__":

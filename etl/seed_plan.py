@@ -27,7 +27,8 @@ import story_db, story_logic
 
 GROUPS = ("outfit", "body_state", "action", "expression", "pose", "motion", "camera", "cast", "props")
 DEFAULT_NEGATIVE = ("worst quality, low quality, score_1, score_2, score_3, artist name, "
-                    "blurry, jpeg artifacts, chromatic aberration")
+                    "blurry, jpeg artifacts, chromatic aberration, text, watermark, "
+                    "bad hands, extra fingers")
 
 def parse_ref(ref):
     # split on the LAST colon: canonical names may contain colons (e.g. honkai:_star_rail)
@@ -56,6 +57,40 @@ def tagged(cur, shot_no, group, refs, unknown, mismatched):
 
 def as_refs(items):
     return [{"name": n, "tagId": t} for n, t in items]
+
+def _token_key(name):
+    return str(name).strip().replace("_", " ")
+
+def split_identities(participants, ident_lines, drop):
+    # Main character giu identity o dau prompt; nhan vat phu di theo clause rieng.
+    main = participants[0] if participants else ""
+    main_tokens, seen = [], set()
+    for tok in ident_lines.get(main, "").split(","):
+        tok = tok.strip()
+        key = _token_key(tok)
+        if tok and key not in drop and key not in seen:
+            main_tokens.append(tok)
+            seen.add(key)
+    scoped = {}
+    for code in participants[1:]:
+        toks = []
+        for tok in ident_lines.get(code, "").split(","):
+            tok = tok.strip()
+            key = _token_key(tok)
+            if tok and key not in drop and key not in seen and key not in {_token_key(x) for x in toks}:
+                toks.append(tok)
+        if toks:
+            scoped[code] = toks
+    return main_tokens, scoped
+
+def take_unique(names, emitted):
+    out = []
+    for name in names:
+        key = _token_key(name)
+        if key and key not in emitted:
+            out.append(name)
+            emitted.add(key)
+    return out
 
 def publish_files(files):
     """Publish (path, text) pairs after the DB commit, all-or-nothing.
@@ -240,7 +275,7 @@ def main():
             p["outfit"] = new
         for name, tid in p["outfit"]:
             e = table.get(tid)
-            if e and tid == e["base_id"] and not e["chosen"] and not e["cue"]:
+            if e and tid == e["base_id"]:
                 undecided.add(name)
     pose_fix = wardrobe.lock_poses(parsed, id_of) if args.fix_pose else []
     print("khoa mau: +mau cho %d/%d shot | chua chon mau: %s | thang tu the: %s"
@@ -286,6 +321,13 @@ def main():
     if len(chars) == 1 and not ident_lines[chars[0]["code"]]:
         ident_lines[chars[0]["code"]] = plan.get("identity_line", "")
     gender = {ch["code"]: ch.get("gender", "girl") for ch in chars}
+    if str(plan.get("project", {}).get("content_profile", "")).lower() in ("nsfw", "explicit"):
+        for ch in chars:
+            words = {w.strip().replace("_", " ").lower()
+                     for w in ident_lines.get(ch["code"], "").split(",")}
+            if "adult" not in words and "mature female" not in words:
+                print("WARN ADULT_TAG_MISSING %s: them adult/mature_female vao identity"
+                      % ch["code"], file=sys.stderr)
 
     def tag_text(name):
         name = name.strip()
@@ -300,7 +342,7 @@ def main():
         if explicit_counts:
             return "%dgirl%s" % (girls, "s" if girls > 1 else "")
         if boys == 0:
-            return "%dgirls, yuri" % girls
+            return "%dgirls" % girls
         if girls == 0:
             return "%dboys" % boys
         if girls > 1:
@@ -344,16 +386,13 @@ def main():
                          % len(p["participants"]))
 
         drop = {"1girl", "1boy", "solo"} if len(p["participants"]) > 1 else set()
-        ident_tokens = []
-        for c in p["participants"]:
-            for tok in ident_lines.get(c, "").split(","):
-                tok = tok.strip()
-                if tok and tok not in drop and tok not in ident_tokens:
-                    ident_tokens.append(tok)
+        ident_tokens, scoped_ident = split_identities(p["participants"], ident_lines, drop)
         parts = [plan["quality_line"], plan.get("safety_tag", "safe")]
         if len(p["participants"]) > 1:
             parts.append(cast_line(p["participants"], bool(p["cast"])))
         parts += [join_tags(ident_tokens)]
+        for code, toks in scoped_ident.items():
+            parts.append("%s: %s" % (char_name.get(code, code), join_tags(toks)))
         if plan.get("artist_line"):
             parts.append(plan["artist_line"])
         pooled = [t for g in GROUPS for t in p[g]]
@@ -366,21 +405,20 @@ def main():
         pruned = [n for n, tid in pooled if tid in redundant]
         pruned_total += len(pruned)
 
-        emitted = set(ident_tokens)
+        ident_keys = {_token_key(n) for n in ident_tokens}
+        emitted = set(ident_keys)
 
         def take(names):
-            out = [n for n in dict.fromkeys(names) if n not in emitted]
-            emitted.update(out)
-            return join_tags(out)
+            return join_tags(take_unique(dict.fromkeys(names), emitted))
 
         def clean(group):
             return take(n for n, tid in p[group] if tid not in redundant)
 
         action_names = {n for n, _ in p["action"]}
         outfit_tokens = [n for n, tid in p["outfit"]
-                         if n not in ident_tokens and n not in action_names and tid not in redundant]
+                         if _token_key(n) not in ident_keys and n not in action_names and tid not in redundant]
         body_tokens = [n for n, tid in p["body_state"]
-                       if n not in ident_tokens and n not in action_names and tid not in redundant]
+                       if _token_key(n) not in ident_keys and n not in action_names and tid not in redundant]
 
         def nl_block():
             who = char_name.get(p["participants"][0], p["participants"][0])
@@ -404,6 +442,7 @@ def main():
             return [first, second]
 
         scene, background_line = scene_for(shot)
+        background_tokens = [t.strip() for t in re.split(r"[,;]", background_line) if t.strip()]
         parts += [clean("cast"),
                   take(outfit_tokens),
                   take(body_tokens),
@@ -413,7 +452,7 @@ def main():
                   clean("pose"),
                   clean("motion"),
                   clean("camera"),
-                  background_line.replace("_", " "),
+                  take(background_tokens),
                   p["caption"]]
         prompt = ", ".join(x for x in parts if x)
 
@@ -464,6 +503,7 @@ def main():
             "beat": p["beat"],
             "purpose": (shot.get("sequence") or {}).get("purpose", shot.get("purpose", "")),
             "sequence": shot.get("sequence") or {},
+            "reactions": shot.get("reactions") or {},
             "character_actions": {c: as_refs(refs) for c, refs in p["character_actions"].items()},
             "character_poses": {c: as_refs(refs) for c, refs in p["character_poses"].items()},
             "signature": signature,
@@ -505,8 +545,14 @@ def main():
         if r:
             pid = r[0]
             if plan.get("shots"):
-                cur.execute("UPDATE project SET idea=?, content_profile=?, style_json=? WHERE id=?",
-                            (pj["idea"], pj["content_profile"], json.dumps(pj["style_json"], ensure_ascii=False), pid))
+                has_act = cur.execute("SELECT 1 FROM act WHERE project_id=? LIMIT 1", (pid,)).fetchone()
+                if has_act:
+                    cur.execute("UPDATE project SET idea=?, content_profile=? WHERE id=?",
+                                (pj["idea"], pj["content_profile"], pid))
+                else:
+                    cur.execute("UPDATE project SET idea=?, content_profile=?, style_json=? WHERE id=?",
+                                (pj["idea"], pj["content_profile"],
+                                 json.dumps(pj["style_json"], ensure_ascii=False), pid))
         else:
             cur.execute("INSERT INTO project(title, idea, content_profile, style_json, created_at) VALUES(?,?,?,?,?)",
                         (pj["title"], pj["idea"], pj["content_profile"],

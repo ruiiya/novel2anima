@@ -98,6 +98,10 @@ def colorize(refs, table, under=None, wanted=None):
         want = (wanted or {}).get(name) or (wanted or {}).get(e["base"])
         if want is None and under and name in UNDER_NAMES:
             want = under
+        # Do mac ngoai khong tu doan mau tu catalog/preset: tran ten = thieu quyet dinh.
+        if want is None and name not in UNDER_NAMES:
+            out.append((name, tid))
+            continue
         pick = colour_pick(e, want)
         out.append(pick)
         if pick == (e["base"], e["base_id"]) and e["cue"]:

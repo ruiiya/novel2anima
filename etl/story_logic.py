@@ -231,7 +231,7 @@ def validate(shots, cast=None):
             if target not in codes or not ((shot.get('reactions') or {}).get(target)):
                 awaiting.append((target, event_id, i + 2))
         signature = (tuple(_refs(shot.get('action'))), tuple(sorted(_refs(shot.get('expression')))),
-                     purpose, seq.get('eventId'))
+                     purpose)
         repeats = repeats + 1 if signature == previous_signature and signature[0] else 1
         if repeats >= 4 and purpose not in {'hold', 'reaction_hold', 'quiet_pause'}:
             issues.append(Issue('WARN', 'NO_STORY_PROGRESS', n,
@@ -333,7 +333,7 @@ def validate_shot_semantics(shots, cast=None, phase_contract=None, blocked_ids=N
         if any(re.search(r'\b%s\b' % re.escape(word), caption) for word in FILLER_WORDS):
             issues.append(Issue('WARN', 'CAPTION_TEMPLATE_FILLER', n,
                                 'caption contains template adverb'))
-        if 'during the ' in caption:
+        if 'during the ' in caption or re.search(r'\bact\b.{0,24}\bends?\b', caption):
             issues.append(Issue('WARN', 'CAPTION_META_LEAK', n,
                                 'caption contains phase/meta text'))
         for prop in sorted(PROP_WORDS):

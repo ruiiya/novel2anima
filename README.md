@@ -88,8 +88,9 @@ Ca hai quy tac chi ap khi db *biet*, khong hard-code trong code:
   bien the mau (`data/wardrobe/colour_cue.json`). seed_plan thay tag do bang bien the mau, noi y
   doi mau theo bo (set den -> `black_panties`). Mon nao chua co quyet dinh mau thi khong doan —
   chi bao `chua chon mau: [...]`.
-  Thu tu uu tien mau: **shot explicit > act explicit > wardrobe preset/catalog > heuristic**.
-  Heuristic (noi y theo mau bo do) chi chay khi mon do chua co mau o muc cao hon, nen
+  Thu tu uu tien mau: **shot explicit > act explicit > catalog preset (chi do lot) > heuristic**.
+  Do mac ngoai phai co mau ngay trong plan/act; seed khong tu doan mau tu catalog.
+  Heuristic (noi y theo mau bo do) chi chay khi do lot chua co mau o muc cao hon, nen
   `white_panties` khai bao ro trong plan duoc giu nguyen. Override bang `colour_choice`
   (map `<do> -> <mau>`) o `shot` hoac `act`.
 - **Tu the**: `wardrobe.lock_poses()` chi la checker read-only (bao nhieu stance xung dot
