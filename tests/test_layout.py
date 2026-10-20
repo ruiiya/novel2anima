@@ -13,7 +13,10 @@ class Layout(unittest.TestCase):
 
     def test_generators_have_main_guard(self):
         missing = []
-        for path in (ROOT / "act_tools" / "generators").glob("*.py"):
+        local = ROOT / "act_tools" / "generators"
+        if not local.is_dir():
+            self.skipTest("act_tools is local-only (generated act workspace)")
+        for path in local.glob("*.py"):
             if path.name == "__init__.py":
                 continue
             text = path.read_text(encoding="utf-8")

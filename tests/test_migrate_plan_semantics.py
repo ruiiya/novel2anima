@@ -4,7 +4,6 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "etl"))
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "act_tools"))
 import migrate_plan_semantics as mig
 
 

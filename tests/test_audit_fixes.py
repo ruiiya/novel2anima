@@ -6,7 +6,6 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "etl"))
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "act_tools"))
 import act_quality as aq
 import seed_plan
 import story_db
