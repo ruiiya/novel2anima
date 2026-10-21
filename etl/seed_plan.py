@@ -144,6 +144,37 @@ def blocked_by(issues, strict=False):
         return errors
     return [i for i in issues if i.level == "WARN"] if strict else []
 
+
+def append_sentence(text, part):
+    """Join a sentence after a caption without producing '..' gaps."""
+    text, part = str(text or "").rstrip(), str(part or "").strip()
+    if not part:
+        return text
+    return text + (" " if text.endswith((".", "!?", "?")) else ". ") + part
+
+
+def directed_clause(char_name, actor, target, primary):
+    """Render the one-direction sentence from a CERTIFIED sequence.
+
+    Templates are configuration data (story_logic.DIRECTED_CLAUSE_TEMPLATES);
+    actor/target names come from the plan, never guessed from gender, tag
+    order or caption pronouns. Unknown action -> empty string: no clause, and
+    the prompt may not claim a direction the metadata does not certify.
+    """
+    primary = str(primary or "").strip().lower()
+    tpl = story_logic.DIRECTED_CLAUSE_TEMPLATES.get(primary)
+    if not tpl:
+        grp = story_logic.ALIAS_INDEX.get(primary)
+        if grp is not None:
+            for cand in story_logic.ALIAS_GROUPS[grp]:
+                if cand in story_logic.DIRECTED_CLAUSE_TEMPLATES:
+                    tpl = story_logic.DIRECTED_CLAUSE_TEMPLATES[cand]
+                    break
+    if not tpl:
+        return ""
+    return "%s %s." % (char_name.get(actor, str(actor)),
+                       tpl.format(t=char_name.get(target, str(target))))
+
 MIGRATIONS = pathlib.Path(__file__).resolve().parent.parent / "sql" / "migrations"
 
 def ensure_runtime_tables(con):
@@ -482,10 +513,22 @@ def main():
             scoped = list(dict.fromkeys(scoped))
             if scoped:
                 role_clauses.append("%s: %s" % (char_name.get(c, c), ", ".join(scoped)))
+        seq0 = shot.get("sequence") or {}
+        a0, t0 = seq0.get("actor"), seq0.get("target")
+        pr0 = str(seq0.get("primaryAction") or seq0.get("action") or "")
+        interaction = {}
+        if a0 and t0 and pr0 and a0 != t0:
+            interaction = {"actor": a0, "target": t0, "action": pr0,
+                           "purpose": seq0.get("purpose") or shot.get("purpose", ""),
+                           "eventId": seq0.get("eventId") or ""}
+            directed = directed_clause(char_name, a0, t0, pr0)
+            if directed and directed not in prompt:
+                prompt = append_sentence(prompt, directed)
+
         if role_clauses:
-            prompt += ". " + "; ".join(role_clauses)
+            prompt = append_sentence(prompt, "; ".join(role_clauses))
         if plan.get("nl"):
-            prompt += ". " + " ".join(nl_block())
+            prompt = append_sentence(prompt, " ".join(nl_block()))
 
         signature = "%s|%s|%s" % (
             ",".join(n for n, _ in p["action"]),
@@ -518,6 +561,7 @@ def main():
             "purpose": (shot.get("sequence") or {}).get("purpose", shot.get("purpose", "")),
             "exposure_level": shot.get("exposure_level", ""),
             "sequence": shot.get("sequence") or {},
+            "interaction": interaction,
             "reactions": shot.get("reactions") or {},
             "character_actions": {c: as_refs(refs) for c, refs in p["character_actions"].items()},
             "character_poses": {c: as_refs(refs) for c, refs in p["character_poses"].items()},

@@ -29,6 +29,19 @@ references are not evidence that a populated DB or production backend exists.
   `sequence` is semantic metadata: it is **not** a Danbooru tag nor an invented catalog ID.
 - Use optional per-character `character_actions`, `character_poses`, `character_gaze`,
   `character_targets` maps for duo. A global action tag is not proof of who performed it.
+- **Interaction direction contract** (one shared validator, raw plan to compiled spec):
+  `sequence.actor` owns `sequence.primaryAction`; `character_actions[actor]` must contain it;
+  `character_targets[actor]` (when declared) must equal `sequence.target`; actor differ from
+  target and both must be visible `participants`. Violations raise the ERROR codes
+  `INTERACTION_ROLE_MISMATCH`, `INTERACTION_ACTOR_ACTION_MISSING`, `INTERACTION_TARGET_REQUIRED`,
+  `INTERACTION_TARGET_NOT_IN_SHOT`, `INTERACTION_TARGET_MISMATCH`, `INTERACTION_PRIMARY_ACTION_MISMATCH`
+  (legacy ambiguous rows stay WARN: `..._SOFT`); seed rejects them before any DB write and
+  never rewrites roles by heuristic. seed_plan stores the canonical `interaction`
+  object in `shot_spec_json` and renders a directed clause from
+  `story_logic.DIRECTED_CLAUSE_TEMPLATES` for templated actions (`check_prompts.py`
+  compares prompt vs `interaction` via `INTERACTION_PROMPT_DIRECTION_MISMATCH`).
+  Symmetric gestures (`holding_hands` etc.) are not forced into one-way ownership.
+  Regression: `python -m unittest tests.test_interaction_direction_contract -v`.
 - Check `stateBefore -> action -> stateAfter`, pose bridge, prop ownership, and important
   reactions. Explicit scene/time cuts can justify skipping micro-actions. Do not turn
   each small movement into a separate shot if a single composition clearly shows it.

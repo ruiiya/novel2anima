@@ -4,6 +4,12 @@ Input JSON uses regular seed_plan project/characters/act fields plus `beats[]`.
 Each beat has {id, purpose, shots:[{action,expression,pose,caption,sequence,...}]}.
 The number of shots is DERIVED from narrative needs, not a fixed quota.
 Actual tag strings must still exist in SQLite; seed_plan performs resolution.
+
+Interaction roles are never rewritten here: beats' `sequence.actor/target` and
+`character_actions`/`character_targets` are copied as authored and then gated by
+the shared story_logic interaction validator (INTERACTION_* codes). If the
+audit contract says the roles are inverted, fix the beat source - do not swap
+roles synthetically.
 """
 import argparse
 import json

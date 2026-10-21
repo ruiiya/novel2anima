@@ -66,6 +66,34 @@ SENSITIVE_ACTIONS = {
 }
 LOOKING_ACTIONS = {'looking_around', 'looking_back', 'looking_at_viewer', 'looking_down',
                    'looking_up', 'looking_away', 'looking_to_the_side'}
+# Interaction direction contract. `sequence` is the source of truth for the
+# main directed event; ownership comes from `character_actions`, never from
+# gender, tag order, caption pronouns or frame position.
+DIRECTIONAL_ACTIONS = {
+    'groping', 'spanking', 'fingering', 'handjob', 'footjob', 'sex', 'vaginal',
+    'missionary', 'cowgirl_position', 'reverse_cowgirl_position', 'doggystyle',
+    'standing_sex', 'paizuri', 'fellatio', 'deepthroat', 'cunnilingus',
+    'headpat', 'head_pat',
+}
+# Verified semantic aliases (one physical act, different tag spellings).
+ALIAS_GROUPS = [
+    {'kiss', 'kissing'},
+    {'headpat', 'head_pat'},
+    {'hug', 'hugging', 'embrace'},
+    {'pose', 'posing'},
+    {'talk', 'talking'},
+    {'undress', 'undressed', 'undressing'},
+    {'missionary', 'on_top'},
+    {'kneeling', 'kneel'},
+]
+ALIAS_INDEX = {name: i for i, group in enumerate(ALIAS_GROUPS) for name in group}
+# One-direction composite clause per action tag. seed_plan renders it next to
+# the caption; QA compares prompts against `shot_spec_json.interaction`.
+DIRECTED_CLAUSE_TEMPLATES = {
+    'headpat': 'pats {t} on the head',
+    'groping': 'gropes {t}',
+    'sex': 'has sex with {t}',
+}
 PROP_WORDS = {'door', 'earpiece', 'gun', 'rifle', 'knife', 'microphone', 'baton',
               'vibrator', 'dildo', 'rope', 'leash'}
 FILLER_WORDS = {'slowly', 'harder'}
@@ -122,6 +150,105 @@ def _primary(shot):
     return seq.get('primaryAction') or seq.get('action') or ''
 
 
+def actions_equal(a, b):
+    """Alias-aware equality for action tokens (exact or verified group)."""
+    a, b = str(a or '').strip().lower(), str(b or '').strip().lower()
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    ia, ib = ALIAS_INDEX.get(a), ALIAS_INDEX.get(b)
+    return ia is not None and ia == ib
+
+
+def character_action_refs(shot, code):
+    """Scoped action names of ONE participant. `character_actions[code]` wins;
+    compiled specs may carry the same data as participants[].action. Never
+    falls back to the pooled/global action line."""
+    out = set(_refs((shot.get('character_actions') or {}).get(code)))
+    if not out:
+        for p in (shot.get('participants') or []):
+            if isinstance(p, dict) and p.get('code') == code and p.get('action'):
+                out |= set(_refs(p['action']))
+    return out
+
+
+def character_target(shot, code):
+    for src in (shot.get('character_targets') or {},):
+        if src.get(code):
+            return src[code]
+    for p in (shot.get('participants') or []):
+        if isinstance(p, dict) and p.get('code') == code and p.get('target'):
+            return p['target']
+    return None
+
+
+def validate_interaction_roles(shot, actor=None, target=None, purpose=None):
+    """One shared validator for interaction orientation (raw plan AND compiled
+    spec). `sequence` declares actor -> primaryAction -> target; the declared
+    scopes must agree or the data is blocked. Heuristics are forbidden: gender,
+    1boy/1girl labels, caption pronouns and frame order may never rewrite roles
+    - contradictions FAIL so the author fixes the source.
+
+    Codes: INTERACTION_TARGET_REQUIRED, INTERACTION_TARGET_NOT_IN_SHOT,
+    INTERACTION_ROLE_MISMATCH, INTERACTION_ACTOR_ACTION_MISSING,
+    INTERACTION_PRIMARY_ACTION_MISMATCH (WARN twin: ..._SOFT when the primary
+    action is claimed only by the target - legacy review case),
+    INTERACTION_TARGET_MISMATCH.
+    """
+    seq = shot.get('sequence') or {}
+    purpose = purpose or seq.get('purpose') or shot.get('purpose') or ''
+    primary = str(seq.get('primaryAction') or seq.get('action') or '')
+    actor, target = actor or seq.get('actor'), target or seq.get('target')
+    codes = _codes(shot)
+    issues = []
+    strict = purpose == 'interaction'
+    if not strict and not (primary in DIRECTIONAL_ACTIONS and len(codes) > 1):
+        return issues
+    n = int(shot.get('n', shot.get('shot_no', 0)))
+    if strict:
+        if not target:
+            issues.append(Issue('ERROR', 'INTERACTION_TARGET_REQUIRED', n,
+                                'purpose=interaction needs a sequence.target'))
+        elif codes and target not in codes:
+            issues.append(Issue('ERROR', 'INTERACTION_TARGET_NOT_IN_SHOT', n,
+                                'target %r is not in shot participants' % target))
+    if not (actor and target) or actor == target:
+        return issues          # ACTOR_TARGET_MISMATCH is reported by validate()
+    aown = character_action_refs(shot, actor)
+    town = character_action_refs(shot, target)
+    if not aown:
+        if primary and primary in town:
+            issues.append(Issue('ERROR', 'INTERACTION_ROLE_MISMATCH', n,
+                                'primary action %r scoped only to target %s while '
+                                'sequence actor is %s' % (primary, target, actor),
+                                'Declare character_actions[%s]=[%s]' % (actor, primary)))
+        elif strict and not town:
+            issues.append(Issue('ERROR', 'INTERACTION_ACTOR_ACTION_MISSING', n,
+                                'directed interaction has no scoped action for '
+                                'actor %s' % actor,
+                                'Declare character_actions[%s]' % actor))
+    elif primary and not any(actions_equal(primary, x) for x in aown):
+        if any(actions_equal(primary, x) for x in town):
+            issues.append(Issue('WARN', 'INTERACTION_PRIMARY_ACTION_SOFT', n,
+                                '%s owns %r but sequence primaryAction is %r '
+                                '(claimed by target %s)' %
+                                (actor, ', '.join(sorted(aown)), primary, target),
+                                'Confirm who performs the primary action'))
+        else:
+            issues.append(Issue('ERROR', 'INTERACTION_PRIMARY_ACTION_MISMATCH', n,
+                                'sequence primaryAction %r is not among the '
+                                'scoped actions of actor %s' % (primary, actor),
+                                'Align primaryAction with character_actions[%s]' % actor))
+    declared = character_target(shot, actor)
+    if declared and target and str(declared) != str(target):
+        issues.append(Issue('ERROR', 'INTERACTION_TARGET_MISMATCH', n,
+                            'character_targets[%s]=%r conflicts with '
+                            'sequence.target=%r' % (actor, declared, target),
+                            'Keep one source of truth: sequence.target'))
+    return issues
+
+
 def validate(shots, cast=None):
     """Return Issue list. No implicit mutation or forced shot count.
 
@@ -170,6 +297,7 @@ def validate(shots, cast=None):
             issues.append(Issue('ERROR', 'ACTOR_TARGET_MISMATCH', n, 'Interaction targets same actor'))
         if purpose and purpose not in PURPOSES:
             issues.append(Issue('WARN', 'UNKNOWN_PURPOSE', n, purpose))
+        issues += validate_interaction_roles(shot, actor=actor, target=target, purpose=purpose)
         if purpose and purpose not in NO_ACTION_OK and not (_primary(shot) or _refs(shot.get('action'))):
             issues.append(Issue('ERROR', 'ACTION_REQUIRED', n, f'{purpose} shot needs a primary action'))
         if not purpose and not legacy_purpose_warned:

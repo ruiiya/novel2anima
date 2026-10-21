@@ -47,6 +47,79 @@ def caption_prompt_issues(caption, words, codes, gender):
             out.append('CAPTION_CAST_GENDER: caption says man but secondary cast is female')
     return out
 
+
+def clause_map(text, caption):
+    """Role clauses after the caption: {'Name': 'token, token, ...'}."""
+    body = text.split(caption, 1)[1] if caption and caption in text else text
+    out = {}
+    for entry in body.split(";"):
+        if ":" not in entry:
+            continue
+        name, _, tokens = entry.partition(":")
+        name = name.strip().rstrip(".").strip()
+        if name and len(name.split()) <= 3:   # role clause names, not sentences
+            out.setdefault(name, tokens.strip())
+    return out
+
+
+def _template_for(action):
+    """Same template lookup as seed_plan.directed_clause, QA side."""
+    action = str(action or "").strip().lower()
+    tpl = story_logic.DIRECTED_CLAUSE_TEMPLATES.get(action)
+    if not tpl:
+        grp = story_logic.ALIAS_INDEX.get(action)
+        if grp is not None:
+            for cand in story_logic.ALIAS_GROUPS[grp]:
+                if cand in story_logic.DIRECTED_CLAUSE_TEMPLATES:
+                    tpl = story_logic.DIRECTED_CLAUSE_TEMPLATES[cand]
+                    break
+    return tpl
+
+
+def interaction_prompt_issues(spec, text, names):
+    """Prompt must not contradict the certified interaction direction.
+
+    Reads `spec['interaction']` (written by seed_plan from the validated
+    `sequence`), never caption wording alone:
+      * ERROR INTERACTION_PROMPT_DIRECTION_MISMATCH - the declared TARGET's
+        role clause claims the primary action and names the actor while the
+        actor has no role clause at all (the classic reversed-prompt shape).
+      * WARN  INTERACTION_PROMPT_DIRECTION_SOFT - target claims it though an
+        actor clause exists without it (legacy ambiguous ownership rows).
+      * WARN  missing directed seed clause for actions that have a template.
+    """
+    out = []
+    ia = spec.get("interaction") or {}
+    if not isinstance(ia, dict):
+        return out
+    actor, target, action = ia.get("actor"), ia.get("target"), str(ia.get("action") or "")
+    if not (actor and target and action) or actor == target:
+        return out
+    actor_name, target_name = names.get(actor), names.get(target)
+    if not actor_name or not target_name or actor_name == target_name:
+        return out
+    token = re.escape(action.replace("_", " "))
+    clauses = clause_map(text, spec.get("caption") or "")
+    target_tokens = clauses.get(target_name, "")
+    claims_reversal = bool(target_tokens
+                           and re.search(r'\b%s\b' % token, target_tokens, re.I)
+                           and "interacting with " + actor_name in target_tokens)
+    if claims_reversal:
+        if actor_name not in clauses:
+            out.append("INTERACTION_PROMPT_DIRECTION_MISMATCH: prompt shows %s "
+                       "performing %s but sequence actor is %s (no %s clause)"
+                       % (target_name, action, actor_name, actor_name))
+        elif not re.search(r'\b%s\b' % token, clauses.get(actor_name, ""), re.I):
+            out.append("warn:INTERACTION_PROMPT_DIRECTION_SOFT: %s clause claims "
+                       "%s; sequence actor is %s" %
+                       (target_name, action, actor_name))
+    tpl = _template_for(action)
+    if tpl:
+        expected = "%s %s." % (actor_name, tpl.format(t=target_name))
+        if expected not in text:
+            out.append("warn:prompt thieu cau interaction co huong (%s)" % expected)
+    return out
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--act", type=int)
@@ -209,6 +282,14 @@ def main(argv=None):
                 warns.append((shot_no, phase, "thieu dong so nguoi (%s)" % "/".join(sorted(want))))
             for msg in caption_prompt_issues(caption, words, codes, gender):
                 warns.append((shot_no, phase, msg))
+            if plan:
+                names = {c.get("code"): c.get("name", c.get("code"))
+                         for c in (plan.get("characters") or [])}
+                for msg in interaction_prompt_issues(spec, text, names):
+                    if msg.startswith("warn:"):
+                        warns.append((shot_no, phase, msg[5:]))
+                    else:
+                        errs.append((shot_no, phase, msg))
             if not spec.get("action") and spec.get("purpose") not in story_logic.NO_ACTION_OK:
                 errs.append((shot_no, phase, "ACTION_UNRESOLVED"))
             if not spec.get("expression"):

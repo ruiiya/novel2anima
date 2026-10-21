@@ -18,7 +18,11 @@ def main():
     actionable = [i.to_dict() for i in issues if i.code in (
         'POSE_BRIDGE_MISSING', 'PRECONDITION_POSE', 'MISSING_REQUIRED_REACTION',
         'PROP_TRANSFER_WITHOUT_ACTION', 'PROP_OWNERSHIP_JUMP', 'ACTION_REQUIRED',
-        'NO_STORY_PROGRESS', 'MISSING_SHOT_PURPOSE')]
+        'NO_STORY_PROGRESS', 'MISSING_SHOT_PURPOSE',
+        'INTERACTION_ROLE_MISMATCH', 'INTERACTION_ACTOR_ACTION_MISSING',
+        'INTERACTION_TARGET_REQUIRED', 'INTERACTION_TARGET_NOT_IN_SHOT',
+        'INTERACTION_TARGET_MISMATCH', 'INTERACTION_PRIMARY_ACTION_MISMATCH',
+        'INTERACTION_PROMPT_DIRECTION_MISMATCH')]
     for i in actionable:
         print('shot %s: %s: %s' % (i['shot'], i['code'], i['suggestion'] or i['detail']))
     if args.json_out:
