@@ -2,11 +2,11 @@
 #!/usr/bin/env python3
 """Novel2Anima SQLite build: P0 schema + P1 pinned-source import. No PostgreSQL.
 
-    python etl/build.py all      # schema -> fetch -> load -> verify
-    python etl/build.py schema   # rebuild db/novel_anima.db from sql/schema_v1.sql
-    python etl/build.py fetch    # download pinned sources into data/sources/
-    python etl/build.py load     # idempotent import of every enabled source
-    python etl/build.py verify   # integrity_check / foreign_key_check / FTS5 / counts
+    python -m novel2anima.catalog.build_service all      # schema -> fetch -> load -> verify
+    python -m novel2anima.catalog.build_service schema   # rebuild db/novel_anima.db from sql/schema_v1.sql
+    python -m novel2anima.catalog.build_service fetch    # download pinned sources into data/sources/
+    python -m novel2anima.catalog.build_service load     # idempotent import of every enabled source
+    python -m novel2anima.catalog.build_service verify   # integrity_check / foreign_key_check / FTS5 / counts
 
 Raw downloads are cached under data/sources/ and hashed into data/sources/manifest.json,
 so load/verify work offline. Every imported row carries a source_snapshot id.

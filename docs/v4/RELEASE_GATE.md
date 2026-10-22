@@ -2,17 +2,17 @@
 
 ## Trạng thái hiện tại
 
-**NOT_READY**. Gate chạy được toàn bộ E2E/restore/rollback/benchmark, nhưng
-P8 vẫn còn legacy transitional nên không được signoff.
+**READY** trên staging. P8 legacy transitional đã xóa; gate trả exit `0`.
+Chưa thực hiện render Anima thật/cutover production.
 
 | Check | Kết quả |
 |---|---|
-| Migration ledger | pass, checksum khớp |
-| P8 disposition | **fail**: còn `character_profile.*_json`, `shot.character_id/shot_spec_json`, `act_publication` |
+| Migration ledger | pass, checksum khớp 002-012 |
+| P8 disposition | pass: 23/23 disposition, `act_publication` removed, không còn cột trùng |
 | DB-only E2E | pass: project → participant → outfit → spec → prompt → render → QA → replay |
 | Backup/restore | pass: counts, FKs, prompt SHA, asset SHA |
 | Rollback drill | pass: counts khớp snapshot nguồn |
-| Benchmark | pass: 1.2M tag, lookup 0.0007s, FK 37.6s |
+| Benchmark | pass: 1,208,779 tag, lookup 0.000197s, FK 29.36s |
 | Signed ledger | pass: content hash (hoặc HMAC nếu có key) |
 
 Report: [`evidence/pr-09/release_gate.json`](../../evidence/pr-09/release_gate.json).
@@ -48,14 +48,8 @@ Exit code:
 
 ## Blocker hiện tại
 
-`P8_LEGACY_DISPOSITION`:
-
-- `character_profile.identity_json/outfit_json`
-- `shot.character_id/shot_spec_json`
-- `act_publication`
-- projections `shot_finding`, `shot_state`, observations
-
-Không được drop khi reader/writer cũ còn dùng. Đây là lý do PR-09 chưa READY.
+Không còn. Projection `shot_finding`/`shot_state`/observations là read model phái
+sinh, không phải nguồn ghi canonical.
 
 ## Signoff
 

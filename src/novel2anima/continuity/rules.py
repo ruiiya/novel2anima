@@ -2,7 +2,7 @@
 
 Provenance: extracted verbatim from infer_state v0.3, a hypothesis for
 adult-shot continuity. Rules are policy, not taxonomy: change them here, bump
-RULES_VERSION, and keep `python etl/infer_state.py` in report mode until reviewed.
+RULES_VERSION, and keep `python -m novel2anima.continuity.inference` in report mode until reviewed.
 
 The algorithm stays deterministic Python; only the data lives in this module so
 `infer_state.py` cannot drift from tests or other consumers.

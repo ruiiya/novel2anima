@@ -4,10 +4,10 @@
 doc JSON tra ve va (tuy chon) ghi vao shot_finding source='qa:llm:v1'.
 
 Usage:
-  python etl/llm_review.py --act 13                  # chay + in ket qua (dry-run)
-  python etl/llm_review.py --act 13 --apply          # ghi shot_finding + data/reviews/
-  python etl/llm_review.py --act 13 --payload        # chi in payload (agent/nguoi tu review)
-  python etl/llm_review.py --act 13 --from-json f.json --apply
+  python -m novel2anima.llm.adapters.review_adapter --act 13                  # chay + in ket qua (dry-run)
+  python -m novel2anima.llm.adapters.review_adapter --act 13 --apply          # ghi shot_finding + data/reviews/
+  python -m novel2anima.llm.adapters.review_adapter --act 13 --payload        # chi in payload (agent/nguoi tu review)
+  python -m novel2anima.llm.adapters.review_adapter --act 13 --from-json f.json --apply
 
 Mac dinh LLM = codex CLI:  codex exec --sandbox read-only -o <tmp> -   (prompt qua stdin)
 Doi bang --cmd "lenh doc stdin, tra JSON ra stdout".
@@ -17,6 +17,7 @@ import argparse, collections, json, pathlib, re, subprocess, sys, tempfile
 from novel2anima.paths import REVIEWS_DIR
 from novel2anima.catalog import build_service as build
 from novel2anima.storage import story_repository as story_db
+from novel2anima.storage.shot_specs import latest_shot_spec
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 SOURCE = "qa:llm:v1"
@@ -51,8 +52,12 @@ Du lieu mot act (moi dong: shot | phase | participants | beat | caption | tags):
 
 def payload(con, act_no, batch, project=None, revision=None):
     aid = story_db.resolve_act(con, act_no, project, revision)
-    rows = con.execute("SELECT shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no",
-                       (aid,)).fetchall()
+    rows = [
+        (shot_no, latest_shot_spec(con, shot_id))
+        for shot_id, shot_no in con.execute(
+            "SELECT id, shot_no FROM shot WHERE act_id=? ORDER BY shot_no", (aid,)
+        ).fetchall()
+    ]
     out = []
     for i in range(0, len(rows), batch):
         lines = []
@@ -60,12 +65,10 @@ def payload(con, act_no, batch, project=None, revision=None):
         context = rows[max(0, i - 2):i]
         if context:
             lines.append("CONTEXT ONLY (do not report findings for these shots):")
-            for ctx_no, ctx_json in context:
-                ctx = json.loads(ctx_json)
+            for ctx_no, ctx in context:
                 lines.append("CONTEXT %d | %s | %s" % (ctx_no, ctx.get("caption", ""), ctx.get("beat", "")))
             lines.append("CURRENT BATCH:")
-        for shot_no, spec_json in rows[i:i + batch]:
-            spec = json.loads(spec_json)
+        for shot_no, spec in rows[i:i + batch]:
             tags = [x["name"] for g in ("identity", "outfit", "action", "expression", "pose",
                                         "motion", "camera", "cast") for x in spec.get(g) or []]
             lines.append("%d | %s | %s | %s | %s | %s" % (

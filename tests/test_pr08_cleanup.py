@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts/migrations"))
 sys.path.insert(0, str(ROOT / "scripts/qa"))
 
 from p8_drop_generation_image_path import rebuild  # noqa: E402
+from p8_drop_legacy_authority import rebuild as rebuild_authority  # noqa: E402
 from verify_p8_disposition import report  # noqa: E402
 from novel2anima.storage.migrations import apply_migrations  # noqa: E402
 
@@ -91,6 +92,70 @@ class Cleanup(unittest.TestCase):
             2,
         )
         con.close()
+
+    def test_authority_rebuild_removes_legacy_columns_and_publication(self):
+        con = sqlite3.connect(self.db)
+        con.execute("PRAGMA foreign_keys=ON")
+        con.execute("INSERT INTO project(id,title) VALUES(1,'P1')")
+        con.execute("INSERT INTO act(id,project_id,act_no,title) VALUES(1,1,1,'A1')")
+        con.execute(
+            "INSERT INTO character_profile(id,project_id,code,identity_json,outfit_json)"
+            " VALUES(1,1,'C1','{\"name\":\"C1\"}','{\"default\":[\"dress:1\"]}')"
+        )
+        con.execute(
+            "INSERT INTO shot(id,act_id,shot_no,character_id,shot_spec_json)"
+            " VALUES(1,1,1,1,'{\"participants\":[{\"code\":\"C1\"}]}')"
+        )
+        con.commit()
+        con.close()
+
+        self.assertEqual(rebuild(self.db)["status"], "ok")
+        result = rebuild_authority(self.db)
+        self.assertEqual(result["status"], "ok")
+        self.assertTrue(result["dropped_act_publication"])
+
+        con = sqlite3.connect(self.db)
+        self.assertEqual(
+            [row[1] for row in con.execute("PRAGMA table_info(character_profile)")],
+            ["id", "project_id", "code"],
+        )
+        self.assertNotIn(
+            "shot_spec_json", [row[1] for row in con.execute("PRAGMA table_info(shot)")]
+        )
+        self.assertNotIn(
+            "character_id", [row[1] for row in con.execute("PRAGMA table_info(shot)")]
+        )
+        self.assertEqual(
+            con.execute(
+                "SELECT count(*) FROM sqlite_master"
+                " WHERE type='table' AND name='act_publication'"
+            ).fetchone()[0],
+            0,
+        )
+        self.assertEqual(
+            json.loads(con.execute(
+                "SELECT identity_json FROM character_identity_revision"
+            ).fetchone()[0]),
+            {"name": "C1"},
+        )
+        self.assertEqual(
+            json.loads(con.execute("SELECT spec_json FROM outfit_revision").fetchone()[0]),
+            {"default": ["dress:1"]},
+        )
+        self.assertEqual(
+            json.loads(con.execute("SELECT spec_json FROM shot_spec_revision").fetchone()[0]),
+            {"participants": [{"code": "C1"}]},
+        )
+        self.assertEqual(con.execute("SELECT count(*) FROM shot_participant").fetchone()[0], 1)
+        self.assertEqual(con.execute("PRAGMA foreign_key_check").fetchall(), [])
+        self.assertEqual(con.execute("PRAGMA quick_check").fetchone()[0], "ok")
+        con.close()
+
+        data = report(self.db)
+        self.assertTrue(data["clean"], [
+            row["table"] for row in data["tables"]
+            if not row["present"] or any(row["duplicate_columns"].values())
+        ])
 
     def test_disposition_covers_every_legacy_table(self):
         data = report(self.db)

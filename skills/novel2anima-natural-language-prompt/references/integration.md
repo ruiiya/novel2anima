@@ -6,9 +6,9 @@ As of the public repository review on 2026-10-20, the Novel2Anima README and sho
 
 - `skills/novel2anima-shot-pipeline/SKILL.md`: upstream ShotSpec and render pipeline guidance.
 - `skills/novel2anima-catalog/SKILL.md`: tag meanings, aliases, roles, concepts, source provenance.
-- `etl/seed_plan.py`, `etl/wardrobe.py`: upstream prompt/tag and garment work.
-- `etl/check_prompts.py`: tag-string and database alignment checks; not suitable as a gate for prose equivalence.
-- `etl/llm_review.py`: LLM advisory review of caption vs tags and character/continuity issues.
+- `python -m novel2anima.pipeline.plan_seeder`, `python -m novel2anima.wardrobe.rules`: upstream prompt/tag and garment work.
+- `python -m novel2anima.quality.prompt_rules`: tag-string and database alignment checks; not suitable as a gate for prose equivalence.
+- `python -m novel2anima.llm.adapters.review_adapter`: LLM advisory review of caption vs tags and character/continuity issues.
 
 Verify the actual checkout before editing. README/skill references may describe planned rather than deployed features, and available model configurations can differ from those examples.
 

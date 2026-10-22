@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Import wiki_pages dump vao tag_source (khong doi schema, khong them bang).
 
-Usage: python etl/import_wiki_pages.py [--file PATH]
+Usage: python -m novel2anima.catalog.importers.wiki_pages [--file PATH]
 
 Moi wiki page co title trung canonical_name cua tag -> 1 row tag_source tren snapshot
 wiki, source_metadata = {"wiki_id":..,"updated_at":..,"body":..}. Title khong phai tag

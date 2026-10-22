@@ -89,13 +89,27 @@ class ImportLedgerTests(unittest.TestCase):
             beta_identity = {"identity_tags": ["beta"]}
             beta_outfit = {"default": []}
             connection.executemany(
-                "INSERT INTO character_profile(id,project_id,code,identity_json,outfit_json) "
-                "VALUES (?,?,?,?,?)",
-                [
-                    (1, 1, "ALPHA_CHAR", canonical(alpha_identity), canonical(alpha_outfit)),
-                    (2, 1, "BETA_CHAR", canonical(beta_identity), canonical(beta_outfit)),
-                ],
+                "INSERT INTO character_profile(id,project_id,code) VALUES (?,?,?)",
+                [(1, 1, "ALPHA_CHAR"), (2, 1, "BETA_CHAR")],
             )
+            for cid, identity, outfit in (
+                (1, alpha_identity, alpha_outfit),
+                (2, beta_identity, beta_outfit),
+            ):
+                body = canonical(identity)
+                connection.execute(
+                    "INSERT INTO character_identity_revision"
+                    "(character_id,revision,identity_json,sha256,status)"
+                    " VALUES(?,1,?,?,'approved')",
+                    (cid, body, sha(body)),
+                )
+                body = canonical(outfit)
+                connection.execute(
+                    "INSERT INTO outfit_revision"
+                    "(character_id,revision,spec_json,spec_sha256,status)"
+                    " VALUES(?,1,?,?,'approved')",
+                    (cid, body, sha(body)),
+                )
             for shot_no in (1, 2, 3):
                 spec_json = canonical({"shot": shot_no, "action": ["test"]})
                 spec_sha = sha(spec_json)

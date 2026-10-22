@@ -1,23 +1,22 @@
 # Novel2Anima - V4 rebuild
 
-> V4 code lives under `src/novel2anima/`; `etl/*.py` are compatibility shims.
+> V4 code lives under `src/novel2anima/`; the legacy `etl/` tree is removed.
 > The SQLite DB is canonical for projects, prompts, renders and QA. Start at
-> [`docs/v4/README.md`](docs/v4/README.md). The legacy command notes below are
-> kept for the catalog importers until PR-08 cleanup is complete.
+> [`docs/v4/README.md`](docs/v4/README.md).
 
-## Legacy catalog build (P0 schema + P1 import)
+## Catalog build (P0 schema + P1 import)
 
 Local SQLite catalog for the Novel2Anima pipeline: raw Danbooru tags, curated visual
 concepts and the runtime tables, in one file. No PostgreSQL, no vector DB.
 
 ## Run
 
-    python etl/build.py all        # schema -> fetch -> load -> verify
-    python etl/build.py fetch      # download pinned sources into data/sources/ (sha256 manifest)
-    python etl/build.py load       # idempotent import into db/novel_anima.db
-    python etl/build.py verify     # integrity_check / foreign_key_check / FTS5 / row gates
-    python etl/build.py schema --force   # drop and rebuild the db from sql/schema_v1.sql
-    python etl/seed_plan.py data/characters/dxd_roster.json   # roster-only: upserts character_profile, writes no shots
+    python -m novel2anima.catalog.build_service all        # schema -> fetch -> load -> verify
+    python -m novel2anima.catalog.build_service fetch      # download pinned sources into data/sources/ (sha256 manifest)
+    python -m novel2anima.catalog.build_service load       # idempotent import into db/novel_anima.db
+    python -m novel2anima.catalog.build_service verify     # integrity_check / foreign_key_check / FTS5 / row gates
+    python -m novel2anima.catalog.build_service schema --force   # drop and rebuild the db from sql/schema_v1.sql
+    python -m novel2anima.pipeline.plan_seeder data/characters/dxd_roster.json   # roster-only: upserts character_profile, writes no shots
 
 Python 3.9+ stdlib only (`sqlite3`, `urllib`, `csv`, `json`). SQLite must have FTS5.
 
@@ -38,7 +37,7 @@ Verified: `integrity_check` ok, 0 foreign-key violations, FTS5 index == concept 
 `MATCH 'pose'` returns 297. Rerunning `load` (and `load --force`) changes nothing:
 imports are keyed on `source_snapshot(source_key, revision)`.
 
-## Pinned sources (`etl/sources.json`)
+## Pinned sources (`config/catalog/sources.json`)
 
 | key | pin | use |
 |---|---|---|
@@ -52,44 +51,44 @@ Every download is hashed into `data/sources/manifest.json`; `load`/`verify` run 
 from that cache. Licenses are recorded per source in `sources.json` and copied into
 `source_snapshot.license_note` — check them before redistribution.
 
-## Local Danbooru dump (`etl/import_danbooru_dump.py`)
+## Local Danbooru dump (`python -m novel2anima.catalog.importers.danbooru_dump`)
 
-`python etl/import_danbooru_dump.py [--dir DIR] [--only tags,aliases,implications,artists]`
+`python -m novel2anima.catalog.importers.danbooru_dump [--dir DIR] [--only tags,aliases,implications,artists]`
 imports the official Danbooru CSV dumps (`tags.csv.gz`, `tag_aliases.csv.gz`,
 `tag_implications.csv.gz`, `artists.csv.gz`) straight from disk. Each file is hashed into
 `source_snapshot`, so reruns are idempotent: existing tags keep their id, `post_count`
 takes the max, new tags land as `unreviewed`. No schema change, no invented ids.
 
-`python etl/analyze_posts.py [--file PATH] [--limit N] [--pair-every 8] [--dry-run]`
+`python -m novel2anima.catalog.importers.analyze_posts [--file PATH] [--limit N] [--pair-every 8] [--dry-run]`
 (6.7M post, ~25 min): cap nhat `tag.post_count` theo so post that, sinh `tag_content_label`
 tu histogram rating (adult/contextual/neutral), sinh `tag_relation(relation='compatible')`
 theo lift co-occurrence (chi giu lift >= 5), va liet ke tag thieu ra
 `data/sources/posts_unknown_tags.txt`.
-`python etl/import_posts_unknown.py [--min-count 5]`: nap cac tag thieu do vao bang tag
+`python -m novel2anima.catalog.importers.unknown_tags [--min-count 5]`: nap cac tag thieu do vao bang tag
 (category NULL vi khong biet, post_count = so lan xuat hien).
 
-`python etl/import_wiki_pages.py [--file PATH]`: wiki text -> tag_source metadata.
-`python etl/import_wiki_links.py [--reset]`: wiki sections -> tag_relation
+`python -m novel2anima.catalog.importers.wiki_pages [--file PATH]`: wiki text -> tag_source metadata.
+`python -m novel2anima.catalog.importers.wiki_links [--reset]`: wiki sections -> tag_relation
 ("related tags"/"see also" = recommends, "not to be confused with"/"should not be tagged as" =
 conflicts) + under_debate flag trong tag_source.
-`python etl/import_wiki_groups.py`: 48 page `tag_group:*` (4 nhom e621 bi skip) -> visual_concept kind=other
+`python -m novel2anima.catalog.importers.wiki_groups`: 48 page `tag_group:*` (4 nhom e621 bi skip) -> visual_concept kind=other
 + concept_tag (palette theo nhom: clothes, colors, anatomy, sex_positions...).
 Moi importer local nhan `--file`/`--dir`; mac dinh lay tu `N2A_DATA_DIR` (fallback
 `data/imports/`), khong con duong dan may ca nhan trong code.
-`python etl/prune_tags.py [--apply] [--vacuum]`: xoa tag post_count=0 khong duoc
+`python -m novel2anima.catalog.maintenance.prune_tags [--apply] [--vacuum]`: xoa tag post_count=0 khong duoc
 tham chieu o dau (giu tag co wiki/role/relation/concept/alias hoac duoc nhac trong plan).
-`python etl/cleanup_db.py [--apply] [--vacuum]`: xoa alias trung ten tag that (tag thang alias),
+`python -m novel2anima.catalog.maintenance.cleanup_db [--apply] [--vacuum]`: xoa alias trung ten tag that (tag thang alias),
 xuat `data/sources/tags_not_prompt_token.txt` (tag ky tu dac biet/emoji - van giu trong db) va vacuum.
-`python etl/check_reseed.py`: seed lai toan bo `data/plans/*.json` va assert ket qua idempotent
+`python -m scripts.qa.check_reseed`: seed lai toan bo `data/plans/*.json` va assert ket qua idempotent
 (prompt file khong doi, khong con alias mo ho, fk sach). Dung sau moi lan sua du lieu catalog.
 
-## Quy tac chung cho moi plan (`etl/wardrobe.py`, seed_plan tu ap)
+## Quy tac chung cho moi plan (`python -m novel2anima.wardrobe.rules`, seed_plan tu ap)
 
 Ca hai quy tac chi ap khi db *biet*, khong hard-code trong code:
 
 - **Khoa mau do**: du lieu mau nam trong catalog — `visual_concept` code `WC_<do>` + `concept_tag`
   (`primary` = do goc, `alternative` = bien the mau, `priority=1` = mau dang chon).
-  Nap bang `python etl/import_colour_sets.py --apply`: bien the `<mau>_<do>` that trong catalog
+  Nap bang `python -m novel2anima.catalog.importers.colour_sets --apply`: bien the `<mau>_<do>` that trong catalog
   (`black_thighhighs`, `white_shirt`...), bo mau chuan bi cho phase 1
   (`data/wardrobe/colour_choice.json`: `<do> -> <mau>`), va cue `<mau>_clothing` cho do khong co
   bien the mau (`data/wardrobe/colour_cue.json`). seed_plan thay tag do bang bien the mau, noi y
@@ -104,16 +103,16 @@ Ca hai quy tac chi ap khi db *biet*, khong hard-code trong code:
   trong cung frame), khong sua pose/action. Chuyen tu the giua cac shot la su kien ke chuyen
   hop le; muon sua thi sua plan bang tay.
 
-Thu tu sau `python etl/build.py all`: seed_plan moi plan -> `python etl/qa_shots.py --apply`
--> `python etl/check_prompts.py` (soat may: file vs db, cu phap, tag thieu/thua/lap, xung dot,
+Thu tu sau `python -m novel2anima.catalog.build_service all`: seed_plan moi plan -> `python -m novel2anima.quality.shot_rules --apply`
+-> `python -m novel2anima.quality.prompt_rules` (soat may: file vs db, cu phap, tag thieu/thua/lap, xung dot,
 so nguoi, do dai, trung lap, negative, dong `qa:*`)
--> `python etl/llm_review.py --act N --apply` (soat nghia bang LLM: caption vs tag, doi mau
-giua cac shot, tag gan sai nguoi; ket qua la goi y, luu `data/reviews/`). `python etl/check_reseed.py`
+-> `python -m novel2anima.llm.adapters.review_adapter --act N --apply` (soat nghia bang LLM: caption vs tag, doi mau
+giua cac shot, tag gan sai nguoi; ket qua la goi y, luu `data/reviews/`). `python -m scripts.qa.check_reseed`
 gom 6 buoc dau va tra ve 0 error.
 
-## Xac dinh van de, khong cung nhac (`etl/qa_shots.py`, `etl/suggest_tags.py`)
+## Xac dinh van de, khong cung nhac (`python -m novel2anima.quality.shot_rules`, `python -m novel2anima.catalog.retrieval.suggest_tags`)
 
-- `python etl/qa_shots.py --apply`: quet moi shot, ghi van de vao `shot_finding` (axis
+- `python -m novel2anima.quality.shot_rules --apply`: quet moi shot, ghi van de vao `shot_finding` (axis
   `mau_thieu`, `mau_lech`, `xung_dot`, `tu_the_lech`, `noi_dung_chan`; `source='qa:v1'`).
   Day la lop bao cao de model/nguoi doc roi quyet dinh: khong sua prompt, khong chan seed.
   Moi `(shot, rule, source)` la mot row rieng nen QA va LLM review khong ghi de nhau.
@@ -121,7 +120,7 @@ gom 6 buoc dau va tra ve 0 error.
   (migration 004), khong bao gio sua `shot_state`/`act_continuity` da duoc chot;
   mac dinh chi report, them `--apply` moi ghi va chi xoa dong `inferred:*` cua act no xu ly.
   `act_publication` la outbox: `pending=1` giua commit DB va publish file; rerun plan de reconcile.
-- `python etl/suggest_tags.py --tag black_thighhighs` (hoac `--shot ID` / `--act 13`): goi y tag
+- `python -m novel2anima.catalog.retrieval.suggest_tags --tag black_thighhighs` (hoac `--shot ID` / `--act 13`): goi y tag
   ngoai tag goc tu `tag_relation` + `concept_tag optional/alternative` + `tag_role`.
 - Plan chi can dung *ten* tag: id cu trong plan duoc thay bang id trong catalog (bao
   `id cu trong plan -> lay theo ten: N ref`); chi ten khong co trong catalog moi bi tu choi.
@@ -139,8 +138,8 @@ gom 6 buoc dau va tra ve 0 error.
 - **No retrieval/ranking API, no shot history, no ComfyUI orchestration** (P3–P5).
 - Alias conflicts (26,653 rows) are resolved first-writer-wins, implications db first.
   Losing CSV aliases are counted in the load stats, not stored.
-- `data/sources/` is gitignored: `python etl/build.py fetch` refetches it. `db/novel_anima.db`
-  is a **build artifact, not tracked** (gitignored): rebuild it with `python etl/build.py all`
+- `data/sources/` is gitignored: `python -m novel2anima.catalog.build_service fetch` refetches it. `db/novel_anima.db`
+  is a **build artifact, not tracked** (gitignored): rebuild it with `python -m novel2anima.catalog.build_service all`
   then re-seed the plans. Committing a 327 MB file left ~300 MB of LFS scratch in
   `.git/lfs/tmp` per git operation; to publish a checkpoint on purpose use
   `git add -f db/novel_anima.db` (the LFS filter in `.gitattributes` still applies).
@@ -151,7 +150,7 @@ gom 6 buoc dau va tra ve 0 error.
 
     git lfs prune                 # xoa LFS object khong con ref nao tro toi
     del .git\lfs\tmp\*            # scratch cua LFS (an toan khi khong co git/lfs dang chay)
-    python etl/build.py verify    # 13 checks
+    python -m novel2anima.catalog.build_service verify    # 13 checks
 
 Giu `db/` ngoai git la yeu cau: file 327 MB bi stage lai moi lan git thao tac, sinh ra
 hang tram GB trong `.git/lfs/tmp`.
@@ -162,13 +161,13 @@ hang tram GB trong `.git/lfs/tmp`.
     data/characters/       character roster (dxd_roster.json) -> character_profile
     act_specs/             tracked hand-authored ActSpec fixtures (solo + duo, CI)
     act_tools/             local-only act workspace (gitignored; generated by act runs)
-    etl/sources.json       pinned source list
-    etl/build.py           schema / fetch / load / verify
-    etl/tag_roles.py       one versioned source for body-state tag overrides
-    etl/state_rules.py     continuity inference policy (RULES_VERSION)
+    config/catalog/sources.json       pinned source list
+    python -m novel2anima.catalog.build_service           schema / fetch / load / verify
+    python -m novel2anima.catalog.tag_roles       one versioned source for body-state tag overrides
+    python -m novel2anima.continuity.rules     continuity inference policy (RULES_VERSION)
     db/novel_anima.db      built catalog (gitignored, khong track)
     db/import_report.json  counts + check results from the last verify
-    etl/check_prompts.py   self-check prompt cua mot act (0 error moi render)
-    etl/llm_review.py      soat prompt bang LLM (codex exec qua stdin, JSON)
+    python -m novel2anima.quality.prompt_rules   self-check prompt cua mot act (0 error moi render)
+    python -m novel2anima.llm.adapters.review_adapter      soat prompt bang LLM (codex exec qua stdin, JSON)
     data/sources/          raw downloads + sha256 manifest (gitignored)
     skills/                novel2anima-catalog + novel2anima-shot-pipeline (skill specs)

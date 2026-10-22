@@ -7,11 +7,11 @@ metadata:
 
 # Novel2Anima Catalog — V4 full-data contract
 
-> V4 implementation lives under `src/novel2anima/`; legacy `etl/` commands are
-> compatibility shims. Canonical schema and disposition are documented in
+> V4 implementation lives under `src/novel2anima/`; the legacy `etl/` tree is
+> removed. Run package modules with `python -m novel2anima...`. Canonical schema
+> and disposition are documented in
 > [`docs/v4/P8_LEGACY_DISPOSITION.md`](../../docs/v4/P8_LEGACY_DISPOSITION.md).
-> Do not treat legacy `character_profile.*_json`, `shot.shot_spec_json`,
-> `shot_finding` or `shot_state` as the only authority.
+> `shot_finding` and `shot_state` are projections, not canonical authority.
 
 Read [references/v4-architecture.md](references/v4-architecture.md) for the architecture
 and table inventory extracted from the user-provided V4 handoff. POC settings and
@@ -48,16 +48,16 @@ Each table has a stage-specific purpose; no individual query needs to join all 1
 
 Some catalog edits do not add tables — they add `visual_concept` rows that later steps read:
 
-- **Outfit colours**: `python etl/import_colour_sets.py --apply` writes one `visual_concept`
+- **Outfit colours**: `python -m novel2anima.catalog.importers.colour_sets --apply` writes one `visual_concept`
   per garment (`code='WC_<garment>'`, kind `other`) whose `concept_tag` rows name the base
   garment (`usage='primary'`), the real `<colour>_<garment>` variants (`alternative`) and the
   chosen colour (`priority=1`). Source of truth for the phase-1 decisions is
   `data/wardrobe/colour_choice.json` (`garment -> colour`) plus `colour_cue.json` for garments
   with no colour variant in the catalog. It deletes stale `WC_*` concepts and rebuilds FTS.
-- **Wiki-derived grouping**: `etl/import_wiki_groups.py` / `import_wiki_links.py` turn Danbooru
+- **Wiki-derived grouping**: `python -m novel2anima.catalog.importers.wiki_groups` / `import_wiki_links.py` turn Danbooru
   wiki text into concept tags and `tag_relation` evidence (`from_tag_id`/`to_tag_id`, note kept).
-- Tag hygiene: `python etl/prune_tags.py`, `python etl/cleanup_db.py [--apply] [--vacuum]`,
-  `python etl/import_danbooru_dump.py`, `python etl/import_posts_unknown.py`.
+- Tag hygiene: `python -m novel2anima.catalog.maintenance.prune_tags`, `python -m novel2anima.catalog.maintenance.cleanup_db [--apply] [--vacuum]`,
+  `python -m novel2anima.catalog.importers.danbooru_dump`, `python -m novel2anima.catalog.importers.unknown_tags`.
 Report empty, unmapped and unused domains separately. Do not invent V1 columns or
 migrations: inspect `sqlite_master` and `PRAGMA table_info(...)` in the actual DB.
 Preserve `tag_content_label`, `content_scope` and `contentProfile` values when they exist;
@@ -99,7 +99,7 @@ When no curated concept exists, return raw-tag, alias or role candidates and rep
 
 ## Catalog development rules
 
-- Prior conventional paths `etl/build.py`, `etl/sources.json`, `sql/schema_v1.sql`,
+- Prior conventional paths `python -m novel2anima.catalog.build_service`, `config/catalog/sources.json`, `sql/schema_v1.sql`,
   `db/novel_anima.db` and `db/import_report.json` are **not bundled**; check for them.
 - ETL stages: pinned fetch → checksum/license manifest → safely parse CSV/JSON/SQLite/JS
   (never `eval` untrusted JS) → normalize tags/aliases → roles → preset mappings → concepts
@@ -119,7 +119,7 @@ Catalog retrieval does not create story events. Preserve real action/expression 
 match each action to the intended participant and reaction, and leave missing semantic
 mappings explicitly unresolved. No random tag pool can replace a beat -> micro-action
 plan. On rebuild, create `sql/migrations/002_shot_state.sql` with base schema and run
-`etl/check_reseed.py` (private SQLite clone) rather than destructive live reseeding.
+`python -m scripts.qa.check_reseed` (private SQLite clone) rather than destructive live reseeding.
 Do not overwrite generation rows when a plan revision changes.
 
 ## Done criteria

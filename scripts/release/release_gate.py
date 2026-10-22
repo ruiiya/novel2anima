@@ -42,7 +42,7 @@ from novel2anima.storage.migrations import (  # noqa: E402
     discover_migrations,
     is_live_database,
 )
-from verify_p8_disposition import report as disposition_report  # noqa: E402
+from verify_p8_disposition import is_clean_row as disposition_row_clean, report as disposition_report  # noqa: E402
 
 SCHEMA_VERSION = "v4-release-gate-1"
 MIGRATIONS = ROOT / "sql/migrations"
@@ -116,8 +116,8 @@ def _seed_e2e(db: pathlib.Path) -> dict:
         b = a + 1
         con.execute("INSERT INTO project(id,title) VALUES(?, 'Release gate E2E')", (project_id,))
         con.executemany(
-            "INSERT INTO character_profile(id,project_id,code,identity_json,outfit_json)"
-            " VALUES(?,?,?,'{}','{}')",
+            "INSERT INTO character_profile(id,project_id,code)"
+            " VALUES(?,?,?)",
             [(a, project_id, "E2E_A"), (b, project_id, "E2E_B")],
         )
         act_id = ids["act"]
@@ -128,8 +128,8 @@ def _seed_e2e(db: pathlib.Path) -> dict:
         )
         shot_id = ids["shot"]
         con.execute(
-            "INSERT INTO shot(id,act_id,shot_no,shot_spec_json,status)"
-            " VALUES(?,?,1,'{}','planned')",
+            "INSERT INTO shot(id,act_id,shot_no,status)"
+            " VALUES(?,?,1,'planned')",
             (shot_id, act_id),
         )
         tag_names = (
@@ -359,22 +359,13 @@ def run_gate(
             report["blockers"].append("MIGRATION_LEDGER_DRIFT")
 
         disposition = disposition_report(db_path)
-        disposition_clean = not any(
-            row["disposition"] == "transitional"
-            or any(row["duplicate_columns"].values())
-            or not row["present"]
-            for row in disposition["tables"]
-        )
         report["checks"]["disposition"] = {
-            "ok": disposition_clean
-                  and not disposition["missing_from_csv"]
-                  and not disposition["missing_disposition"],
+            "ok": disposition["clean"],
             "legacy_tables": disposition["legacy_table_count"],
             "missing": disposition["missing_from_csv"] + disposition["missing_disposition"],
             "transitional": [
                 row["table"] for row in disposition["tables"]
-                if row["disposition"] == "transitional"
-                or any(row["duplicate_columns"].values())
+                if not disposition_row_clean(row)
             ],
         }
         if not report["checks"]["disposition"]["ok"]:

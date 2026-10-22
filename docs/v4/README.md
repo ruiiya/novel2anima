@@ -8,12 +8,12 @@
 | PR-01 | Migration runner, schema version | hoàn tất |
 | PR-02 | Relational backfill | hoàn tất |
 | PR-03 | Import ledger | hoàn tất |
-| PR-04 | Domain package, `etl/` shims | hoàn tất |
+| PR-04 | Domain package (`etl/` removed) | hoàn tất |
 | PR-05 | Story/wardrobe/continuity invariants | hoàn tất |
 | PR-06 | 11 LLM contracts, prompt registry | hoàn tất |
 | PR-07 | Compile, render BLOB, QA history | hoàn tất |
-| PR-08 | Legacy cleanup + docs/skills | một phần, xem disposition |
-| PR-09 | Release gate | **chạy được, NOT_READY** do P8 legacy |
+| PR-08 | Legacy cleanup + docs/skills | hoàn tất |
+| PR-09 | Release gate | **READY** trên staging; chưa render Anima thật/cutover |
 
 ## Nguồn chuẩn
 
@@ -39,7 +39,6 @@ src/novel2anima/
   llm/           contracts, registry, adapters
   render/        render persistence
   quality/       prompt/story/shot/QA rules
-etl/             thin compatibility shims, not implementation
 sql/migrations/  additive + data-preserving migrations
 docs/v4/         authoritative V4 documentation
 ```
@@ -60,6 +59,5 @@ python scripts/qa/verify_p8_disposition.py --db <staging.db>
 PYTHONPATH=src python -m novel2anima.storage.migrations --db <staging.db> --migrations sql/migrations
 ```
 
-Legacy CLI vẫn chạy qua `python etl/<name>.py`; implementation nằm trong
-`src/novel2anima/**`. `etl/` sẽ chỉ bị xóa sau khi PR-08 hoàn tất việc loại bỏ
-reader legacy.
+CLI dùng package module: `python -m novel2anima.<domain>.<module>`. Không còn
+`etl/` shim hay reader legacy.

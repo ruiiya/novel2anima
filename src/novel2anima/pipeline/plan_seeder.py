@@ -2,16 +2,15 @@
 """Seed a plan JSON into the runtime tables and emit the prompt file.
 
 Usage:
-  python etl/seed_plan.py data/plans/act02_yuri_raiden_yae.json
-  python etl/seed_plan.py data/plans/foo.json --dry-run
-  python etl/seed_plan.py data/plans/foo.json --strict
+  python -m novel2anima.pipeline.plan_seeder data/plans/act02_yuri_raiden_yae.json
+  python -m novel2anima.pipeline.plan_seeder data/plans/foo.json --dry-run
+  python -m novel2anima.pipeline.plan_seeder data/plans/foo.json --strict
 
 The whole act is validated before any write. Prompt files are written with a
 temporary file + atomic replace; SQLite writes run in one transaction. Existing
 shot/render history is still protected by story_db.upsert_shot/prune_missing_shots.
 """
 import argparse
-import hashlib
 import json
 import os
 import pathlib
@@ -24,6 +23,12 @@ from datetime import datetime, timezone
 from novel2anima.paths import DB_PATH
 from novel2anima.wardrobe import rules as wardrobe
 from novel2anima.storage import story_repository as story_db
+from novel2anima.storage.domain_repository import (
+    add_interaction,
+    bind_outfit,
+    ensure_identity_revision,
+    ensure_outfit_revision,
+)
 from novel2anima.story import logic as story_logic
 
 GROUPS = ("outfit", "body_state", "action", "expression", "pose", "motion", "camera", "cast", "props")
@@ -176,33 +181,6 @@ def directed_clause(char_name, actor, target, primary):
     return "%s %s." % (char_name.get(actor, str(actor)),
                        tpl.format(t=char_name.get(target, str(target))))
 
-MIGRATIONS = pathlib.Path(__file__).resolve().parents[3] / "sql" / "migrations"
-
-def ensure_runtime_tables(con):
-    """Create observation/publication tables on older DBs (idempotent DDL)."""
-    con.executescript((MIGRATIONS / "004_observation_publication.sql").read_text(encoding="utf-8"))
-
-def _now():
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-def record_publication(cur, act_id, revision, files):
-    """Write the publication outbox row as pending before touching the filesystem."""
-    prompt_path, prompt_text = files[0]
-    neg_path, neg_text = files[1] if len(files) > 1 else (None, "")
-    cur.execute(
-        "INSERT INTO act_publication(act_id, revision, prompt_path, prompt_sha256,"
-        " negative_path, negative_sha256, pending, updated_at) VALUES(?,?,?,?,?,?,1,?)"
-        " ON CONFLICT(act_id, revision) DO UPDATE SET prompt_path=excluded.prompt_path,"
-        " prompt_sha256=excluded.prompt_sha256, negative_path=excluded.negative_path,"
-        " negative_sha256=excluded.negative_sha256, pending=1, updated_at=excluded.updated_at",
-        (act_id, revision, str(prompt_path), hashlib.sha256(prompt_text.encode("utf-8")).hexdigest(),
-         str(neg_path) if neg_path else None,
-         hashlib.sha256(neg_text.encode("utf-8")).hexdigest() if neg_path else None, _now()))
-
-def mark_published(cur, act_id, revision):
-    cur.execute("UPDATE act_publication SET pending=0, updated_at=? WHERE act_id=? AND revision=?",
-                (_now(), act_id, revision))
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("plan")
@@ -232,7 +210,7 @@ def main():
               file=sys.stderr)
         return 1
     if issues:
-        print("story plan: %d warning(s); run etl/plan_actions.py for suggestions" %
+        print("story plan: %d warning(s); run python -m novel2anima.story.action_planner for suggestions" %
               sum(i.level == "WARN" for i in issues))
 
     chars = plan.get("characters") or [plan["character"]]
@@ -428,7 +406,7 @@ def main():
         if pose_cid is None:
             flags.append("POSE_CONCEPT_GAP")
         if len(p["participants"]) > 1:
-            flags.append("SCHEMA_GAP: shot.character_id holds one FK; %d participants live in shot_spec_json"
+            flags.append("SCHEMA_GAP: %d participants stored in shot_participant"
                          % len(p["participants"]))
 
         drop = {"1girl", "1boy", "solo"} if len(p["participants"]) > 1 else set()
@@ -596,7 +574,6 @@ def main():
         con.close()
         return 0
 
-    ensure_runtime_tables(con)
     con.isolation_level = None
     try:
         con.execute("BEGIN IMMEDIATE")
@@ -622,19 +599,19 @@ def main():
 
         char_ids = {}
         for ch in chars:
-            cur.execute("SELECT id, identity_json, outfit_json FROM character_profile"
-                        " WHERE project_id=? AND code=?", (pid, ch["code"]))
+            cur.execute("SELECT id FROM character_profile WHERE project_id=? AND code=?",
+                        (pid, ch["code"]))
             r = cur.fetchone()
-            ident = ch.get("identity_json") or (json.loads(r[1]) if r and r[1] else {})
-            outfit = ch.get("outfit_json") or (json.loads(r[2]) if r and r[2] else {})
-            payload = (json.dumps(ident, ensure_ascii=False), json.dumps(outfit, ensure_ascii=False))
             if r:
-                char_ids[ch["code"]] = r[0]
-                cur.execute("UPDATE character_profile SET identity_json=?, outfit_json=? WHERE id=?", payload + (r[0],))
+                cid = int(r[0])
             else:
-                cur.execute("INSERT INTO character_profile(project_id, code, identity_json, outfit_json) VALUES(?,?,?,?)",
-                            (pid, ch["code"], payload[0], payload[1]))
-                char_ids[ch["code"]] = cur.lastrowid
+                cur.execute("INSERT INTO character_profile(project_id, code) VALUES(?,?)",
+                            (pid, ch["code"]))
+                cid = int(cur.lastrowid)
+            char_ids[ch["code"]] = cid
+            ensure_identity_revision(
+                cur, cid, ch.get("identity_json") or {}, status="approved"
+            )
 
         if "shots" not in plan:
             con.commit()
@@ -660,8 +637,47 @@ def main():
         for item in built:
             shot, p, spec = item["shot"], item["p"], item["spec"]
             multi = multi or len(p["participants"]) > 1
-            story_db.upsert_shot(cur, aid, shot["n"], char_ids[p["participants"][0]],
-                                 item["pose_cid"], spec["signature"], spec, content_mode)
+            sid, changed = story_db.upsert_shot(
+                cur, aid, shot["n"], spec, content_mode, pose_id=item["pose_cid"]
+            )
+            participant_ids = [char_ids[code] for code in p["participants"]]
+            if changed or not cur.execute(
+                "SELECT 1 FROM shot_participant WHERE shot_id=? LIMIT 1", (sid,)
+            ).fetchone():
+                story_db.replace_participants(cur, sid, participant_ids)
+                sequence = shot.get("sequence") or {}
+                actor_code, target_code = sequence.get("actor"), sequence.get("target")
+                action = sequence.get("primaryAction") or sequence.get("action")
+                if (
+                    actor_code in char_ids and target_code in char_ids and action
+                    and cur.execute(
+                        "SELECT 1 FROM tag WHERE canonical_name=?", (action,)
+                    ).fetchone()
+                ):
+                    add_interaction(
+                        cur, sid, char_ids[actor_code], char_ids[target_code], action
+                    )
+                if p["outfit"]:
+                    outfit_spec = {
+                        "tags": [
+                            {"name": name, "tag_id": tag_id}
+                            for name, tag_id in p["outfit"]
+                        ]
+                    }
+                    items = [
+                        {
+                            "item_code": "tag_%d" % tag_id,
+                            "slot": "outfit",
+                            "garment_type": "garment",
+                            "details": {"tag_id": tag_id},
+                        }
+                        for _name, tag_id in p["outfit"]
+                    ]
+                    for character_id in participant_ids:
+                        outfit_id = ensure_outfit_revision(
+                            cur, character_id, outfit_spec, items, status="approved"
+                        )
+                        bind_outfit(cur, sid, character_id, outfit_id)
             lines.append(item["prompt"])
 
         story_db.prune_missing_shots(cur, aid, [item["shot"]["n"] for item in built])
@@ -672,15 +688,12 @@ def main():
             (out, "\n\n".join(lines) + "\n"),
             (out.with_name(out.stem + ".neg.txt"), negative + "\n"),
         ]
-        record_publication(cur, aid, ac.get("revision", 1), files)
-        con.commit()
         try:
             publish_files(files)
         except OSError as exc:
             print("prompt publish failed after DB commit: %s; rerun this plan to reconcile" % exc,
                   file=sys.stderr)
             raise
-        mark_published(cur, aid, ac.get("revision", 1))
         con.commit()
     except BaseException:
         con.rollback()
@@ -694,7 +707,7 @@ def main():
     print("pose concept resolved: %d/%d" % (pose_hits, len(parsed)))
     print("implied-redundant tags pruned from prompts: %d" % pruned_total)
     if multi:
-        print("SCHEMA_GAP: multi-character shots keep the whole cast in shot_spec_json.participants")
+        print("participants stored in shot_participant; specs in shot_spec_revision")
     return 0
 
 if __name__ == "__main__":

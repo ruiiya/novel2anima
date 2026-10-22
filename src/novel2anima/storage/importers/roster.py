@@ -78,8 +78,12 @@ class RosterParser:
                 continue
 
             matches = connection.execute(
-                "SELECT id, project_id, identity_json, outfit_json "
-                "FROM character_profile WHERE code = ? ORDER BY project_id, id",
+                "SELECT c.id, c.project_id,"
+                " (SELECT identity_json FROM character_identity_revision"
+                "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS identity_json,"
+                " (SELECT spec_json FROM outfit_revision"
+                "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS outfit_json"
+                " FROM character_profile c WHERE c.code = ? ORDER BY c.project_id, c.id",
                 (code,),
             ).fetchall()
             if not matches:
@@ -123,8 +127,8 @@ class RosterParser:
                 continue
 
             db_row = matches[0]
-            db_identity = json.loads(db_row["identity_json"])
-            db_outfit = json.loads(db_row["outfit_json"])
+            db_identity = json.loads(db_row["identity_json"]) if db_row["identity_json"] else {}
+            db_outfit = json.loads(db_row["outfit_json"]) if db_row["outfit_json"] else {}
             row_mismatch = False
             for aspect, source_value, database_value in (
                 ("identity", identity, db_identity),

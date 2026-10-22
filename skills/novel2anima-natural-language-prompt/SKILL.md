@@ -35,7 +35,7 @@ Story → Act → Beat → Action Sequence → ShotSpec
 
 - Keep the original compiled tag prompt and canonical tag/ShotSpec data as **immutable source artifacts**.
 - Produce a new `natural_prompt` artifact. Do **not** overwrite `shot_spec_json.prompt`, an existing `.txt` prompt file, the original tag list, or generation history simply to install this feature.
-- The current repository's tag-oriented `etl/check_prompts.py` checks literal tag presence/file-vs-DB alignment. It is **not** a natural-language fidelity checker. Retain it for source validation; add a separate semantic check for this skill.
+- The current repository's tag-oriented `python -m novel2anima.quality.prompt_rules` checks literal tag presence/file-vs-DB alignment. It is **not** a natural-language fidelity checker. Retain it for source validation; add a separate semantic check for this skill.
 - Existing model-specific workflows may require non-prose tokens. Keep them in separately identified metadata or a deliberately configured hybrid render payload; do not claim a pure natural-language string is equivalent to those control tokens.
 - A model preference for natural language is a prompting preference, **not a proven render-quality improvement** without side-by-side tests on the configured checkpoint/workflow.
 

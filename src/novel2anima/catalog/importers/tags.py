@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Import vai character tag con thieu tu source pinned (danbooru_taxonomy/tags.csv).
 
-Usage: python etl/import_tags.py shinra_tsubaki meguri_tomoe
+Usage: python -m novel2anima.catalog.importers.tags shinra_tsubaki meguri_tomoe
 Khong bia id: chi lay row co that trong data/sources/danbooru_taxonomy/tags.csv.
 """
 import csv, sys, pathlib

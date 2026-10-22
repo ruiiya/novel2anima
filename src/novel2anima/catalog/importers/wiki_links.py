@@ -7,7 +7,7 @@
 
 va co "tag under debate" ghi vao tag_source.source_metadata.under_debate.
 
-Usage: python etl/import_wiki_links.py [--file PATH] [--reset]
+Usage: python -m novel2anima.catalog.importers.wiki_links [--file PATH] [--reset]
 Link [[x]] chi duoc resolve khi tag co that; link chet (pool:, help:, tag_group:) bo qua.
 Idempotent nho PK (from,to,relation); --reset xoa relation cu cua wiki roi nap lai.
 """
@@ -101,7 +101,7 @@ def main(argv=None):
     snap = con.execute("SELECT id FROM source_snapshot WHERE source_key=? ORDER BY id DESC LIMIT 1",
                        (SOURCE_KEY,)).fetchone()
     if snap is None:
-        raise SystemExit("chua import wiki_pages (chay etl/import_wiki_pages.py truoc)")
+        raise SystemExit("chua import wiki_pages (chay python -m novel2anima.catalog.importers.wiki_pages truoc)")
     snap_id = snap[0]
     ep = time.time()
     if args.reset:

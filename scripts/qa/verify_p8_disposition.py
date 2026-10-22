@@ -31,15 +31,15 @@ DISPOSITION = {
     "visual_concept_fts": ("keep", "rebuildable FTS index"),
     "model_profile": ("keep", "render model reference"),
     "project": ("keep", "project root"),
-    "character_profile": ("transitional", "drop identity_json/outfit_json after all readers use revisions"),
+    "character_profile": ("keep", "identity/outfit in revision tables"),
     "act": ("keep", "act root"),
-    "shot": ("transitional", "drop character_id/shot_spec_json after all readers use participants/spec revisions"),
+    "shot": ("keep", "participants/spec in canonical tables"),
     "generation": ("cleanup", "image_path removed; bytes in asset_blob"),
     "shot_state": ("projection", "latest continuity state"),
     "act_continuity": ("keep", "initial act state"),
     "shot_observation": ("projection", "compat until assertion parity"),
     "act_observation": ("projection", "compat until assertion parity"),
-    "act_publication": ("transitional", "file export history; not current prompt authority"),
+    "act_publication": ("removed", "file export history removed; prompt revision is canonical"),
     "shot_finding": ("projection", "latest QA finding"),
 }
 
@@ -52,6 +52,14 @@ DUP_COLUMNS = {
 
 def table_columns(con: sqlite3.Connection, table: str) -> set[str]:
     return {row[1] for row in con.execute(f"PRAGMA table_info({table})")}
+
+
+def is_clean_row(row: dict) -> bool:
+    if row["disposition"] == "removed":
+        return not row["present"]
+    if not row["present"]:
+        return False
+    return row["disposition"] != "transitional" and not any(row["duplicate_columns"].values())
 
 
 def report(db_path: pathlib.Path) -> dict:
@@ -90,6 +98,7 @@ def report(db_path: pathlib.Path) -> dict:
             "missing_from_csv": missing,
             "missing_disposition": unknown,
             "tables": rows,
+            "clean": not missing and not unknown and all(is_clean_row(row) for row in rows),
         }
     finally:
         con.close()
@@ -109,12 +118,7 @@ def main(argv: list[str] | None = None) -> int:
     if data["missing_from_csv"] or data["missing_disposition"]:
         return 2
     if args.require_clean:
-        dirty = [
-            row for row in data["tables"]
-            if row["disposition"] == "transitional"
-            or any(row["duplicate_columns"].values())
-            or not row["present"]
-        ]
+        dirty = [row for row in data["tables"] if not is_clean_row(row)]
         if dirty:
             print("not clean:", [row["table"] for row in dirty], file=sys.stderr)
             return 3

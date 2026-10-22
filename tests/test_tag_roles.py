@@ -4,13 +4,13 @@ import sys
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "etl"))
-import act_quality as aq
-import build
-import infer_state
-import state_rules
-import story_logic as sl
-import tag_roles
+sys.path.insert(0, str(ROOT / "src"))
+from novel2anima.quality import act_quality as aq
+from novel2anima.catalog import build_service as build
+from novel2anima.continuity import inference as infer_state
+from novel2anima.continuity import rules as state_rules
+from novel2anima.story import logic as sl
+from novel2anima.catalog import tag_roles
 
 class TagRoles(unittest.TestCase):
     def test_build_and_qa_use_same_set(self):

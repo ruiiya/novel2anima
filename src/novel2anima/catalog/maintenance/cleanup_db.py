@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Don dep 2 loai du lieu mo ho con lai (khong doi schema).
 
-Usage: python etl/cleanup_db.py [--apply] [--vacuum]
+Usage: python -m novel2anima.catalog.maintenance.cleanup_db [--apply] [--vacuum]
 
 1. Alias trung ten tag that (alias_name cung la canonical_name cua mot tag):
    quy tac TAG THANG ALIAS -> xoa cac dong alias nay (du lieu cu/tu site khac).

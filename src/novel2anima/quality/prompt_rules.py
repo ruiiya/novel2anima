@@ -4,7 +4,7 @@
 xung dot, so nguoi, do dai, trung lap, negative file, va cac van de da ghi trong shot_state.
 
 Usage:
-  python etl/check_prompts.py [--act N] [--examples K]
+  python -m novel2anima.quality.prompt_rules [--act N] [--examples K]
   Thu tu: seed_plan -> qa_shots --apply -> check_prompts
 
 Exit 1 khi co ERROR. Read-only: khong sua prompt, khong ghi db.
@@ -15,6 +15,7 @@ from novel2anima.paths import PLANS_DIR
 from novel2anima.catalog import build_service as build
 from novel2anima.storage import story_repository as story_db
 from novel2anima.story import logic as story_logic
+from novel2anima.storage.shot_specs import latest_shot_spec
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 MAX_TOKENS = 80
@@ -175,8 +176,12 @@ def main(argv=None):
         raise SystemExit("act ambiguous/not found; specify --project and --revision")
     total = collections.Counter()
     for aid, act_no, project_title, revision in acts:
-        rows = con.execute("SELECT id, shot_no, shot_spec_json FROM shot WHERE act_id=?"
-                           " ORDER BY shot_no", (aid,)).fetchall()
+        rows = [
+            (sid, shot_no, latest_shot_spec(con, sid))
+            for sid, shot_no in con.execute(
+                "SELECT id, shot_no FROM shot WHERE act_id=? ORDER BY shot_no", (aid,)
+            ).fetchall()
+        ]
         errs, warns, seen_at = [], [], collections.defaultdict(list)
         plan = plans.get((project_title, act_no, revision))
         lines = []
@@ -200,14 +205,13 @@ def main(argv=None):
                     warns.append((0, "", "negative thieu %s" % ", ".join(miss)))
 
         sequence_issues = story_logic.validate_specs(
-            [(n, json.loads(spec)) for _sid, n, spec in rows],
+            [(n, spec) for _sid, n, spec in rows],
             phase_contract=(plan or {}).get("act", {}).get("phase_contract"))
         for issue in sequence_issues:
             item = (issue.shot, "story", "%s: %s" % (issue.code, issue.detail))
             (errs if issue.level == "ERROR" else warns).append(item)
         sig_seq = []
-        for i, (shot_id, shot_no, spec_json) in enumerate(rows):
-            spec = json.loads(spec_json)
+        for i, (shot_id, shot_no, spec) in enumerate(rows):
             phase = spec.get("phase", "")
             text = spec.get("prompt", "")
             if plan:
@@ -218,7 +222,7 @@ def main(argv=None):
                     errs.append((shot_no, phase, "SCENE_METADATA_PARITY: background %r != plan %r"
                                  % (spec.get("background"), expected_bg)))
             if i < len(lines) and lines[i] != text:
-                errs.append((shot_no, phase, "prompt trong file khac shot_spec_json (drift)"))
+                errs.append((shot_no, phase, "prompt trong file khac shot_spec_revision (drift)"))
             caption = spec.get("caption") or ""
             tag_zone = text.split(caption)[0] if caption and caption in text else text
             tag_zone = tag_zone.rstrip().rstrip(",").strip()   # bo dau phay cuoi cua phan tag

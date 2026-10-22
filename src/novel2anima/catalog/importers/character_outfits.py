@@ -7,12 +7,13 @@ Nguon du lieu (chi tag that trong catalog):
   3. nhan vat base khong co costume -> school_uniform, danh dau "assumed" de phase 1 sua
 Khong bia tag: tu nao khong map duoc thi ghi vao report.
 
-Usage: python etl/add_ba_outfits.py [--apply] [--code ba_]
+Usage: python -m novel2anima.catalog.importers.character_outfits [--apply] [--code ba_]
 """
 import argparse, collections, json, pathlib, re, sqlite3, sys
 
 from novel2anima.catalog import build_service as build
 from novel2anima.paths import CHARACTERS_DIR, DB_PATH
+from novel2anima.storage.domain_repository import ensure_outfit_revision
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 OUT = CHARACTERS_DIR / "ba_outfits.json"
@@ -56,8 +57,15 @@ def main(argv=None):
         if m2:
             variants_by_base[m2.group(1) + "_(blue_archive)"].append(name)
 
-    rows = con.execute("SELECT id, code, identity_json, outfit_json FROM character_profile"
-                       " WHERE code LIKE ? ORDER BY code", (args.code + "%",)).fetchall()
+    rows = con.execute(
+        "SELECT c.id, c.code,"
+        " (SELECT identity_json FROM character_identity_revision"
+        "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS identity_json,"
+        " (SELECT spec_json FROM outfit_revision"
+        "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS outfit_json"
+        " FROM character_profile c WHERE c.code LIKE ? ORDER BY c.code",
+        (args.code + "%",),
+    ).fetchall()
     report = {"filled": 0, "assumed": 0, "empty": [], "unmapped_word": [], "items": {}}
     plan = []
     for r in rows:
@@ -111,8 +119,13 @@ def main(argv=None):
     OUT.parent.mkdir(parents=True, exist_ok=True)
     st = {"profiles": len(rows), "with_outfit": 0, "assumed": 0, "empty": [],
           "items": {}, "unmapped_word": report["unmapped_word"]}
-    for r in con.execute("SELECT code, outfit_json FROM character_profile WHERE code LIKE ?"
-                         " ORDER BY code", (args.code + "%",)):
+    for r in con.execute(
+        "SELECT c.code,"
+        " (SELECT spec_json FROM outfit_revision"
+        "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS outfit_json"
+        " FROM character_profile c WHERE c.code LIKE ? ORDER BY c.code",
+        (args.code + "%",),
+    ):
         o = json.loads(r["outfit_json"] or "{}")
         st["with_outfit"] += 1 if o else 0
         st["assumed"] += 1 if o.get("assumed") else 0
@@ -122,21 +135,46 @@ def main(argv=None):
     OUT.write_text(json.dumps(st, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     print("report:", OUT)
     if not args.apply:
-        print("dry-run: them --apply de ghi character_profile.outfit_json")
+        print("dry-run: them --apply de ghi outfit_revision")
         return 0
     with con:
-        for pid, code, outfit in plan:
-            con.execute("UPDATE character_profile SET outfit_json=? WHERE id=?",
-                        (json.dumps(outfit, ensure_ascii=False), pid))
-    print("da ghi %d profile" % len(plan))
+        for cid, code, outfit in plan:
+            tags = []
+            items = []
+            for key, refs in outfit.items():
+                if not isinstance(refs, list):
+                    continue
+                for ref in refs:
+                    name, _, tid = ref.rpartition(":")
+                    if not name or not tid.isdigit():
+                        continue
+                    tags.append({"name": name, "tag_id": int(tid)})
+                    items.append({
+                        "item_code": "tag_%s" % tid,
+                        "slot": key or "outfit",
+                        "garment_type": "garment",
+                        "details": {"tag_id": int(tid)},
+                    })
+            ensure_outfit_revision(
+                con, cid, {"tags": tags, "phases": outfit}, items, status="approved"
+            )
+    print("da ghi %d outfit_revision" % len(plan))
     if args.export:
         out = OUT.with_name("ba_roster.json")
         data = []
-        for r in con.execute("SELECT code, identity_json, outfit_json FROM character_profile"
-                             " WHERE code LIKE ? ORDER BY code", (args.code + "%",)):
+        for r in con.execute(
+            "SELECT c.code,"
+            " (SELECT identity_json FROM character_identity_revision"
+            "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS identity_json,"
+            " (SELECT spec_json FROM outfit_revision"
+            "  WHERE character_id=c.id ORDER BY revision DESC LIMIT 1) AS outfit_json"
+            " FROM character_profile c WHERE c.code LIKE ? ORDER BY c.code",
+            (args.code + "%",),
+        ):
             ident = json.loads(r["identity_json"] or "{}")
             data.append({"code": r["code"], "name": ident.get("name"),
-                         "identity_json": ident, "outfit_json": json.loads(r["outfit_json"] or "{}")})
+                         "identity_json": ident,
+                         "outfit_json": json.loads(r["outfit_json"] or "{}")})
         out.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
         print("roster:", out, "(%d nhan vat)" % len(data))
     return 0

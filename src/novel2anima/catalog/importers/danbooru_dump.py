@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Import dump CSV chinh thuc cua Danbooru (tags / aliases / implications / artists .csv.gz).
 
-Usage: python etl/import_danbooru_dump.py [--dir DIR] [--only tags,aliases,implications,artists]
+Usage: python -m novel2anima.catalog.importers.danbooru_dump [--dir DIR] [--only tags,aliases,implications,artists]
 
 --dir defaults to $N2A_DATA_DIR (fallback: data/imports).
 

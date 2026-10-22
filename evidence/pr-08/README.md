@@ -4,12 +4,12 @@
 
 | Mục | Kết quả |
 |---|---|
-| Trạng thái | **MỘT PHẦN** - cleanup an toàn đã làm, còn legacy transitional |
+| Trạng thái | **HOÀN TẤT** - không còn cột/bảng legacy transitional |
 | Branch | `rebuild/v4` |
-| Cleanup thật | `generation.image_path` đã bị rebuild bỏ trên staging |
-| Disposition | 23/23 bảng legacy có quyết định |
+| Cleanup thật | `image_path`, profile JSON, shot legacy columns, `act_publication`, `etl/` |
+| Disposition | 23/23 bảng legacy có quyết định; `--require-clean` exit 0 |
 | Docs | `docs/v4/README.md`, `P8_LEGACY_DISPOSITION.md`, README, 3 skills |
-| Tests | 3 PR-08; full suite 126 pass, 1 skip |
+| Tests | 4 PR-08; full suite 124 pass, 1 skip |
 
 ## Đã xóa: `generation.image_path`
 
@@ -17,7 +17,17 @@
 - Version: `011_p8_generation_no_image_path`
 - Cách làm: tạo `generation_new`, copy đủ rows/PK/`image_sha256`/`evaluation_json`/`decision`/`created_at`, drop bảng cũ, rename, tạo lại index + trigger.
 - Không đọc/ghi path nữa; render bytes nằm trong `asset_blob`, SHA-256 là khóa.
-- Đã chạy trên staging, không chạy live.
+- Đã chạy trên staging và live; backup dưới `db/backup/`.
+
+## Đã xóa: legacy authority + shims
+
+- Script: `scripts/migrations/p8_drop_legacy_authority.py`
+- Version: `012_p8_no_legacy_authority`
+- Copy legacy JSON sang revision canonical nếu chưa có, rebuild `character_profile`
+  và `shot`, drop `act_publication`.
+- Xóa toàn bộ `etl/` shim và hai migration script legacy
+  `migrate_plan_semantics`, `migrate_runtime`; CLI dùng `python -m novel2anima...`.
+- Đã chạy trên staging và live; `quick_check=ok`, `foreign_key_check=[]`.
 
 ## 23 bảng legacy
 
@@ -32,28 +42,21 @@ missing_disposition=[]
 
 Chi tiết: [`docs/v4/P8_LEGACY_DISPOSITION.md`](../../docs/v4/P8_LEGACY_DISPOSITION.md).
 
-`--require-clean` trả mã **3** vì còn:
-
-- `character_profile.identity_json/outfit_json`
-- `shot.character_id/shot_spec_json`
-- `act_publication`
-- các projection `shot_finding`, `shot_state`, observations
-
-Đây là blocker thật: importer/seed/QA cũ vẫn đọc các cột này. Không xóa trước
-khi reader/writer cuối cùng được chuyển, theo đúng quy tắc P8.
+`--require-clean` trả mã **0**. `character_profile`/`shot` chỉ còn cột canonical;
+`act_publication` đã bị xóa. Các projection `shot_finding`, `shot_state`,
+observations vẫn là read model phái sinh, không phải nguồn ghi canonical.
 
 ## Docs/skills
 
 - `docs/v4/README.md`: trạng thái PR, layout, DB, command.
-- `docs/v4/P8_LEGACY_DISPOSITION.md`: bảng 23 dòng, đã xóa/chưa xóa/lý do.
-- `README.md`: V4 là canonical, `etl/` là shim.
+- `docs/v4/P8_LEGACY_DISPOSITION.md`: bảng 23 dòng, đã xóa/projection.
+- `README.md`: V4 là canonical; `etl/` đã bị xóa.
 - `skills/novel2anima-catalog`, `shot-pipeline`, `natural-language-prompt`:
-  ghi rõ DB canonical và legacy transitional.
+  ghi rõ DB canonical và không còn shim legacy.
 
 ## Staging
 
-- Backup trước cleanup: `db/backup/pr-08/pre_p8_staging.db`
-- SHA-256: `5ab656eb24521c23a8f9dd592abd48f9b73a90ef7d082545b70dc8a291d9d83a`
+- Backup trước cleanup authority: `db/backup/pr-09/pre_012_staging.db`
 - Sau cleanup: `quick_check=ok`, `foreign_key_check=[]`, `project=0`
 - `generation` columns không còn `image_path`.
 
@@ -61,11 +64,11 @@ khi reader/writer cuối cùng được chuyển, theo đúng quy tắc P8.
 
 ```text
 python -m unittest tests.test_pr08_cleanup -v
-Ran 3 tests
+Ran 4 tests
 OK
 
 python -m unittest discover -s tests -q
-Ran 126 tests
+Ran 124 tests
 OK (skipped=1)
 
 python -m unittest discover -s docs/v4/tests -q
@@ -73,9 +76,8 @@ Ran 14 tests
 OK
 ```
 
-## Không tuyên bố pass
+## Ghi chú
 
-PR-08 **chưa hoàn tất** theo định nghĩa "final schema no duplicate authoritative
-stores". Đã hoàn tất một cleanup data-preserving và disposition/audit; các cột
-transitional còn lại là công việc tiếp theo, cần chuyển reader/writer trước khi
-drop.
+PR-08 đã hoàn tất phần schema: không còn cột/bảng legacy transitional. Projection
+QA/continuity vẫn tồn tại có chủ đích như read model; retire khi UI/QA đọc hoàn
+toàn `qa_issue`/`continuity_assertion`.

@@ -1,6 +1,6 @@
 # PR-09 evidence
 
-Status: **NOT_READY** (release gate ran; P8 blocker remains).
+Status: **READY** on staging (release gate exit `0`).
 
 ## Artifact
 
@@ -15,7 +15,7 @@ Status: **NOT_READY** (release gate ran; P8 blocker remains).
 |---|---|
 | Source `quick_check` | ok |
 | Migration ledger | all SQL files applied, checksums match |
-| P8 disposition | **fail** (transitional columns remain) |
+| P8 disposition | pass (23/23; `act_publication` removed) |
 | DB-only E2E | pass |
 | Backup/restore | pass |
 | Rollback drill | pass |
@@ -37,21 +37,18 @@ Staging benchmark:
 
 - 1,208,773 tags on staging; 1,208,779 on the E2E copy (+6 synthetic).
 - `tag_count`: 0.105 s.
-- canonical name lookup: 0.0007 s.
-- `foreign_key_check`: 37.6 s.
+- canonical name lookup: 0.000197 s.
+- `foreign_key_check`: 29.36 s.
 - backup + restore two layers: 10.2 s.
 
 ## Limitations
 
 - E2E image is 20 synthetic bytes, not an Anima render.
 - Staging DB has 0 project rows; E2E seeds a temporary copy.
-- P8 columns still authoritative in old readers/writers:
-  `character_profile.identity_json/outfit_json`,
-  `shot.character_id/shot_spec_json`,
-  `act_publication`,
-  QA projections.
-- Therefore `verify_p8_disposition.py --require-clean` exits `3`.
-- No pilot/cutover was performed. PR-09 is not signed off.
+- P8 transitional columns and `act_publication` are removed; legacy `etl/` shims are removed.
+- `verify_p8_disposition.py --require-clean` exits `0`.
+- QA/continuity projection tables remain as derived read models.
+- No pilot/cutover or real Anima render was performed; production signoff still requires both.
 
 ## Reproduce
 
@@ -61,4 +58,4 @@ python scripts\release\release_gate.py `
   --report evidence\pr-09\release_gate.json
 ```
 
-Exit code `3` is expected until the P8 blocker is removed.
+Exit code `0` means READY; `3` means a blocker remains.

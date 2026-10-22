@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Xoa tag rac: post_count = 0, khong tai lieu, khong duoc tham chieu o dau.
 
-Usage: python etl/prune_tags.py [--apply] [--vacuum]
+Usage: python -m novel2anima.catalog.maintenance.prune_tags [--apply] [--vacuum]
 
 Giu lai tag khi co BAT KY dau hieu su dung:
   post_count > 0 | danbooru_category = artist | taxonomy_status != unreviewed

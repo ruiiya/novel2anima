@@ -2,9 +2,9 @@
 """Goi y tag NGOAI bo tag goc cua shot, dua vao quan he trong catalog (khong bia tag).
 
 Usage:
-  python etl/suggest_tags.py --tag thighhighs [--limit 15]
-  python etl/suggest_tags.py --shot 1234 [--limit 15]      # shot_id trong bang shot
-  python etl/suggest_tags.py --act 13 [--limit 15]
+  python -m novel2anima.catalog.retrieval.suggest_tags --tag thighhighs [--limit 15]
+  python -m novel2anima.catalog.retrieval.suggest_tags --shot 1234 [--limit 15]      # shot_id trong bang shot
+  python -m novel2anima.catalog.retrieval.suggest_tags --act 13 [--limit 15]
 
 Nguon:
   * tag_relation: implies (tag nay keo theo gi), compatible (hay di cung, do tu lift
@@ -17,15 +17,15 @@ Ket qua in ra "ten:id  pc=...  nguon" de dan thang vao plan.
 import argparse, collections, json, pathlib, sys
 
 from novel2anima.catalog import build_service as build
+from novel2anima.storage.shot_specs import latest_shot_spec
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 REL = ("compatible", "recommends", "implies")
 
 def shot_tags(con, shot_id):
-    spec = con.execute("SELECT shot_spec_json FROM shot WHERE id=?", (shot_id,)).fetchone()
-    if not spec:
+    if not con.execute("SELECT 1 FROM shot WHERE id=?", (shot_id,)).fetchone():
         raise SystemExit("khong co shot id=%s" % shot_id)
-    spec = json.loads(spec[0])
+    spec = latest_shot_spec(con, shot_id)
     out = {}
     for group in ("identity", "outfit", "action", "expression", "pose", "motion", "camera", "cast"):
         for x in spec.get(group) or []:

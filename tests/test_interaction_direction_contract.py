@@ -5,6 +5,7 @@ against the audited source until the interaction-orientation changes are merged.
 """
 import copy
 import json
+import os
 import pathlib
 import sqlite3
 import subprocess
@@ -13,8 +14,10 @@ import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'etl'))
-import story_logic
+sys.path.insert(0, str(ROOT / 'src'))
+sys.path.insert(0, str(ROOT / 'scripts/migrations'))
+from novel2anima.story import logic as story_logic
+from p8_drop_legacy_authority import rebuild as rebuild_authority
 
 
 def headpat_plan(actor='M', target='F', scoped=True):
@@ -107,6 +110,10 @@ class CompilerIntegration(unittest.TestCase):
         con.executescript((ROOT/'sql/schema_v1.sql').read_text(encoding='utf8'))
         for mig in sorted((ROOT/'sql/migrations').glob('*.sql')):
             con.executescript(mig.read_text(encoding='utf8'))
+        con.commit()
+        con.close()
+        assert rebuild_authority(cls.db)['status'] == 'ok'
+        con = sqlite3.connect(cls.db)
         con.executemany('INSERT INTO tag(canonical_name,search_name) VALUES(?,?)',
                         [('headpat', 'headpat'), ('standing', 'standing'), ('smile', 'smile')])
         con.commit()
@@ -121,8 +128,9 @@ class CompilerIntegration(unittest.TestCase):
         plan['prompt_file'] = str(self.workdir / (name+'.txt'))
         src = self.workdir / (name+'.json')
         src.write_text(json.dumps(plan), encoding='utf8')
-        res = subprocess.run([sys.executable, str(ROOT/'etl/seed_plan.py'), str(src),
-                              '--db', str(self.db)], cwd=ROOT, text=True, capture_output=True)
+        res = subprocess.run([sys.executable, "-m", "novel2anima.pipeline.plan_seeder", str(src),
+                              '--db', str(self.db)], cwd=ROOT, text=True, capture_output=True,
+                             env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
         return res, pathlib.Path(plan['prompt_file'])
 
     def test_reverse_direction_is_rejected_before_database_write(self):

@@ -1,10 +1,8 @@
 {
   "schema_version": "v4-release-gate-1",
   "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
-  "status": "NOT_READY",
-  "blockers": [
-    "P8_LEGACY_DISPOSITION"
-  ],
+  "status": "READY",
+  "blockers": [],
   "checks": {
     "migrations": {
       "ok": true,
@@ -56,20 +54,17 @@
         "008_import_ledger": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224",
         "009_llm_registry": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e",
         "010_prompt_pinning": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939",
-        "011_p8_generation_no_image_path": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44"
+        "011_p8_generation_no_image_path": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44",
+        "012_p8_no_legacy_authority": "fdda6c1e1a8755aec9a69927b785cb4a294cf0a93e817b5458e5d6bfb8122e52"
       },
       "missing": [],
       "drift": []
     },
     "disposition": {
-      "ok": false,
+      "ok": true,
       "legacy_tables": 23,
       "missing": [],
-      "transitional": [
-        "character_profile",
-        "shot",
-        "act_publication"
-      ]
+      "transitional": []
     },
     "e2e": {
       "ok": true,
@@ -107,7 +102,7 @@
         "qa_run": 1,
         "qa_issue": 1
       },
-      "seconds": 10.196
+      "seconds": 9.264
     },
     "rollback": {
       "ok": true,
@@ -139,9 +134,9 @@
       "ok": true,
       "tag_rows": 1208779,
       "seconds": {
-        "tag_count": 0.1053,
-        "canonical_lookup": 0.000666,
-        "foreign_key_check": 37.591
+        "tag_count": 0.0773,
+        "canonical_lookup": 0.000197,
+        "foreign_key_check": 29.356
       },
       "thresholds": {
         "tag_count": 10.0,
@@ -164,11 +159,11 @@
       }
     }
   },
-  "started_at_utc": "2026-10-22T08:36:37.478756+00:00",
-  "finished_at_utc": "2026-10-22T08:39:53.082729+00:00",
+  "started_at_utc": "2026-10-22T09:27:20.485547+00:00",
+  "finished_at_utc": "2026-10-22T09:28:55.157774+00:00",
   "signed_ledger": {
     "schema_version": "v4-release-gate-1",
-    "database_sha256": "e892221a90a65a78fa6d79ff73dc321b29b918be1933a397fe3274730454bcee",
+    "database_sha256": "511047c18ae1a2efbb1a19e8a18465722b1e7a60ac1f84a0c7147b775e835ac4",
     "migrations": {
       "002_shot_state": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821",
       "003_shot_finding": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8",
@@ -179,7 +174,8 @@
       "008_import_ledger": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224",
       "009_llm_registry": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e",
       "010_prompt_pinning": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939",
-      "011_p8_generation_no_image_path": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44"
+      "011_p8_generation_no_image_path": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44",
+      "012_p8_no_legacy_authority": "fdda6c1e1a8755aec9a69927b785cb4a294cf0a93e817b5458e5d6bfb8122e52"
     },
     "ledger": [
       {
@@ -231,14 +227,17 @@
         "version": "011_p8_generation_no_image_path",
         "sha256": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44",
         "applied_at": "2026-10-22 08:16:46"
+      },
+      {
+        "version": "012_p8_no_legacy_authority",
+        "sha256": "fdda6c1e1a8755aec9a69927b785cb4a294cf0a93e817b5458e5d6bfb8122e52",
+        "applied_at": "2026-10-22 09:27:11"
       }
     ],
-    "status": "NOT_READY",
-    "blockers": [
-      "P8_LEGACY_DISPOSITION"
-    ],
-    "generated_at_utc": "2026-10-22T08:39:54.157476+00:00",
+    "status": "READY",
+    "blockers": [],
+    "generated_at_utc": "2026-10-22T09:28:56.404889+00:00",
     "signature_type": "sha256-content",
-    "signature": "e8d1768975cd869f709a455aa5e860dac1c9105e86518ac00d1de858823a48ff"
+    "signature": "48b663107f25e73a4e62b0d377abd61d42f084b95ab00b461167573bbda37ce1"
   }
 }

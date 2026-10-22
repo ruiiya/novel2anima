@@ -6,10 +6,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class Layout(unittest.TestCase):
-    def test_no_act_generators_in_etl(self):
-        offenders = sorted(p.name for p in (ROOT / "etl").glob("*.py")
-                           if p.name.startswith(("gen_", "clone_", "vary_")))
-        self.assertEqual(offenders, [])
+    def test_no_legacy_etl_tree(self):
+        self.assertFalse((ROOT / "etl").exists())
 
     def test_generators_have_main_guard(self):
         missing = []

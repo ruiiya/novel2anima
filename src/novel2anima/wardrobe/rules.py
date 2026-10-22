@@ -9,7 +9,7 @@ Usage (tu seed_plan):
     refs  = wardrobe.under_fix(refs, table)     # set den -> noi y den
     wardrobe.lock_poses(parsed, id_of)          # thang tu the dung -> quy -> ngoi -> nam
 
-Bang mau lay tu visual_concept code WC_<do> (+ concept_tag): etl/import_colour_sets.py nap tu
+Bang mau lay tu visual_concept code WC_<do> (+ concept_tag): python -m novel2anima.catalog.importers.colour_sets nap tu
 catalog (bien the <mau>_<do> that) va tu cac act da seed (mau dang dung), cue <mau>_clothing cho
 do khong co bien the mau (data/wardrobe/colour_cue.json - bo mau chuan bi cho phase 1).
 """

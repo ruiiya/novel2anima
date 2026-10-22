@@ -3,7 +3,7 @@
 """Xac dinh van de cua tung shot bang du lieu trong catalog (khong tu sua prompt).
 
 Usage:
-  python etl/qa_shots.py [--act N] [--apply]
+  python -m novel2anima.quality.shot_rules [--act N] [--apply]
 
 ghi vao bang shot_finding (rule_id, axis, value_tag_id, severity, source)
 de model/nguoi doc roi quyet dinh - day la phan "xac dinh van de" thay cho viec sua cung:
@@ -19,6 +19,7 @@ from novel2anima.paths import PLANS_DIR
 from novel2anima.catalog import build_service as build
 from novel2anima.wardrobe import rules as wardrobe
 from novel2anima.storage import story_repository as story_db
+from novel2anima.storage.shot_specs import latest_shot_spec
 from novel2anima.story import logic as story_logic
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -74,9 +75,9 @@ def main(argv=None):
         plan = plans.get((project_title, act_no, revision))
         floor, cause, phase = -1, 0, None
         specs, shot_ids = [], {}
-        for shot_id, shot_no, spec_json in con.execute(
-                "SELECT id, shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no", (aid,)):
-            spec = json.loads(spec_json)
+        for shot_id, shot_no in con.execute(
+                "SELECT id, shot_no FROM shot WHERE act_id=? ORDER BY shot_no", (aid,)):
+            spec = latest_shot_spec(con, shot_id)
             specs.append((shot_no, spec))
             shot_ids[shot_no] = shot_id
             refs = shot_refs(spec)

@@ -12,6 +12,7 @@ import argparse, json, pathlib, sqlite3, sys
 from novel2anima.paths import DB_PATH
 from novel2anima.continuity.rules import *
 from novel2anima.continuity.rules import RULES_VERSION
+from novel2anima.storage.shot_specs import latest_shot_spec
 
 def main():
     ap = argparse.ArgumentParser()
@@ -41,12 +42,15 @@ def main():
     acts = cur.execute("SELECT id, act_no FROM act ORDER BY act_no").fetchall()
     rows, removals = 0, 0
     for act_id, act_no in acts:
-        shots = cur.execute("SELECT shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no",
-                            (act_id,)).fetchall()
+        shots = [
+            (shot_no, latest_shot_spec(con, shot_id))
+            for shot_id, shot_no in cur.execute(
+                "SELECT id, shot_no FROM shot WHERE act_id=? ORDER BY shot_no", (act_id,)
+            ).fetchall()
+        ]
         # Experimental counters are act-scoped, not character-scoped: disable for duo
         # rather than silently applying inferred state to both participants.
-        if any(len(json.loads(spec_json).get("participants") or []) != 1
-               for _no, spec_json in shots):
+        if any(len(spec.get("participants") or []) != 1 for _no, spec in shots):
             print("skip inferred act continuity %s: multi-character state must be per participant" % act_no)
             continue
         if args.apply:  # only rows owned by this pipeline; manual shot_state/act_continuity stay intact
@@ -66,8 +70,7 @@ def main():
                         " cause_shot_no, source) VALUES((SELECT id FROM shot WHERE act_id=? AND shot_no=?),"
                         "?,?,?,?,?,?)", (act_id, shot_no, axis, vtid, sev, since, cause, source))
 
-        for shot_no, spec_json in shots:
-            spec = json.loads(spec_json)
+        for shot_no, spec in shots:
             names = set()
             for g in ("outfit", "body_state", "props", "action", "expression", "pose", "motion", "camera"):
                 names |= {t["name"] for t in spec.get(g, [])}

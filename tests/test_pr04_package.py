@@ -1,6 +1,7 @@
 """PR-04 package boundaries and legacy CLI compatibility."""
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
 import sys
@@ -8,10 +9,6 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "etl"))
-
-import novel2anima.story.logic as story_logic_pkg  # noqa: E402
-import novel2anima.catalog.tag_roles as tag_roles_pkg  # noqa: E402
 
 PACKAGE_MODULES = (
     "novel2anima.catalog.build_service",
@@ -51,12 +48,8 @@ class PackageLayout(unittest.TestCase):
             with self.subTest(name=name):
                 importlib.import_module(name)
 
-    def test_shims_alias_package_modules(self):
-        import story_logic
-        import tag_roles
-
-        self.assertIs(story_logic, story_logic_pkg)
-        self.assertIs(tag_roles, tag_roles_pkg)
+    def test_no_legacy_etl_tree(self):
+        self.assertFalse((ROOT / "etl").exists())
 
     def test_no_src_path_hacks(self):
         offenders = []
@@ -65,14 +58,19 @@ class PackageLayout(unittest.TestCase):
                 offenders.append(str(path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
-    def test_legacy_cli_help(self):
-        for name in ("infer_state.py", "seed_plan.py", "build.py"):
-            with self.subTest(name=name):
+    def test_package_cli_help(self):
+        for module in (
+            "novel2anima.continuity.inference",
+            "novel2anima.pipeline.plan_seeder",
+            "novel2anima.catalog.build_service",
+        ):
+            with self.subTest(module=module):
                 result = subprocess.run(
-                    [sys.executable, str(ROOT / "etl" / name), "--help"],
+                    [sys.executable, "-m", module, "--help"],
                     cwd=ROOT,
                     capture_output=True,
                     text=True,
+                    env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
 

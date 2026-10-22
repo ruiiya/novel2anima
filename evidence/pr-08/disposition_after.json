@@ -113,11 +113,11 @@
       "table": "character_profile",
       "present": true,
       "rows": 0,
-      "disposition": "transitional",
-      "note": "drop identity_json/outfit_json after all readers use revisions",
+      "disposition": "keep",
+      "note": "identity/outfit in revision tables",
       "duplicate_columns": {
-        "identity_json": true,
-        "outfit_json": true
+        "identity_json": false,
+        "outfit_json": false
       }
     },
     {
@@ -132,11 +132,11 @@
       "table": "shot",
       "present": true,
       "rows": 0,
-      "disposition": "transitional",
-      "note": "drop character_id/shot_spec_json after all readers use participants/spec revisions",
+      "disposition": "keep",
+      "note": "participants/spec in canonical tables",
       "duplicate_columns": {
-        "character_id": true,
-        "shot_spec_json": true
+        "character_id": false,
+        "shot_spec_json": false
       }
     },
     {
@@ -183,10 +183,10 @@
     },
     {
       "table": "act_publication",
-      "present": true,
+      "present": false,
       "rows": 0,
-      "disposition": "transitional",
-      "note": "file export history; not current prompt authority",
+      "disposition": "removed",
+      "note": "file export history removed; prompt revision is canonical",
       "duplicate_columns": {}
     },
     {
@@ -197,5 +197,6 @@
       "note": "latest QA finding",
       "duplicate_columns": {}
     }
-  ]
+  ],
+  "clean": true
 }

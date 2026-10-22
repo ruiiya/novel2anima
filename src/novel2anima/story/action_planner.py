@@ -1,6 +1,6 @@
 """Identify missing bridge actions without hallucinating catalog tag IDs or adding arbitrary shots.
 
-Usage: python etl/plan_actions.py --plan data/plans/example.json [--json-out review.json]
+Usage: python -m novel2anima.story.action_planner --plan data/plans/example.json [--json-out review.json]
 """
 import argparse
 import json

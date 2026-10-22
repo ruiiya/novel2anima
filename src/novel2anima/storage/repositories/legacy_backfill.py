@@ -209,6 +209,20 @@ def _assert_schema(connection: sqlite3.Connection) -> None:
     missing = [table for table in sorted(REQUIRED_TABLES) if not _table_exists(connection, table)]
     if missing:
         raise BackfillError(f"staging DB is missing required tables: {', '.join(missing)}")
+    legacy_columns = {
+        "character_profile": {"identity_json", "outfit_json"},
+        "shot": {"character_id", "shot_spec_json"},
+    }
+    removed = [
+        f"{table}.{column}"
+        for table, columns in legacy_columns.items()
+        for column in sorted(columns)
+        if column not in {row[1] for row in connection.execute(f"PRAGMA table_info({table})")}
+    ]
+    if removed:
+        raise BackfillError(
+            "legacy columns already removed; backfill is not applicable: " + ", ".join(removed)
+        )
     applied = applied_migrations(connection)
     missing_migrations = sorted(REQUIRED_MIGRATIONS - set(applied))
     if missing_migrations:

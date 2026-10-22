@@ -8,10 +8,10 @@ import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "etl"))
-import infer_state
-import seed_plan
-import state_rules
+sys.path.insert(0, str(ROOT / "src"))
+from novel2anima.continuity import inference as infer_state
+from novel2anima.pipeline import plan_seeder as seed_plan
+from novel2anima.continuity import rules as state_rules
 
 
 def run_sql(con, name):
@@ -36,7 +36,8 @@ class InferStateApply(unittest.TestCase):
         con.executescript(
             "CREATE TABLE act(id INTEGER PRIMARY KEY, act_no INTEGER);"
             "CREATE TABLE shot(id INTEGER PRIMARY KEY, act_id INTEGER REFERENCES act(id),"
-            " shot_no INTEGER, shot_spec_json TEXT);"
+            " shot_no INTEGER);"
+            "CREATE TABLE shot_spec_revision(shot_id INTEGER, revision INTEGER, spec_json TEXT);"
             "CREATE TABLE tag(id INTEGER PRIMARY KEY, canonical_name TEXT UNIQUE);")
         run_sql(con, "002_shot_state.sql")
         run_sql(con, "004_observation_publication.sql")
@@ -44,8 +45,10 @@ class InferStateApply(unittest.TestCase):
         con.executemany("INSERT INTO act(id, act_no) VALUES(?,?)", [(1, 1), (2, 2)])
         solo = json.dumps({"participants": ["A"], "caption": "", "beat": "", "background": ""})
         duo = json.dumps({"participants": ["A", "B"], "caption": "", "beat": "", "background": ""})
-        con.executemany("INSERT INTO shot(id, act_id, shot_no, shot_spec_json) VALUES(?,?,?,?)",
-                        [(1, 1, 1, solo), (2, 2, 1, duo)])
+        con.executemany("INSERT INTO shot(id, act_id, shot_no) VALUES(?,?,?)",
+                        [(1, 1, 1), (2, 2, 1)])
+        con.executemany("INSERT INTO shot_spec_revision(shot_id, revision, spec_json) VALUES(?,1,?)",
+                        [(1, solo), (2, duo)])
         con.execute("INSERT INTO shot_state(shot_id, axis, severity, since_shot_no, cause_shot_no, source)"
                     " VALUES(1,'outfit:stage',0.9,1,1,'manual')")
         con.execute("INSERT INTO act_continuity(act_id, axis, notes) VALUES(1,'environment','manual curator notes')")
@@ -58,9 +61,10 @@ class InferStateApply(unittest.TestCase):
         self.dir.cleanup()
 
     def apply(self):
-        return subprocess.run([sys.executable, str(ROOT / "etl" / "infer_state.py"),
+        return subprocess.run([sys.executable, "-m", "novel2anima.continuity.inference",
                                "--db", self.db, "--apply"],
-                              capture_output=True, text=True)
+                              capture_output=True, text=True,
+        env={**__import__("os").environ, "PYTHONPATH": str(ROOT / "src")})
 
     def rows(self, sql):
         con = sqlite3.connect(self.db)
@@ -85,27 +89,11 @@ class InferStateApply(unittest.TestCase):
         self.assertEqual(first, second)
 
     def test_report_only_writes_nothing(self):
-        result = subprocess.run([sys.executable, str(ROOT / "etl" / "infer_state.py"),
-                                 "--db", self.db], capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "-m", "novel2anima.continuity.inference",
+                                 "--db", self.db], capture_output=True, text=True,
+        env={**__import__("os").environ, "PYTHONPATH": str(ROOT / "src")})
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.rows("SELECT count(*) FROM shot_observation"), [(1,)])
-
-
-class PublicationOutbox(unittest.TestCase):
-    def setUp(self):
-        self.con = sqlite3.connect(":memory:")
-        self.con.executescript("CREATE TABLE act(id INTEGER PRIMARY KEY);"
-                               "INSERT INTO act(id) VALUES(1);")
-        run_sql(self.con, "004_observation_publication.sql")
-
-    def test_failed_publish_leaves_pending(self):
-        files = [(pathlib.Path("p.txt"), "prompt\n"), (pathlib.Path("p.neg.txt"), "neg\n")]
-        seed_plan.record_publication(self.con, 1, 1, files)
-        self.con.commit()
-        self.assertEqual(self.con.execute("SELECT pending FROM act_publication").fetchone(), (1,))
-        seed_plan.mark_published(self.con, 1, 1)
-        self.con.commit()
-        self.assertEqual(self.con.execute("SELECT pending FROM act_publication").fetchone(), (0,))
 
 
 if __name__ == "__main__":

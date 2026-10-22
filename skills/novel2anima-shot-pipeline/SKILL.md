@@ -17,8 +17,8 @@ and schema, [references/continuity-state.md](references/continuity-state.md) for
 experimental continuity model, plus
 [references/retrieval-and-memory.md](references/retrieval-and-memory.md) and
 [references/prompt-and-render.md](references/prompt-and-render.md) for implementation.
-Dress, stance and prompt hygiene are enforced at seed time by `etl/wardrobe.py` +
-`etl/seed_plan.py`; whatever those gates cannot decide is reported by `etl/qa_shots.py` into
+Dress, stance and prompt hygiene are enforced at seed time by `python -m novel2anima.wardrobe.rules` +
+`python -m novel2anima.pipeline.plan_seeder`; whatever those gates cannot decide is reported by `python -m novel2anima.quality.shot_rules` into
 `shot_state` instead of being forced - see
 [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md).
 The catalog skill owns ETL/table semantics. Inspect the actual SQLite schema; skill
@@ -27,7 +27,7 @@ references are not evidence that a populated DB or production backend exists.
 ## Story quality P0/P1 contract (solo and 1girl/1boy)
 
 - Plan semantic beat progression **before** retrieving tags. Never independently randomize action,
-  expression and caption merely to fill a shot quota. Use `etl/build_story_plan.py` with
+  expression and caption merely to fill a shot quota. Use `python -m novel2anima.story.beat_planner` with
   author-defined `beats[].shots[]`, or author a seed-compatible plan directly.
 - For a meaningful action shot, specify `sequence.purpose`, `actor`, optional `target`,
   `primaryAction`, `poseBefore` / `poseAfter`, optional `object` holders, and `eventId`.
@@ -50,9 +50,9 @@ references are not evidence that a populated DB or production backend exists.
 - Check `stateBefore -> action -> stateAfter`, pose bridge, prop ownership, and important
   reactions. Explicit scene/time cuts can justify skipping micro-actions. Do not turn
   each small movement into a separate shot if a single composition clearly shows it.
-- `python etl/plan_actions.py --plan <plan>` lists missing bridges; then run
-  `python etl/check_story.py --plan <plan>` **before** `seed_plan.py`.
-  `etl/check_prompts.py` now gates severe narrative and action-resolution errors.
+- `python -m novel2anima.story.action_planner --plan <plan>` lists missing bridges; then run
+  `python -m novel2anima.quality.story_rules --plan <plan>` **before** `seed_plan.py`.
+  `python -m novel2anima.quality.prompt_rules` now gates severe narrative and action-resolution errors.
 - Existing plan JSONs without `sequence` remain accepted for backwards compatibility,
   but those plans have **lower QA coverage**: a zero-error check does not certify story clarity.
 - Preserve previous generation records; if a generated/approved shot changes, **increment
@@ -84,7 +84,7 @@ references are not evidence that a populated DB or production backend exists.
   `WC_*` presets are used for underwear, which follows the set.
   A garment without a colour decision is reported (`chua chon mau`, QA axis `mau_thieu`) —
   never silently repainted. Stance can change in either direction when an action or declared cut explains the transition.
-- Problems are *reported* before they are *fixed*: `etl/qa_shots.py --apply` writes flagged
+- Problems are *reported* before they are *fixed*: `python -m novel2anima.quality.shot_rules --apply` writes flagged
   shots (missing/mismatched colour, conflicting tags, stance step-back, blocked content) into
   `shot_state` with a severity hint. Read them, decide, then change the plan or the catalog —
   no gate silently rewrites creative content. A shot may depict one or multiple **adult**
@@ -137,7 +137,7 @@ references are not evidence that a populated DB or production backend exists.
    `concept_relation`, Wardrobe/Tools seed mappings, `tag_source` and `source_snapshot`,
    original `tag_content_label` data, shot history and generation feedback. A `draft` or
    missing concept must not hide relevant raw tags.
-   To go *outside* the base tag of a garment/action, ask `python etl/suggest_tags.py
+   To go *outside* the base tag of a garment/action, ask `python -m novel2anima.catalog.retrieval.suggest_tags
    --tag <tag> | --shot <id> | --act <n>`; it suggests from `tag_relation`, concept
    `optional`/`alternative` mappings and `tag_role` with post_count evidence.
 6. **Combine evidence:** canonical IDs, source revisions, original metadata/labels,
@@ -159,11 +159,11 @@ references are not evidence that a populated DB or production backend exists.
 10. **Render:** use the actual ComfyUI workflow with Anima Base 2B + Turbo 4-step LoRA;
    record model, LoRA, sampler, CFG, prompt, seed, generated paths and outcome.
 11. **QC and revise:** review action/expression fidelity, identity, white background,
-   artifacts and near-duplicates. After seeding, run `python etl/check_prompts.py`
+   artifacts and near-duplicates. After seeding, run `python -m novel2anima.quality.prompt_rules`
    (0 error before render: it diffs the prompt file against the db and the catalog),
-   then `python etl/llm_review.py --act <n> --apply` for the semantic pass (caption vs tag,
+   then `python -m novel2anima.llm.adapters.review_adapter --act <n> --apply` for the semantic pass (caption vs tag,
    colour flips inside a beat, wrong-character tags) whose findings are advisory and read the report rows
-   (`etl/qa_shots.py --apply` -> `shot_state`, axes in
+   (`python -m novel2anima.quality.shot_rules --apply` -> `shot_state`, axes in
    [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md)) and fix the plan or the
    catalog data instead of hand-editing prompts. Keep rejected attempts as diagnostics, revisions appended
    rather than overwriting accepted shots; use bounded targeted retries.

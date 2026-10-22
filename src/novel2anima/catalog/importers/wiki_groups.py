@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """tag_group:* trong wiki Danbooru -> visual_concept kind=other + concept_tag.
 
-Usage: python etl/import_wiki_groups.py [--file PATH] [--min-members 5]
+Usage: python -m novel2anima.catalog.importers.wiki_groups [--file PATH] [--min-members 5]
 
 Moi group thanh 1 concept: code TG_<slug>, search_terms = danh sach tag thanh vien,
 metadata_json = cay phan cap (tag + depth + section). Member -> concept_tag usage=optional,

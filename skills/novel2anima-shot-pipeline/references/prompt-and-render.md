@@ -90,16 +90,16 @@ cannot render a particular request.
 
 ## Outfit colour, pose and QA gates (seed time)
 
-The prompt compiler does not decide garment colours or stance order by itself: `etl/wardrobe.py`
+The prompt compiler does not decide garment colours or stance order by itself: `python -m novel2anima.wardrobe.rules`
 swaps every garment for the colour variant recorded in the catalog (`visual_concept WC_*`, prepared
 for phase 1 in `data/wardrobe/*.json`) and keeps stance monotone inside a phase
 (standing -> kneeling -> sitting -> lying). Problems the gates cannot decide are written to
-`shot_state` by `etl/qa_shots.py` for the model to judge. Details, commands and the current axes:
+`shot_state` by `python -m novel2anima.quality.shot_rules` for the model to judge. Details, commands and the current axes:
 [wardrobe-and-pose.md](wardrobe-and-pose.md).
 
-## Prompt self-check (`etl/check_prompts.py`)
+## Prompt self-check (`python -m novel2anima.quality.prompt_rules`)
 
-After seeding an act (or the whole project) run `python etl/check_prompts.py [--act N]
+After seeding an act (or the whole project) run `python -m novel2anima.quality.prompt_rules [--act N]
 [--examples K]` — read-only, exit 1 when an ERROR remains. It compares the prompt file with
 the db and with the catalog tables:
 
@@ -117,14 +117,14 @@ the db and with the catalog tables:
 | negative | `<prompt file>.neg.txt` exists, is non-empty and carries worst/low quality + blurry |
 | `shot_state` | the act's `qa:*` rows (`mau_thieu`, `mau_lech`, `xung_dot`, `tu_the_lech`, `noi_dung_chan`) |
 
-### LLM self-check (`etl/llm_review.py`)
+### LLM self-check (`python -m novel2anima.llm.adapters.review_adapter`)
 
 `check_prompts.py` is mechanical; it cannot tell that a caption says "legs clamping" while the tag
 says `spread_legs`, or that the bra flips black -> white inside one beat. For that layer:
 
-    python etl/llm_review.py --act 13            # goi LLM (mac dinh: codex exec, stdin -> JSON)
-    python etl/llm_review.py --act 13 --apply    # ghi shot_state source='qa:llm:v1'
-    python etl/llm_review.py --act 13 --payload  # chi in payload (agent/nguoi tu soat)
+    python -m novel2anima.llm.adapters.review_adapter --act 13            # goi LLM (mac dinh: codex exec, stdin -> JSON)
+    python -m novel2anima.llm.adapters.review_adapter --act 13 --apply    # ghi shot_state source='qa:llm:v1'
+    python -m novel2anima.llm.adapters.review_adapter --act 13 --payload  # chi in payload (agent/nguoi tu soat)
 
 Each batch of shots is sent as `shot | phase | participants | beat | caption | tags` and the model
 answers strict JSON `{"findings":[{"shot","axis","severity","why"}]}` with axes
@@ -137,11 +137,11 @@ Treat LLM findings as **hypotheses, not verdicts** (it does hallucinate, e.g. "t
 is not in the string): `check_prompts.py` reports them as WARN, so the mechanical checks stay the
 gate and the LLM layer only proposes what to inspect. Verify each one against the prompt before
 changing a plan. `--cmd` swaps in another LLM that reads stdin and prints JSON. Re-seeding an act cascades `shot_state` rows away, so
-`etl/llm_review.py --replay` reloads the saved reports (`data/reviews/act*_llm.json`) without
+`python -m novel2anima.llm.adapters.review_adapter --replay` reloads the saved reports (`data/reviews/act*_llm.json`) without
 calling the model again — `check_reseed.py` runs it.
 
 A WARN is a judgement call to report, an ERROR blocks: fix the plan or the catalog and re-seed,
-never hand-edit the prompt file. `etl/check_reseed.py` runs this as its 6th check, so one
+never hand-edit the prompt file. `python -m scripts.qa.check_reseed` runs this as its 6th check, so one
 `check_reseed` = reseed + `qa_shots` + prompt self-check.
 
 ## Prompt block order (compiler output)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Bien kien thuc mau do thanh du lieu trong catalog (khong doi schema).
 
-Usage: python etl/import_colour_sets.py [--apply] [--min-post 20]
+Usage: python -m novel2anima.catalog.importers.colour_sets [--apply] [--min-post 20]
 
 Voi moi mon do (tag do) co bien the mau trong catalog:
   * visual_concept code WC_<do>, kind='other'  = bang mau cua mon do do
@@ -17,6 +17,7 @@ import argparse, collections, json, os, pathlib, re, sys, time
 
 from novel2anima.catalog import build_service as build
 from novel2anima.paths import WARDROBE_DIR
+from novel2anima.storage.shot_specs import latest_shot_spec
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -34,9 +35,9 @@ def colour_of(name):
 def chosen_from_acts(con):
     """mau dang dung cho tung mon do = cap (do goc, bien the mau) xuat hien nhieu nhat trong cac act"""
     tally = collections.Counter()
-    for (spec,) in con.execute("SELECT shot_spec_json FROM shot"):
+    for (shot_id,) in con.execute("SELECT id FROM shot"):
         try:
-            outfit = json.loads(spec).get("outfit") or []
+            outfit = latest_shot_spec(con, shot_id).get("outfit") or []
         except ValueError:
             continue
         worn = [x["name"] for x in outfit]

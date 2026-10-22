@@ -4,8 +4,8 @@ import sys
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "etl"))
-import build_story_plan
+sys.path.insert(0, str(ROOT / "src"))
+from novel2anima.story import beat_planner as build_story_plan
 
 class ActSpecs(unittest.TestCase):
     def compile(self, name):

@@ -1,7 +1,7 @@
 """Read-only story continuity gate; works with plan JSON or runtime DB.
 
-Usage: python etl/check_story.py --plan data/plans/a.json
-       python etl/check_story.py --db db/novel_anima.db --act 1 --project 'My Project' --revision 1
+Usage: python -m novel2anima.quality.story_rules --plan data/plans/a.json
+       python -m novel2anima.quality.story_rules --db db/novel_anima.db --act 1 --project 'My Project' --revision 1
 """
 import argparse
 import json
@@ -11,6 +11,7 @@ import sys
 from novel2anima.paths import DB_PATH, PLANS_DIR
 from novel2anima.story import logic as story_logic
 from novel2anima.storage import story_repository as story_db
+from novel2anima.storage.shot_specs import shot_specs_for_act
 
 
 def main(argv=None):
@@ -33,8 +34,7 @@ def main(argv=None):
             con = sqlite3.connect(args.db)
             try:
                 aid = story_db.resolve_act(con, args.act, args.project, args.revision)
-                specs = [(n, json.loads(s)) for n, s in con.execute(
-                    'SELECT shot_no, shot_spec_json FROM shot WHERE act_id=? ORDER BY shot_no', (aid,))]
+                specs = [(no, spec) for _sid, no, spec in shot_specs_for_act(con, aid)]
                 meta = con.execute('SELECT p.title, a.act_no, a.revision FROM act a'
                                    ' JOIN project p ON p.id=a.project_id WHERE a.id=?', (aid,)).fetchone()
                 contract = None

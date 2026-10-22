@@ -232,6 +232,82 @@ def bind_outfit(
     )
 
 
+def ensure_identity_revision(
+    con: sqlite3.Connection,
+    character_id: int,
+    identity: Mapping[str, Any],
+    *,
+    status: str = "approved",
+) -> int:
+    """Reuse an identical latest revision, otherwise append one."""
+    body = _json(dict(identity))
+    row = con.execute(
+        "SELECT id,status,identity_json FROM character_identity_revision"
+        " WHERE character_id=? ORDER BY revision DESC LIMIT 1",
+        (character_id,),
+    ).fetchone()
+    if row is not None and row[2] == body:
+        if status != row[1] and row[1] == "draft":
+            con.execute(
+                "UPDATE character_identity_revision SET status=? WHERE id=?", (status, row[0])
+            )
+        return int(row[0])
+    return create_identity_revision(con, character_id, identity, status=status)
+
+
+def ensure_outfit_revision(
+    con: sqlite3.Connection,
+    character_id: int,
+    spec: Mapping[str, Any],
+    items: Iterable[Mapping[str, Any]],
+    *,
+    status: str = "approved",
+    anchor_asset_id: int | None = None,
+) -> int:
+    """Reuse an identical latest outfit revision, otherwise append one."""
+    body = _json(dict(spec))
+    row = con.execute(
+        "SELECT id,status,spec_json FROM outfit_revision"
+        " WHERE character_id=? ORDER BY revision DESC LIMIT 1",
+        (character_id,),
+    ).fetchone()
+    if row is not None and row[2] == body:
+        if status != row[1] and row[1] == "draft":
+            con.execute("UPDATE outfit_revision SET status=? WHERE id=?", (status, row[0]))
+        return int(row[0])
+    return create_outfit_revision(
+        con, character_id, spec, items, status=status, anchor_asset_id=anchor_asset_id
+    )
+
+
+def ensure_shot_spec_revision(
+    con: sqlite3.Connection,
+    shot_id: int,
+    spec: Mapping[str, Any],
+    *,
+    status: str = "approved",
+    source_document_revision_id: int | None = None,
+) -> int:
+    """Reuse an identical latest shot spec, otherwise append one."""
+    body = _json(dict(spec))
+    row = con.execute(
+        "SELECT id,status,spec_json FROM shot_spec_revision"
+        " WHERE shot_id=? ORDER BY revision DESC LIMIT 1",
+        (shot_id,),
+    ).fetchone()
+    if row is not None and row[2] == body:
+        if status != row[1] and row[1] == "draft":
+            con.execute("UPDATE shot_spec_revision SET status=? WHERE id=?", (status, row[0]))
+        return int(row[0])
+    return create_shot_spec_revision(
+        con,
+        shot_id,
+        spec,
+        source_document_revision_id=source_document_revision_id,
+        status=status,
+    )
+
+
 def add_continuity_assertion(
     con: sqlite3.Connection,
     shot_id: int,

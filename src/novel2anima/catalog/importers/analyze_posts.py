@@ -2,7 +2,7 @@
 """Thong ke tu posts dump cua Danbooru -> cap nhat tag.post_count, tag_content_label,
 tag_relation(relation=compatible) va liet ke tag la (co trong posts, chua co trong db).
 
-Usage: python etl/analyze_posts.py [--file PATH] [--limit N] [--min-pair 50] [--min-label 100] [--dry-run]
+Usage: python -m novel2anima.catalog.importers.analyze_posts [--file PATH] [--limit N] [--min-pair 50] [--min-label 100] [--dry-run]
 
 1 pass duy nhat, doc tuan tu (khong parallel vi CSV co field chua newline).
 Co-occurrence chi tinh trong vocab = tag cua TG_* concept + tag co tag_role.

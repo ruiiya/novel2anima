@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Nap cac tag co trong posts dump nhung thieu trong db (file do analyze_posts.py sinh ra).
 
-Usage: python etl/import_posts_unknown.py [--file PATH] [--min-count 5]
+Usage: python -m novel2anima.catalog.importers.unknown_tags [--file PATH] [--min-count 5]
 
 Chi them TEN + post_count quan sat duoc; danbooru_category = NULL (khong biet),
 taxonomy_status = unreviewed, gan tag_source vao snapshot posts.
@@ -39,7 +39,7 @@ def main(argv=None):
     snap = con.execute("SELECT id FROM source_snapshot WHERE source_key=? ORDER BY id DESC LIMIT 1",
                        (SOURCE_KEY,)).fetchone()
     if snap is None:
-        raise SystemExit("chua co snapshot posts (chay etl/analyze_posts.py truoc)")
+        raise SystemExit("chua co snapshot posts (chay python -m novel2anima.catalog.importers.analyze_posts truoc)")
     con.execute("DROP TABLE IF EXISTS _pu")
     con.execute("CREATE TEMP TABLE _pu(name TEXT PRIMARY KEY, c INT)")
     con.execute("BEGIN")

@@ -74,7 +74,7 @@ shot_observation(shot_id, axis, value_tag_id, severity, since_shot_no, cause_sho
 act_observation(act_id, axis, initial_tag_id, notes, source)
 ```
 
-`etl/infer_state.py` (`state_rules.RULES_VERSION`) walks each act in shot order and fills the
+`python -m novel2anima.continuity.inference` (`state_rules.RULES_VERSION`) walks each act in shot order and fills the
 observation tables; it is report-only unless `--apply` is passed, and then deletes only its own
 `inferred:<version>` rows for acts it processes. The rows are
 **inferred placeholders**: they are searchable, grep-able trial data, not editorial fact.
@@ -86,7 +86,7 @@ pruning, see below.
 QA findings live in `shot_finding` (migration `003_shot_finding.sql`), keyed by
 `(shot_id, rule_id, source)`, so `qa:v1` and `qa:llm:v1` can report the same rule without
 overwriting each other (see [wardrobe-and-pose.md](wardrobe-and-pose.md)). Reseeding a plan
-cascades a shot's findings away, so run `etl/qa_shots.py --apply` again after any reseed.
+cascades a shot's findings away, so run `python -m novel2anima.quality.shot_rules --apply` again after any reseed.
 A finding is a flagged problem with a severity hint, not a verdict.
 
 

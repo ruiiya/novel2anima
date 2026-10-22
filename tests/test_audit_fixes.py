@@ -5,13 +5,13 @@ import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "etl"))
-import act_quality as aq
-import check_prompts
-import seed_plan
-import story_db
-import story_logic as sl
-import wardrobe
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
+from novel2anima.quality import act_quality as aq
+from novel2anima.quality import prompt_rules as check_prompts
+from novel2anima.pipeline import plan_seeder as seed_plan
+from novel2anima.storage import story_repository as story_db
+from novel2anima.story import logic as sl
+from novel2anima.wardrobe import rules as wardrobe
 
 
 def shot(n):
