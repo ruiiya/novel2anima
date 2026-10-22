@@ -1,0 +1,2 @@
+Migrations: status= dry_run applied= 0 skipped= 5 pending_before= 0 pending= 0
+Checks: integrity= True foreign_keys= True

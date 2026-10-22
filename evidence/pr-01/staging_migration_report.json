@@ -1,0 +1,90 @@
+{
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "migrations_dir": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\sql\\migrations",
+  "started_at_utc": "2026-10-22T04:07:37.017890+00:00",
+  "dry_run": false,
+  "backup": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\pre_migration_staging_live.db",
+  "discovered": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    }
+  ],
+  "applied": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821",
+      "duration_seconds": 0.001
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8",
+      "duration_seconds": 0.0
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266",
+      "duration_seconds": 0.0
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867",
+      "duration_seconds": 0.003
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f",
+      "duration_seconds": 0.035
+    }
+  ],
+  "skipped": [],
+  "pending": [],
+  "pending_before": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    }
+  ],
+  "checks": {
+    "integrity_check": [
+      "ok"
+    ],
+    "integrity_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true
+  },
+  "status": "ok",
+  "finished_at_utc": "2026-10-22T04:09:36.879046+00:00"
+}

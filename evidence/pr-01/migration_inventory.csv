@@ -1,0 +1,6 @@
+﻿"Version","Path","Bytes","Sha256"
+"002_shot_state","sql\migrations\002_shot_state.sql","1071","11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+"003_shot_finding","sql\migrations\003_shot_finding.sql","775","774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+"004_observation_publication","sql\migrations\004_observation_publication.sql","1480","722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+"005_db_first","sql\migrations\005_db_first.sql","10051","e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+"006_normalization","sql\migrations\006_normalization.sql","23609","87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"

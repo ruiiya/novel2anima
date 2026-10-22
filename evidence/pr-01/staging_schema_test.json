@@ -1,0 +1,51 @@
+{
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\base_test.db",
+  "migrations_dir": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\migrations_005_006",
+  "started_at_utc": "2026-10-22T04:10:01.385365+00:00",
+  "dry_run": false,
+  "backup": null,
+  "discovered": [
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    }
+  ],
+  "applied": [
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867",
+      "duration_seconds": 0.01
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f",
+      "duration_seconds": 0.015
+    }
+  ],
+  "skipped": [],
+  "pending": [],
+  "pending_before": [
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    }
+  ],
+  "checks": {
+    "integrity_check": [
+      "ok"
+    ],
+    "integrity_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true
+  },
+  "status": "ok",
+  "finished_at_utc": "2026-10-22T04:10:01.440795+00:00"
+}

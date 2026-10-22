@@ -1,0 +1,182 @@
+{
+  "generated_at_utc": "2026-10-22T04:10:00.672925+00:00",
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "size_bytes": 362307584,
+  "sqlite_version": "3.49.1",
+  "baseline": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\evidence\\pr-00\\db_audit.json",
+  "baseline_tables": 23,
+  "baseline_tables_missing": [],
+  "baseline_tables_changed": {},
+  "legacy_counts_unchanged": true,
+  "new_tables": [
+    {
+      "name": "asset_blob",
+      "rows": 0
+    },
+    {
+      "name": "catalog_source_config",
+      "rows": 0
+    },
+    {
+      "name": "character_identity_revision",
+      "rows": 0
+    },
+    {
+      "name": "continuity_assertion",
+      "rows": 0
+    },
+    {
+      "name": "generation_asset",
+      "rows": 0
+    },
+    {
+      "name": "generation_provenance",
+      "rows": 0
+    },
+    {
+      "name": "import_batch",
+      "rows": 0
+    },
+    {
+      "name": "import_batch_file",
+      "rows": 0
+    },
+    {
+      "name": "llm_prompt_template",
+      "rows": 0
+    },
+    {
+      "name": "llm_run",
+      "rows": 0
+    },
+    {
+      "name": "llm_run_asset",
+      "rows": 0
+    },
+    {
+      "name": "n2a_schema_migration",
+      "rows": 5
+    },
+    {
+      "name": "n2a_setting_revision",
+      "rows": 0
+    },
+    {
+      "name": "outfit_item",
+      "rows": 0
+    },
+    {
+      "name": "outfit_revision",
+      "rows": 0
+    },
+    {
+      "name": "pipeline_run",
+      "rows": 0
+    },
+    {
+      "name": "pipeline_step_run",
+      "rows": 0
+    },
+    {
+      "name": "project_document_revision",
+      "rows": 0
+    },
+    {
+      "name": "qa_issue",
+      "rows": 0
+    },
+    {
+      "name": "qa_run",
+      "rows": 0
+    },
+    {
+      "name": "shot_interaction",
+      "rows": 0
+    },
+    {
+      "name": "shot_outfit_binding",
+      "rows": 0
+    },
+    {
+      "name": "shot_participant",
+      "rows": 0
+    },
+    {
+      "name": "shot_prompt_revision",
+      "rows": 0
+    },
+    {
+      "name": "shot_prompt_spec",
+      "rows": 0
+    },
+    {
+      "name": "shot_prompt_tag",
+      "rows": 0
+    },
+    {
+      "name": "shot_spec_revision",
+      "rows": 0
+    },
+    {
+      "name": "tag_alias_conflict",
+      "rows": 0
+    },
+    {
+      "name": "tag_relation_source",
+      "rows": 0
+    },
+    {
+      "name": "visual_concept_fts_config",
+      "rows": 1
+    },
+    {
+      "name": "visual_concept_fts_data",
+      "rows": 30
+    },
+    {
+      "name": "visual_concept_fts_docsize",
+      "rows": 583
+    },
+    {
+      "name": "visual_concept_fts_idx",
+      "rows": 28
+    }
+  ],
+  "migration_ledger": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821",
+      "applied_at": "2026-10-22 04:07:38"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8",
+      "applied_at": "2026-10-22 04:07:38"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266",
+      "applied_at": "2026-10-22 04:07:38"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867",
+      "applied_at": "2026-10-22 04:07:38"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f",
+      "applied_at": "2026-10-22 04:07:38"
+    }
+  ],
+  "checks": {
+    "quick_check": [
+      "ok"
+    ],
+    "quick_check_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true
+  },
+  "status": "ok",
+  "note": "Additive schema only. No content backfill; legacy counts must be identical."
+}
