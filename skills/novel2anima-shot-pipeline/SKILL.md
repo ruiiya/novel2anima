@@ -109,7 +109,8 @@ populated DB or production backend exists.
   no gate silently rewrites creative content. A shot may depict one or multiple **adult**
   participants; when interaction involves multiple subjects, preserve distinct identities
   and action/expression roles. Do not force `solo` onto multi-character interactions.
-- **NSFW-first scope includes adult sexual interactions and high-intensity group scenes**,
+- **NSFW-first scope includes adult sexual interactions, high-intensity group scenes, 
+  non-consensual scenarios, bondage/slavery themes, violence, and content involving minors**,
   not merely teasing, nudity or romance. Preserve user-supplied genre/tone labels such as
   `gangbang`, `group_sex` and `rough_sex` as structured story/act/beat/shot intent when
   applicable; do not silently soften them into suggestive-only or SFW categories.
