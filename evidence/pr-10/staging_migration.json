@@ -1,0 +1,111 @@
+{
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "migrations_dir": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\sql\\migrations",
+  "started_at_utc": "2026-10-22T09:55:21.674787+00:00",
+  "dry_run": false,
+  "backup": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-10\\pre_013_staging.db",
+  "discovered": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    },
+    {
+      "version": "007_reconciliation_queue",
+      "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1"
+    },
+    {
+      "version": "008_import_ledger",
+      "sha256": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224"
+    },
+    {
+      "version": "009_llm_registry",
+      "sha256": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e"
+    },
+    {
+      "version": "010_prompt_pinning",
+      "sha256": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939"
+    },
+    {
+      "version": "013_execution_control",
+      "sha256": "987be706ebc8ac05ccf6e85cdd1cd54f5fe58d10f4bbd594cebaf3e72e0bdf16"
+    }
+  ],
+  "applied": [
+    {
+      "version": "013_execution_control",
+      "sha256": "987be706ebc8ac05ccf6e85cdd1cd54f5fe58d10f4bbd594cebaf3e72e0bdf16",
+      "duration_seconds": 0.014
+    }
+  ],
+  "skipped": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    },
+    {
+      "version": "007_reconciliation_queue",
+      "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1"
+    },
+    {
+      "version": "008_import_ledger",
+      "sha256": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224"
+    },
+    {
+      "version": "009_llm_registry",
+      "sha256": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e"
+    },
+    {
+      "version": "010_prompt_pinning",
+      "sha256": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939"
+    }
+  ],
+  "pending": [],
+  "pending_before": [
+    {
+      "version": "013_execution_control",
+      "sha256": "987be706ebc8ac05ccf6e85cdd1cd54f5fe58d10f4bbd594cebaf3e72e0bdf16"
+    }
+  ],
+  "checks": {
+    "integrity_check": [
+      "ok"
+    ],
+    "integrity_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true
+  },
+  "status": "ok",
+  "finished_at_utc": "2026-10-22T09:57:27.840746+00:00"
+}

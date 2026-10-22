@@ -5,7 +5,7 @@ relevant data during generation planning, not placing every tag in a single Anim
 This is a **design contract**, not proof that the live SQLite contains the sources, tables,
 or rows. Inspect the DB and source manifests first.
 
-## 1. Stage-to-table matrix (16 data tables + FTS5)
+## 1. Stage-to-table matrix (core 16 catalog/runtime tables + FTS5)
 
 | Database object | Primary use; must not be ignored | Observability / verification |
 |---|---|---|

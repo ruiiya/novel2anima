@@ -1,0 +1,56 @@
+{
+  "schema_version": "v4.1-pr10-pr11-gate-1",
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "workflow": {
+    "code": "story",
+    "version": "v4.1",
+    "sha256": "198cb104e95780b9eec7df1356f7d868b3b5467e5c18a7c230cba5954e5d42a2",
+    "steps": 14
+  },
+  "checks": {
+    "migrations": {
+      "ok": true,
+      "applied": 12,
+      "missing": [],
+      "drift": [],
+      "execution_control_sha256": "987be706ebc8ac05ccf6e85cdd1cd54f5fe58d10f4bbd594cebaf3e72e0bdf16"
+    },
+    "schema": {
+      "ok": true,
+      "missing_tables": [],
+      "missing_triggers": [],
+      "runtime_setting": {
+        "runtime_mode": "LEGACY",
+        "strict_execution_control": "off"
+      },
+      "strict_default_off": true
+    },
+    "code": {
+      "ok": true,
+      "forbidden_story_imports": [],
+      "prompt_scaffolds": 33,
+      "prompt_scaffold_bytes": 0,
+      "skills_present": true
+    },
+    "integrity": {
+      "ok": true,
+      "integrity_check": "ok",
+      "foreign_key_errors": 0
+    },
+    "tests": {
+      "ok": true,
+      "returncode": 0,
+      "summary": "OK"
+    }
+  },
+  "status": "PASS",
+  "blockers": [],
+  "not_run": [
+    "external_LLM_provider",
+    "real_Anima_render",
+    "production_cutover_and_rollback_drill"
+  ],
+  "production_signoff": false,
+  "generated_at_utc": "2026-10-22T10:14:11.641186+00:00",
+  "signature": "fbd8b350902280a8b03ec468b231d5ede638a67e37674c150f1994452915aee1"
+}

@@ -1,13 +1,33 @@
-# PR-09 - Release gate
+# PR-09 → PR-11 - Release gates
 
-## Trạng thái hiện tại
+## PR-10/PR-11 (V4.1)
+
+Gate bổ sung: `scripts/release/release_gate_v41.py`. Kiểm tra migration ledger tới
+`013_execution_control`, bảng/trigger runtime, static workflow hash, prompt scaffold
+zero-byte, skill contract và chạy `tests.test_pr10_orchestrator` +
+`tests.test_pr11_skills`. Exit `0` = `PASS` cho repository/staging; **không** chứng minh
+external provider, Anima render thật hay cutover production (`production_signoff=false`).
+
+```powershell
+$env:PYTHONPATH='src'
+python scripts\release\release_gate_v41.py `
+  --db db\backup\pr-01\staging_live.db `
+  --report evidence\pr-10\release_gate_staging.json
+```
+
+`PR-11` không thay thế backend checks bằng prompt. Ba skill ID vẫn giữ nguyên; các
+reference kiến trúc trùng đã chuyển thành redirect nhỏ.
+
+## PR-09 - Release gate
+
+### Trạng thái hiện tại
 
 **READY** trên staging. P8 legacy transitional đã xóa; gate trả exit `0`.
 Chưa thực hiện render Anima thật/cutover production.
 
 | Check | Kết quả |
 |---|---|
-| Migration ledger | pass, checksum khớp 002-012 |
+| Migration ledger | pass, checksum khớp 002-013 |
 | P8 disposition | pass: 23/23 disposition, `act_publication` removed, không còn cột trùng |
 | DB-only E2E | pass: project → participant → outfit → spec → prompt → render → QA → replay |
 | Backup/restore | pass: counts, FKs, prompt SHA, asset SHA |

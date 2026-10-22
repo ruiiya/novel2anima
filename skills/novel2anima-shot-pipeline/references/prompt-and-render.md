@@ -6,7 +6,9 @@ retrieval contract, candidate evidence, project-wide memory and feedback.
 
 ## ShotSpec shape
 
-Mirrors the runtime tables in the catalog DB (`shot`, `generation`), not the catalog itself.
+Mirrors V4.1 canonical revision tables (`shot_spec_revision`, `shot_participant`,
+`shot_interaction`, `shot_outfit_binding`, `shot_prompt_revision`, `generation`), not the
+catalog vocabulary. The DTO below is illustrative; inspect the actual schema.
 
 ```json
 {
@@ -75,8 +77,8 @@ cannot render a particular request.
   (`safe` / `sensitive` / `nsfw` / `explicit`). Anima-Aesthetic is quality-tuned: quality tags are
   optional and `score_*` tags should be dropped.
 - Negative: `worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, chromatic aberration`.
-  The compiler writes it to `<prompt file>.neg.txt` beside the prompt file. At CFG 1 negatives lose
-  effect, so still state constraints positively.
+  It is stored in the prompt revision/DB payload; any `.neg.txt` copy is an export only.
+  At CFG 1 negatives lose effect, so still state constraints positively.
 - Natural language may be mixed with tags in any order; a pure-NL prompt should be at least two
   sentences. Name a character and then describe their appearance - required for multi-character
   shots, otherwise the model mixes the cast up.
@@ -100,12 +102,12 @@ for phase 1 in `data/wardrobe/*.json`) and keeps stance monotone inside a phase
 ## Prompt self-check (`python -m novel2anima.quality.prompt_rules`)
 
 After seeding an act (or the whole project) run `python -m novel2anima.quality.prompt_rules [--act N]
-[--examples K]` — read-only, exit 1 when an ERROR remains. It compares the prompt file with
-the db and with the catalog tables:
+[--examples K]` — read-only, exit 1 when an ERROR remains. It compares the canonical
+prompt revision with the DB and catalog tables:
 
 | check | what it means |
 |---|---|
-| file vs db | prompt line count == shot count, and every line == `shot_spec_json.prompt` |
+| revision vs DB | each shot resolves to the expected current `shot_prompt_revision`; any export file is not authority |
 | syntax | lowercase tags, no `_` left (except `score_*`), no `, ,` |
 | missing tag | every tag in the spec must appear in the prompt — unless another tag in the same shot implies it (deliberately pruned) |
 | redundant tag | a tag that another tag implies is still in the prompt |
@@ -114,35 +116,34 @@ the db and with the catalog tables:
 | slots | missing action / expression / pose |
 | length | more than 80 tags per prompt (random tag dropout flattens long prompts) |
 | duplicates | two shots share a prompt, or one action repeats 4 shots in a row |
-| negative | `<prompt file>.neg.txt` exists, is non-empty and carries worst/low quality + blurry |
+| negative | the prompt revision has a non-empty negative carrying worst/low quality + blurry |
 | `shot_state` | the act's `qa:*` rows (`mau_thieu`, `mau_lech`, `xung_dot`, `tu_the_lech`, `noi_dung_chan`) |
 
 ### LLM self-check (`python -m novel2anima.llm.adapters.review_adapter`)
 
-`check_prompts.py` is mechanical; it cannot tell that a caption says "legs clamping" while the tag
+`prompt_rules` is mechanical; it cannot tell that a caption says "legs clamping" while the tag
 says `spread_legs`, or that the bra flips black -> white inside one beat. For that layer:
 
-    python -m novel2anima.llm.adapters.review_adapter --act 13            # goi LLM (mac dinh: codex exec, stdin -> JSON)
-    python -m novel2anima.llm.adapters.review_adapter --act 13 --apply    # ghi shot_state source='qa:llm:v1'
-    python -m novel2anima.llm.adapters.review_adapter --act 13 --payload  # chi in payload (agent/nguoi tu soat)
+    python -m novel2anima.llm.adapters.review_adapter --act 13            # call the configured reviewer
+    python -m novel2anima.llm.adapters.review_adapter --act 13 --apply    # append QA findings
+    python -m novel2anima.llm.adapters.review_adapter --act 13 --payload  # print payload for review
 
 Each batch of shots is sent as `shot | phase | participants | beat | caption | tags` and the model
 answers strict JSON `{"findings":[{"shot","axis","severity","why"}]}` with axes
 `y_nghia / mau_thuan / danh_tinh / tiep_dien / gia_tao / thieu / khac` (meaning vs beat,
 self-contradiction, wrong character assignment, reset state, unreadable phrasing, missing beat
-detail). Raw answer is kept in `data/reviews/actNN_llm.json`, rows land in `shot_state` as
-`llm:<axis>`.
+detail). Results belong in `qa_issue`/derived QA projections; a JSON report may be exported but
+is not the authority.
 
 Treat LLM findings as **hypotheses, not verdicts** (it does hallucinate, e.g. "tag lap 2 lan" that
-is not in the string): `check_prompts.py` reports them as WARN, so the mechanical checks stay the
-gate and the LLM layer only proposes what to inspect. Verify each one against the prompt before
-changing a plan. `--cmd` swaps in another LLM that reads stdin and prints JSON. Re-seeding an act cascades `shot_state` rows away, so
-`python -m novel2anima.llm.adapters.review_adapter --replay` reloads the saved reports (`data/reviews/act*_llm.json`) without
-calling the model again — `check_reseed.py` runs it.
+is not in the string): `prompt_rules` reports them as WARN, so mechanical checks stay the gate
+and the LLM layer only proposes what to inspect. Verify each one against the prompt before
+changing a plan. Re-seeding an act cascades derived `shot_state` rows away; reconstruct derived
+projections from canonical revisions and QA rows rather than treating an export as truth.
 
-A WARN is a judgement call to report, an ERROR blocks: fix the plan or the catalog and re-seed,
-never hand-edit the prompt file. `python -m scripts.qa.check_reseed` runs this as its 6th check, so one
-`check_reseed` = reseed + `qa_shots` + prompt self-check.
+A WARN is a judgement call to report; an ERROR blocks: fix the plan or catalog and append a
+new revision, never hand-edit an approved prompt revision. `python -m scripts.qa.check_reseed`
+is an authoring/diagnostic gate, not a story-runtime endpoint.
 
 ## Prompt block order (compiler output)
 
@@ -210,8 +211,9 @@ POC value, say so when reporting results, and never present a ranking score as v
 Read the model card and prompt rules for the exact checkpoint/LoRA in use before a run, and
 save the actual workflow, seed, sampler, steps and CFG with each generation row.
 
-Every produced image is appended to `generation` with `prompt`, `seed`, `image_path`,
-`image_sha256`, `evaluation_json`, `decision`. Image bytes stay on disk - the DB stores paths.
+Every produced image is appended to `generation` with the prompt revision, seed, model
+settings, `asset_id`, evaluation and decision. Image bytes are stored in `asset_blob`;
+there is no `generation.image_path` authority column.
 
 ## QC and retry taxonomy
 

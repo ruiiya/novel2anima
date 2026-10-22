@@ -3,6 +3,11 @@
 > V4 code lives under `src/novel2anima/`; the legacy `etl/` tree is removed.
 > The SQLite DB is canonical for projects, prompts, renders and QA. Start at
 > [`docs/v4/README.md`](docs/v4/README.md).
+>
+> V4.1 story execution is governed by `src/novel2anima/pipeline/orchestrator.py`
+> and migration `sql/migrations/013_execution_control.sql`. Catalog maintenance is
+> operator-only via `scripts/catalog/run_job.py`; it is never a story substep.
+> The pipeline gate is `scripts/release/release_gate_v41.py`.
 
 ## Catalog build (P0 schema + P1 import)
 
@@ -20,22 +25,23 @@ concepts and the runtime tables, in one file. No PostgreSQL, no vector DB.
 
 Python 3.9+ stdlib only (`sqlite3`, `urllib`, `csv`, `json`). SQLite must have FTS5.
 
-## What is in the db (measured, 2026-10-15)
+## What is in the db (measured, 2026-10-22)
 
 | table | rows | source |
 |---|---|---|
-| `tag` | 280,100 | implications db + taxonomy CSV + Anima index |
-| `tag_alias` | 49,340 | Danbooru active aliases (40,732) + CSV aliases, first-writer-wins |
-| `tag_relation` | 45,501 | Danbooru active `implies` edges |
-| `tag_role` | 30,265 | taxonomy `slot` mapping: outfit 12,028 / other 6,927 / identity 3,496 / pose 2,976 / action 1,354 / ... |
-| `tag_content_label` | 548 | Anima `banned_tags.csv` -> `scope='blocked'` |
-| `visual_concept` | 297 | Anima-Tools pose groups (draft, `contextual`) |
-| `concept_tag` | 514 | primary/optional tag per concept |
-| `tag_source` | 387,997 | provenance row per (tag, source, ref) |
+| `tag` | 1,208,773 | implications db + taxonomy CSV + Anima index + Danbooru dump |
+| `tag_alias` | 149,546 | Danbooru active aliases + CSV aliases, first-writer-wins |
+| `tag_relation` | 213,175 | Danbooru implications + compatibility edges |
+| `tag_role` | 30,265 | taxonomy `slot` mapping |
+| `tag_content_label` | 9,994 | rating/content classification |
+| `visual_concept` | 583 | Anima-Tools groups and curated concepts |
+| `concept_tag` | 9,741 | primary/optional tag per concept |
+| `tag_source` | 1,479,995 | provenance row per (tag, source, ref) |
 
-Verified: `integrity_check` ok, 0 foreign-key violations, FTS5 index == concept rows,
-`MATCH 'pose'` returns 297. Rerunning `load` (and `load --force`) changes nothing:
-imports are keyed on `source_snapshot(source_key, revision)`.
+Verified on the current live/staging copies: `integrity_check` ok, 0 foreign-key
+violations, project rows 0, catalog preserved at 1,208,773 tags. Rerunning `load`
+(and `load --force`) changes nothing: imports are keyed on
+`source_snapshot(source_key, revision)`.
 
 ## Pinned sources (`config/catalog/sources.json`)
 
@@ -79,8 +85,9 @@ Moi importer local nhan `--file`/`--dir`; mac dinh lay tu `N2A_DATA_DIR` (fallba
 tham chieu o dau (giu tag co wiki/role/relation/concept/alias hoac duoc nhac trong plan).
 `python -m novel2anima.catalog.maintenance.cleanup_db [--apply] [--vacuum]`: xoa alias trung ten tag that (tag thang alias),
 xuat `data/sources/tags_not_prompt_token.txt` (tag ky tu dac biet/emoji - van giu trong db) va vacuum.
-`python -m scripts.qa.check_reseed`: seed lai toan bo `data/plans/*.json` va assert ket qua idempotent
-(prompt file khong doi, khong con alias mo ho, fk sach). Dung sau moi lan sua du lieu catalog.
+`python -m scripts.qa.check_reseed`: legacy authoring diagnostic only. It may compare
+`data/plans/*.json`, but canonical runtime data is SQLite (`shot_prompt_revision`), not a
+prompt file; do not use it as a story endpoint or as canonical state.
 
 ## Quy tac chung cho moi plan (`python -m novel2anima.wardrobe.rules`, seed_plan tu ap)
 

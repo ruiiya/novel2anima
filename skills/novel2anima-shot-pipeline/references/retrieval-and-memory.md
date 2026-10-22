@@ -1,6 +1,6 @@
 # V4 Shot Retrieval, Novelty and Feedback Contract
 
-Read the sibling catalog skill's `references/full-coverage.md` first for all 16 tables +
+Read the sibling catalog skill's `references/full-coverage.md` first for the core 16 tables +
 FTS5. This reference translates that coverage into planning and candidate decisions.
 
 ## A. Request and output boundaries

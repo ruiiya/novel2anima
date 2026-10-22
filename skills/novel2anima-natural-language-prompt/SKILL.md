@@ -1,16 +1,29 @@
 ---
 name: novel2anima-natural-language-prompt
-description: "Convert an existing Novel2Anima ShotSpec and/or compiled Danbooru-style tag prompt into a faithful, readable English natural-language image prompt. Use after shot planning/tag compilation and before render, especially for Anima-3.8B natural-language workflows. Preserve character identity, actor/target roles, primary action, expression, pose, camera, continuity, background and model-specific metadata without inventing story events."
+description: "Convert an immutable Novel2Anima ShotSpec/tag prompt into faithful English prose as optional V4.1 stage 08; read-only proposal, no story/ETL creation."
 metadata:
-  short-description: Faithful ShotSpec/tag-to-natural-language prompt conversion
+  short-description: Shot-faithful optional NL prompt conversion
 ---
 
-# Novel2Anima — Natural Language Prompt Converter
+# Novel2Anima Natural Language Prompt — V4.1
 
-> V4 canonical prompt revision is `shot_prompt_revision`; natural language is
-> optional `natural_prompt`. The DB row, not a `.txt` file, is authoritative.
-> See [`docs/v4/README.md`](../../docs/v4/README.md) and
-> [`docs/v4/docs/LLM_PIPELINE_CONTRACTS.md`](../../docs/v4/docs/LLM_PIPELINE_CONTRACTS.md).
+## Scope and authority
+
+This is **optional stage `08_natural_prompt`**, not a story orchestrator. Input is a
+validated ShotSpec, source prompt, participants, revision pins, technical tokens and
+negative prompt supplied by the application. For a standalone human request, return a
+conversion **without database or filesystem changes**. In `V4_ACTIVE`, the application
+stores a validated proposal as a new `shot_prompt_revision`; this skill never writes the DB.
+
+Canonical policy:
+[`docs/v4/docs/LLM_PIPELINE_CONTRACTS.md`](../../docs/v4/docs/LLM_PIPELINE_CONTRACTS.md),
+[`docs/contracts/SKILL_RUNTIME_CONTRACTS.md`](../../docs/contracts/SKILL_RUNTIME_CONTRACTS.md)
+and [`docs/architecture/PIPELINE_EXECUTION_CONTROL.md`](../../docs/architecture/PIPELINE_EXECUTION_CONTROL.md).
+See [`docs/v4/README.md`](../../docs/v4/README.md).
+
+> The canonical prompt revision is `shot_prompt_revision`; natural language is
+> optional. The DB row, not a `.txt` file or JSONL export, is authoritative. A missing
+> approved stage template is `BLOCKED_CONFIG`, not permission to use an empty TXT scaffold.
 
 ## Mission and scope
 
@@ -22,7 +35,10 @@ Use this skill when the user requests “convert prompt to natural language”, 
 
 **Never modify the narrative intent.** The upstream Story → Act → Beat → Action Sequence → ShotSpec owns the event. Catalog/tag selection owns the visual vocabulary. This skill only verbalizes it.
 
-See [references/integration.md](references/integration.md) for non-destructive integration and [references/qa-fixtures.md](references/qa-fixtures.md) for behavior tests. These files describe a **proposed new skill**, not a claim that corresponding backend code or database columns are already present.
+See [references/integration.md](references/integration.md) for the V4.1 non-destructive
+integration and [references/qa-fixtures.md](references/qa-fixtures.md) for behavior tests.
+The stage contract is implemented in `src/novel2anima/llm/contracts.py`; application
+persistence/versioning remains the caller's responsibility.
 
 ## Position in pipeline
 
@@ -34,7 +50,7 @@ Story → Act → Beat → Action Sequence → ShotSpec
 ```
 
 - Keep the original compiled tag prompt and canonical tag/ShotSpec data as **immutable source artifacts**.
-- Produce a new `natural_prompt` artifact. Do **not** overwrite `shot_spec_json.prompt`, an existing `.txt` prompt file, the original tag list, or generation history simply to install this feature.
+- Produce a new `natural_prompt` artifact. Do **not** overwrite the source `shot_prompt_revision`, an export `.txt`/JSONL file, the original tag list, or generation history simply to install this feature.
 - The current repository's tag-oriented `python -m novel2anima.quality.prompt_rules` checks literal tag presence/file-vs-DB alignment. It is **not** a natural-language fidelity checker. Retain it for source validation; add a separate semantic check for this skill.
 - Existing model-specific workflows may require non-prose tokens. Keep them in separately identified metadata or a deliberately configured hybrid render payload; do not claim a pure natural-language string is equivalent to those control tokens.
 - A model preference for natural language is a prompting preference, **not a proven render-quality improvement** without side-by-side tests on the configured checkpoint/workflow.
@@ -119,7 +135,7 @@ Some source fragments carry machine control rather than visual semantics: `score
 
 **Interactive human request:** Return only the English `natural_prompt` by default, followed by a concise issue note **only if** missing or contradictory information prevented a faithful conversion. Never show an internal checklist unless requested.
 
-**Machine/pipeline request:** Return one JSON object (or JSONL, one object per shot) with this logical shape:
+**Machine/pipeline request:** Return one schema-validated JSON object proposal. JSONL may be used only as a caller-side export, never as canonical runtime storage. Logical shape:
 
 ```json
 {

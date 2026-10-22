@@ -1,28 +1,46 @@
 ---
 name: novel2anima-shot-pipeline
-description: "Plan Novel2Anima V4 acts and action/expression-first ShotSpecs, including high-intensity, multi-participant adult NSFW scene intent metadata, with full SQLite catalog retrieval, project memory, and render QC. The LLM selects contextually and the backend compiles model-supported Anima Base 2B + Turbo 4-step LoRA prompts."
+description: "Novel2Anima V4.1 action-first story/act/shot planning via the backend orchestrator; explicit actor-target and outfit continuity; no autonomous ETL or script execution."
 metadata:
-  short-description: V4 full-catalog shot planning, Anima compilation and QC
+  short-description: V4.1 governed story-to-shot planning and QA
 ---
 
-# Novel2Anima Shot Pipeline — V4 full-catalog planning
+# Novel2Anima Shot Pipeline — V4.1
 
-> V4 backend: `src/novel2anima/story`, `prompting`, `render`, `quality`.
-> `shot_prompt_revision` and `qa_issue` are canonical; legacy `shot_spec_json`
-> and `shot_finding` are transitional/projection only. Read
-> [`docs/v4/README.md`](../../docs/v4/README.md) before using legacy commands.
+**Canonical policy:**
+[`docs/architecture/PIPELINE_EXECUTION_CONTROL.md`](../../docs/architecture/PIPELINE_EXECUTION_CONTROL.md),
+[`docs/contracts/SKILL_RUNTIME_CONTRACTS.md`](../../docs/contracts/SKILL_RUNTIME_CONTRACTS.md)
+and [`docs/v4/docs/LLM_PIPELINE_CONTRACTS.md`](../../docs/v4/docs/LLM_PIPELINE_CONTRACTS.md).
+Existing references explain creative/semantic constraints; they do **not** grant
+independent CLI, SQL-write, file-persistence, ETL-spawning or DAG-creation authority.
 
-Read [references/v4-architecture.md](references/v4-architecture.md) for the V4 architecture
-and schema, [references/continuity-state.md](references/continuity-state.md) for the
-experimental continuity model, plus
-[references/retrieval-and-memory.md](references/retrieval-and-memory.md) and
-[references/prompt-and-render.md](references/prompt-and-render.md) for implementation.
-Dress, stance and prompt hygiene are enforced at seed time by `python -m novel2anima.wardrobe.rules` +
-`python -m novel2anima.pipeline.plan_seeder`; whatever those gates cannot decide is reported by `python -m novel2anima.quality.shot_rules` into
-`shot_state` instead of being forced - see
-[references/wardrobe-and-pose.md](references/wardrobe-and-pose.md).
-The catalog skill owns ETL/table semantics. Inspect the actual SQLite schema; skill
-references are not evidence that a populated DB or production backend exists.
+## V4.1 runtime contract
+
+- One user `start story` = one idempotent root `pipeline_run`; retries are immutable
+  `pipeline_step_run` attempts. The LLM cannot add steps or dispatch commands.
+- Registered DAG: `01_brief` → `02_story` → `03_character` → `04_wardrobe` →
+  `05_act_beats` → `06_shot_direction` → retrieval → conditional `07` → compile →
+  optional `08` → `09_semantic_review` → render → conditional QC/revision.
+- Active instructions come only from approved `llm_prompt_template` rows.
+  `llm/prompts/*/*.txt` are zero-byte scaffolds; a missing template is
+  `BLOCKED_CONFIG` with **0 provider calls**.
+- Canonical shot state is `shot_spec_revision`, `shot_participant`,
+  `shot_interaction`, `shot_outfit_binding` and `shot_prompt_revision`.
+  Removed JSON authority is not a supported write target.
+- `shot_prompt_revision` and `qa_issue` are canonical; `shot_finding` and
+  `shot_state` are projection/read-model tables.
+- Missing catalog data → `CURATION_GAP` / `BLOCKED_DEPENDENCY`; never launch catalog
+  ETL, import tags or author an importer inside the story.
+- Runtime modes `LEGACY`, `MIGRATING`, `V4_ACTIVE` are backend settings. Only
+  `V4_ACTIVE` with `strict_execution_control=on` runs the orchestrator.
+
+Read [references/v4-architecture.md](references/v4-architecture.md) for the redirect,
+[references/continuity-state.md](references/continuity-state.md) for the trial continuity
+model, plus [references/retrieval-and-memory.md](references/retrieval-and-memory.md) and
+[references/prompt-and-render.md](references/prompt-and-render.md) for semantic detail.
+Seed/check commands in this skill are authoring/diagnostic tools, not story-runtime
+endpoints. Inspect the actual SQLite schema; references are not evidence that a
+populated DB or production backend exists.
 
 ## Story quality P0/P1 contract (solo and 1girl/1boy)
 
@@ -41,18 +59,19 @@ references are not evidence that a populated DB or production backend exists.
   `INTERACTION_ROLE_MISMATCH`, `INTERACTION_ACTOR_ACTION_MISSING`, `INTERACTION_TARGET_REQUIRED`,
   `INTERACTION_TARGET_NOT_IN_SHOT`, `INTERACTION_TARGET_MISMATCH`, `INTERACTION_PRIMARY_ACTION_MISMATCH`
   (legacy ambiguous rows stay WARN: `..._SOFT`); seed rejects them before any DB write and
-  never rewrites roles by heuristic. seed_plan stores the canonical `interaction`
-  object in `shot_spec_json` and renders a directed clause from
-  `story_logic.DIRECTED_CLAUSE_TEMPLATES` for templated actions (`check_prompts.py`
-  compares prompt vs `interaction` via `INTERACTION_PROMPT_DIRECTION_MISMATCH`).
-  Symmetric gestures (`holding_hands` etc.) are not forced into one-way ownership.
+  never rewrites roles by heuristic. The plan seeder writes the canonical directed
+  `shot_interaction` row and renders a directed clause from
+  `story_logic.DIRECTED_CLAUSE_TEMPLATES` for templated actions. Prompt QA compares
+  prompt vs interaction via `INTERACTION_PROMPT_DIRECTION_MISMATCH`. Symmetric gestures
+  (`holding_hands` etc.) are not forced into one-way ownership.
   Regression: `python -m unittest tests.test_interaction_direction_contract -v`.
 - Check `stateBefore -> action -> stateAfter`, pose bridge, prop ownership, and important
   reactions. Explicit scene/time cuts can justify skipping micro-actions. Do not turn
   each small movement into a separate shot if a single composition clearly shows it.
 - `python -m novel2anima.story.action_planner --plan <plan>` lists missing bridges; then run
-  `python -m novel2anima.quality.story_rules --plan <plan>` **before** `seed_plan.py`.
-  `python -m novel2anima.quality.prompt_rules` now gates severe narrative and action-resolution errors.
+  `python -m novel2anima.quality.story_rules --plan <plan>` **before**
+  `python -m novel2anima.pipeline.plan_seeder`. `python -m novel2anima.quality.prompt_rules`
+  gates severe narrative and action-resolution errors.
 - Existing plan JSONs without `sequence` remain accepted for backwards compatibility,
   but those plans have **lower QA coverage**: a zero-error check does not certify story clarity.
 - Preserve previous generation records; if a generated/approved shot changes, **increment
@@ -157,16 +176,18 @@ references are not evidence that a populated DB or production backend exists.
    compact primary/optional/alternative ingredients; do not stuff all retrieved tags
    into the prompt. Contextual interpretation remains with the LLM.
 10. **Render:** use the actual ComfyUI workflow with Anima Base 2B + Turbo 4-step LoRA;
-   record model, LoRA, sampler, CFG, prompt, seed, generated paths and outcome.
+   record model settings, prompt revision, seed and `asset_blob` reference. Image bytes
+   live in `asset_blob`; do not write an `image_path` authority column.
 11. **QC and revise:** review action/expression fidelity, identity, white background,
-   artifacts and near-duplicates. After seeding, run `python -m novel2anima.quality.prompt_rules`
-   (0 error before render: it diffs the prompt file against the db and the catalog),
-   then `python -m novel2anima.llm.adapters.review_adapter --act <n> --apply` for the semantic pass (caption vs tag,
-   colour flips inside a beat, wrong-character tags) whose findings are advisory and read the report rows
-   (`python -m novel2anima.quality.shot_rules --apply` -> `shot_state`, axes in
-   [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md)) and fix the plan or the
-   catalog data instead of hand-editing prompts. Keep rejected attempts as diagnostics, revisions appended
-   rather than overwriting accepted shots; use bounded targeted retries.
+   artifacts and near-duplicates. Run `python -m novel2anima.quality.prompt_rules`
+   (read-only DB/catalog checks before render), then
+   `python -m novel2anima.llm.adapters.review_adapter --act <n> --apply` for the semantic
+   pass (caption vs tag, colour flips inside a beat, wrong-character tags). Findings are
+   advisory; read the projection rows (`shot_state`, axes in
+   [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md)) and fix the plan or
+   catalog data instead of hand-editing approved prompts. Keep rejected attempts as
+   diagnostics; append revisions rather than overwriting accepted shots; use bounded
+   targeted retries.
 
 ## Retrieval failure strategy
 

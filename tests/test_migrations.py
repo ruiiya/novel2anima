@@ -256,6 +256,7 @@ class MigrationRunnerTests(unittest.TestCase):
                 "008_import_ledger",
                 "009_llm_registry",
                 "010_prompt_pinning",
+                "013_execution_control",
             ],
         )
         for item in discovered:

@@ -1,3 +1,3 @@
 interface:
   display_name: "N2A Catalog"
-  short_description: "Full SQLite catalog incl. adult NSFW metadata"
+  short_description: "V4.1 DB-first catalog read + approved maintenance"

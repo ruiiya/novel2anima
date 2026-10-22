@@ -14,6 +14,12 @@
 | PR-07 | Compile, render BLOB, QA history | hoàn tất |
 | PR-08 | Legacy cleanup + docs/skills | hoàn tất |
 | PR-09 | Release gate | **READY** trên staging; chưa render Anima thật/cutover |
+| PR-10 | Pipeline execution control (static DAG, idempotent runs, `catalog_job`) | hoàn tất code + migration `013`; chưa provider/render thật |
+| PR-11 | Skill runtime alignment V4.1 | hoàn tất merge, giữ 3 skill ID |
+
+> PR-10/11 gate: `python scripts\release\release_gate_v41.py --db <db>
+> --report evidence\pr-10\release_gate.json`. `production_signoff` vẫn `false` cho đến
+> khi có external provider, Anima render thật và cutover/rollback drill.
 
 ## Nguồn chuẩn
 
