@@ -13,7 +13,7 @@
 | PR-06 | 11 LLM contracts, prompt registry | hoàn tất |
 | PR-07 | Compile, render BLOB, QA history | hoàn tất |
 | PR-08 | Legacy cleanup + docs/skills | một phần, xem disposition |
-| PR-09 | Release gate | chưa làm |
+| PR-09 | Release gate | **chạy được, NOT_READY** do P8 legacy |
 
 ## Nguồn chuẩn
 
@@ -23,6 +23,8 @@
 - LLM contracts: [`docs/LLM_PIPELINE_CONTRACTS.md`](docs/LLM_PIPELINE_CONTRACTS.md)
 - Refactor rules: [`docs/SOURCE_REFACTOR.md`](docs/SOURCE_REFACTOR.md)
 - Legacy disposition: [`P8_LEGACY_DISPOSITION.md`](P8_LEGACY_DISPOSITION.md)
+- Release gate: [`RELEASE_GATE.md`](RELEASE_GATE.md)
+- Backup/recovery: [`BACKUP_RECOVERY.md`](BACKUP_RECOVERY.md)
 
 ## Layout
 

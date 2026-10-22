@@ -1,0 +1,244 @@
+{
+  "schema_version": "v4-release-gate-1",
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "status": "NOT_READY",
+  "blockers": [
+    "P8_LEGACY_DISPOSITION"
+  ],
+  "checks": {
+    "migrations": {
+      "ok": true,
+      "files": [
+        {
+          "version": "002_shot_state",
+          "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+        },
+        {
+          "version": "003_shot_finding",
+          "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+        },
+        {
+          "version": "004_observation_publication",
+          "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+        },
+        {
+          "version": "005_db_first",
+          "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+        },
+        {
+          "version": "006_normalization",
+          "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+        },
+        {
+          "version": "007_reconciliation_queue",
+          "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1"
+        },
+        {
+          "version": "008_import_ledger",
+          "sha256": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224"
+        },
+        {
+          "version": "009_llm_registry",
+          "sha256": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e"
+        },
+        {
+          "version": "010_prompt_pinning",
+          "sha256": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939"
+        }
+      ],
+      "applied": {
+        "002_shot_state": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821",
+        "003_shot_finding": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8",
+        "004_observation_publication": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266",
+        "005_db_first": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867",
+        "006_normalization": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f",
+        "007_reconciliation_queue": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1",
+        "008_import_ledger": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224",
+        "009_llm_registry": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e",
+        "010_prompt_pinning": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939",
+        "011_p8_generation_no_image_path": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44"
+      },
+      "missing": [],
+      "drift": []
+    },
+    "disposition": {
+      "ok": false,
+      "legacy_tables": 23,
+      "missing": [],
+      "transitional": [
+        "character_profile",
+        "shot",
+        "act_publication"
+      ]
+    },
+    "e2e": {
+      "ok": true,
+      "project_id": 1,
+      "act_id": 1,
+      "shot_id": 1,
+      "prompt_id": 1,
+      "generation_id": 1,
+      "qa_run_id": 1,
+      "prompt_sha": "83ffc102bf624b7cd033894628595a73f776cbd1168515503a525d6c4e69326f",
+      "render_sha": "2e446cbf6c35f620d8c8c52da917214b0be2b85a403903d17e8233c47d18a03d",
+      "image_bytes": 20,
+      "qa_history": 1,
+      "interaction": [
+        2,
+        1
+      ],
+      "body_sha": "2e446cbf6c35f620d8c8c52da917214b0be2b85a403903d17e8233c47d18a03d",
+      "replay_sha": "2e446cbf6c35f620d8c8c52da917214b0be2b85a403903d17e8233c47d18a03d"
+    },
+    "backup_restore": {
+      "ok": true,
+      "quick_check": "ok",
+      "foreign_key_errors": 0,
+      "asset_sha_match": true,
+      "prompt_sha_match": true,
+      "counts": {
+        "project": 1,
+        "character_profile": 2,
+        "act": 1,
+        "shot": 1,
+        "shot_prompt_revision": 1,
+        "generation": 1,
+        "asset_blob": 1,
+        "qa_run": 1,
+        "qa_issue": 1
+      },
+      "seconds": 10.196
+    },
+    "rollback": {
+      "ok": true,
+      "quick_check": "ok",
+      "counts": {
+        "project": 0,
+        "character_profile": 0,
+        "act": 0,
+        "shot": 0,
+        "shot_prompt_revision": 0,
+        "generation": 0,
+        "asset_blob": 0,
+        "qa_run": 0,
+        "qa_issue": 0
+      },
+      "expected": {
+        "project": 0,
+        "character_profile": 0,
+        "act": 0,
+        "shot": 0,
+        "shot_prompt_revision": 0,
+        "generation": 0,
+        "asset_blob": 0,
+        "qa_run": 0,
+        "qa_issue": 0
+      }
+    },
+    "benchmark": {
+      "ok": true,
+      "tag_rows": 1208779,
+      "seconds": {
+        "tag_count": 0.1053,
+        "canonical_lookup": 0.000666,
+        "foreign_key_check": 37.591
+      },
+      "thresholds": {
+        "tag_count": 10.0,
+        "canonical_lookup": 0.1
+      }
+    },
+    "source": {
+      "ok": true,
+      "quick_check": "ok",
+      "counts": {
+        "project": 0,
+        "character_profile": 0,
+        "act": 0,
+        "shot": 0,
+        "shot_prompt_revision": 0,
+        "generation": 0,
+        "asset_blob": 0,
+        "qa_run": 0,
+        "qa_issue": 0
+      }
+    }
+  },
+  "started_at_utc": "2026-10-22T08:36:37.478756+00:00",
+  "finished_at_utc": "2026-10-22T08:39:53.082729+00:00",
+  "signed_ledger": {
+    "schema_version": "v4-release-gate-1",
+    "database_sha256": "e892221a90a65a78fa6d79ff73dc321b29b918be1933a397fe3274730454bcee",
+    "migrations": {
+      "002_shot_state": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821",
+      "003_shot_finding": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8",
+      "004_observation_publication": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266",
+      "005_db_first": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867",
+      "006_normalization": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f",
+      "007_reconciliation_queue": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1",
+      "008_import_ledger": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224",
+      "009_llm_registry": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e",
+      "010_prompt_pinning": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939",
+      "011_p8_generation_no_image_path": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44"
+    },
+    "ledger": [
+      {
+        "version": "002_shot_state",
+        "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821",
+        "applied_at": "2026-10-22 04:07:38"
+      },
+      {
+        "version": "003_shot_finding",
+        "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8",
+        "applied_at": "2026-10-22 04:07:38"
+      },
+      {
+        "version": "004_observation_publication",
+        "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266",
+        "applied_at": "2026-10-22 04:07:38"
+      },
+      {
+        "version": "005_db_first",
+        "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867",
+        "applied_at": "2026-10-22 04:07:38"
+      },
+      {
+        "version": "006_normalization",
+        "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f",
+        "applied_at": "2026-10-22 04:07:38"
+      },
+      {
+        "version": "007_reconciliation_queue",
+        "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1",
+        "applied_at": "2026-10-22 04:32:36"
+      },
+      {
+        "version": "008_import_ledger",
+        "sha256": "a6c3228d690cea0ba49a272deb93440d952e41eec784b0f9be908f83f3abe224",
+        "applied_at": "2026-10-22 05:43:26"
+      },
+      {
+        "version": "009_llm_registry",
+        "sha256": "0aa57238dd3a9e95e4af0ea3f4f58b4927d9e64601542bcfe80e0eb3394ed74e",
+        "applied_at": "2026-10-22 07:49:46"
+      },
+      {
+        "version": "010_prompt_pinning",
+        "sha256": "f69006ab0c58dd1c94c7a0f4f43b6cccbf2b0cd4902486e02a43cd88937d3939",
+        "applied_at": "2026-10-22 08:07:03"
+      },
+      {
+        "version": "011_p8_generation_no_image_path",
+        "sha256": "1edd3327b7d20569552b299dfcc00bb27fa640bcd25db28a9feecd6cc0ff7c44",
+        "applied_at": "2026-10-22 08:16:46"
+      }
+    ],
+    "status": "NOT_READY",
+    "blockers": [
+      "P8_LEGACY_DISPOSITION"
+    ],
+    "generated_at_utc": "2026-10-22T08:39:54.157476+00:00",
+    "signature_type": "sha256-content",
+    "signature": "e8d1768975cd869f709a455aa5e860dac1c9105e86518ac00d1de858823a48ff"
+  }
+}
