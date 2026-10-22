@@ -1,0 +1,29 @@
+{
+  "staging_after": {
+    "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+    "size_bytes": 397799424,
+    "last_write_time": "2026-10-22T06:04:04.563108+00:00",
+    "sha256": "0031b7b7eb5b89a4f3567f91be30f26b147fd611e868dce0d1572c8a4f58297f"
+  },
+  "pre_008_backup": {
+    "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-03\\pre_008_staging.db",
+    "size_bytes": 393494528,
+    "last_write_time": "2026-10-22T05:43:26.155910+00:00",
+    "sha256": "bbc550c0193d89535c295039f3c3d0acfb8c4cf57421a962a4d665b56268d9ba"
+  },
+  "pre_import_backup": {
+    "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-03\\pre_import_staging.db",
+    "size_bytes": 393527296,
+    "last_write_time": "2026-10-22T05:48:14.057161+00:00",
+    "sha256": "4cb50f06b416d863202aa8646671af47b9caeebd47b782aa9453e9c4716a2349"
+  },
+  "live": {
+    "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\novel_anima.db",
+    "size_bytes": 360968192,
+    "last_write_time": "2026-10-21T10:11:38.023348+00:00",
+    "sha256": null,
+    "sha256_error": "file is locked by another process; content hash could not be re-read",
+    "prior_recorded_sha256": "2cd296ce9be953a85d77acc4d18d46ca7f1531121b4a2d3645e76461fe3b0eac",
+    "pr00_audit_size_bytes": 360968192
+  }
+}

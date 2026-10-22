@@ -1,0 +1,76 @@
+{
+  "schema_version": "n2a-import-ledger-verification/1",
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "source_root": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2",
+  "status": "ok",
+  "excluded_directories": [
+    ".git",
+    ".pytest_cache",
+    "765/.pytest_cache",
+    "765/__pycache__",
+    "act_tools/generators/nagisa_day_data/__pycache__",
+    "act_tools/generators/six_sessions_data/__pycache__",
+    "db/backup",
+    "dist",
+    "docs/v4/tests/__pycache__",
+    "docs/v4/tools/__pycache__",
+    "etl/__pycache__",
+    "evidence",
+    "scripts/__pycache__",
+    "scripts/diagnostics/__pycache__",
+    "scripts/migrations/__pycache__",
+    "src/novel2anima/__pycache__",
+    "src/novel2anima/storage/__pycache__",
+    "src/novel2anima/storage/importers/__pycache__",
+    "src/novel2anima/storage/repositories/__pycache__",
+    "tests/__pycache__"
+  ],
+  "skipped_symlinks": [],
+  "policy_skipped_files": [
+    {
+      "relative_path": "db/novel_anima.db",
+      "classification": "canonical_database",
+      "reason": "canonical database is the destination; hashed by PR-00 inventory, not an import source"
+    },
+    {
+      "relative_path": "db/novel_anima.db-shm",
+      "classification": "canonical_database",
+      "reason": "canonical database is the destination; hashed by PR-00 inventory, not an import source"
+    },
+    {
+      "relative_path": "db/novel_anima.db-wal",
+      "classification": "canonical_database",
+      "reason": "canonical database is the destination; hashed by PR-00 inventory, not an import source"
+    }
+  ],
+  "checks": {
+    "quick_check": [
+      "ok"
+    ],
+    "quick_check_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true,
+    "ledger_rows": 369,
+    "current_sources": 359,
+    "missing": [],
+    "mismatched": [],
+    "stale_paths": []
+  },
+  "by_status": {
+    "blocked": 3,
+    "duplicate": 29,
+    "skipped_by_policy": 337
+  },
+  "by_classification": {
+    "catalog": 10,
+    "legacy_report": 5,
+    "legacy_workspace": 34,
+    "llm_scaffold": 35,
+    "plan": 8,
+    "prompt": 19,
+    "review": 3,
+    "roster": 4,
+    "source_controlled": 249,
+    "wardrobe": 2
+  }
+}

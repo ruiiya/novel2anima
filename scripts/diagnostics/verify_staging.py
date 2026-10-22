@@ -30,9 +30,14 @@ def table_counts(connection: sqlite3.Connection) -> dict[str, int]:
     return counts
 
 
-def build_report(db_path: Path, baseline_path: Path) -> dict:
+def build_report(
+    db_path: Path,
+    baseline_path: Path,
+    allowed_changed: list[str] | None = None,
+) -> dict:
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
     expected = baseline.get("table_counts", {})
+    allowed = set(allowed_changed or [])
     connection = sqlite3.connect(db_path.resolve().as_uri() + "?mode=ro", uri=True)
     try:
         counts = table_counts(connection)
@@ -56,6 +61,12 @@ def build_report(db_path: Path, baseline_path: Path) -> dict:
         for name, before in expected.items()
         if name in counts and counts[name] != before
     }
+    allowed_changes = {
+        name: change for name, change in changed.items() if name in allowed
+    }
+    unexpected_changes = {
+        name: change for name, change in changed.items() if name not in allowed
+    }
     new_tables = sorted(set(counts) - set(expected))
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -66,6 +77,8 @@ def build_report(db_path: Path, baseline_path: Path) -> dict:
         "baseline_tables": len(expected),
         "baseline_tables_missing": missing,
         "baseline_tables_changed": changed,
+        "baseline_tables_allowed_changed": allowed_changes,
+        "baseline_tables_unexpected_changed": unexpected_changes,
         "legacy_counts_unchanged": not missing and not changed,
         "new_tables": [
             {"name": name, "rows": counts[name]} for name in new_tables
@@ -78,9 +91,10 @@ def build_report(db_path: Path, baseline_path: Path) -> dict:
             "foreign_key_ok": not fk,
         },
         "status": "ok"
-        if not missing and not changed and integrity == ["ok"] and not fk
+        if not missing and not unexpected_changes and integrity == ["ok"] and not fk
         else "failed",
-        "note": "Additive schema only. No content backfill; legacy counts must be identical.",
+        "note": "Additive schema only. No content backfill; legacy counts must be identical "
+        "unless a table is explicitly listed as an allowed provenance change.",
     }
 
 
@@ -89,9 +103,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--db", required=True, help="Staging database")
     parser.add_argument("--baseline", required=True, help="PR-00 db_audit.json")
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--allow-changed",
+        action="append",
+        default=[],
+        help="Baseline table allowed to change for an explicit provenance reason (repeatable)",
+    )
     args = parser.parse_args(argv)
 
-    report = build_report(Path(args.db), Path(args.baseline))
+    report = build_report(Path(args.db), Path(args.baseline), args.allow_changed)
     output = Path(args.output).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

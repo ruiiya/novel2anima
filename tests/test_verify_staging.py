@@ -58,6 +58,14 @@ class VerifyStagingTests(unittest.TestCase):
             self.assertEqual(drifted["status"], "failed")
             self.assertEqual(drifted["baseline_tables_changed"]["t"], {"before": 2, "after": 3})
 
+            allowed = verify.build_report(db, baseline, ["t"])
+            self.assertEqual(allowed["status"], "ok")
+            self.assertEqual(
+                allowed["baseline_tables_allowed_changed"],
+                {"t": {"before": 2, "after": 3}},
+            )
+            self.assertEqual(allowed["baseline_tables_unexpected_changed"], {})
+
 
 if __name__ == "__main__":
     unittest.main()

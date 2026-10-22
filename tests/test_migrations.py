@@ -253,6 +253,7 @@ class MigrationRunnerTests(unittest.TestCase):
                 "005_db_first",
                 "006_normalization",
                 "007_reconciliation_queue",
+                "008_import_ledger",
             ],
         )
         for item in discovered:
