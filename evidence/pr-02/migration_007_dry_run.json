@@ -1,0 +1,78 @@
+{
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "migrations_dir": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\sql\\migrations",
+  "started_at_utc": "2026-10-22T04:30:31.716196+00:00",
+  "dry_run": true,
+  "backup": null,
+  "discovered": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    },
+    {
+      "version": "007_reconciliation_queue",
+      "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1"
+    }
+  ],
+  "applied": [],
+  "skipped": [
+    {
+      "version": "002_shot_state",
+      "sha256": "11eabc02981293ce14d22f5b3d656a9efca49ad406cf847006f8a5512141e821"
+    },
+    {
+      "version": "003_shot_finding",
+      "sha256": "774a3eda5ad08060d041b21d08a08e671572451f70b4c62c4be6d8f380ca62d8"
+    },
+    {
+      "version": "004_observation_publication",
+      "sha256": "722c337ce92b10cc92f3942039e428be17c8153b644994104804d3a706b59266"
+    },
+    {
+      "version": "005_db_first",
+      "sha256": "e9d19e489a01bc032bafdb9fcbc38eb8b58e51b61b3f192aa91c56239caa0867"
+    },
+    {
+      "version": "006_normalization",
+      "sha256": "87cf6bdf7c2f69fcf483134c159f7a879d746b68e9bee829726cf769e9551c5f"
+    }
+  ],
+  "pending": [
+    {
+      "version": "007_reconciliation_queue",
+      "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1"
+    }
+  ],
+  "pending_before": [
+    {
+      "version": "007_reconciliation_queue",
+      "sha256": "4e1131bee95f397a7c0211106edac49ed2c09e05a2431e0f409742ba817ee3f1"
+    }
+  ],
+  "checks": {
+    "integrity_check": [
+      "ok"
+    ],
+    "integrity_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true
+  },
+  "status": "dry_run",
+  "finished_at_utc": "2026-10-22T04:32:22.094808+00:00"
+}

@@ -1,0 +1,90 @@
+{
+  "schema_version": "n2a-backfill-report/1",
+  "backfill_version": "pr-02/1",
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "dry_run": true,
+  "project_ids": null,
+  "started_at_utc": "2026-10-22T04:34:46.430332+00:00",
+  "finished_at_utc": "2026-10-22T04:35:32.511739+00:00",
+  "status": "dry_run",
+  "counts": {
+    "project_documents": {
+      "inserted": 31,
+      "skipped": 0,
+      "conflicts": 0
+    },
+    "identities": {
+      "inserted": 574,
+      "skipped": 0,
+      "conflicts": 0,
+      "invalid": 0
+    },
+    "outfits": {
+      "revisions_inserted": 1142,
+      "revisions_skipped": 0,
+      "revisions_conflicts": 0,
+      "items_inserted": 2805,
+      "items_skipped": 0,
+      "variant_name_lists": 204
+    },
+    "shot_specs": {
+      "inserted": 7099,
+      "skipped": 0,
+      "conflicts": 0,
+      "invalid": 0
+    },
+    "participants": {
+      "inserted": 10444,
+      "skipped": 0,
+      "conflicts": 0,
+      "shots": 7099
+    },
+    "interactions": {
+      "inserted": 1160,
+      "skipped": 0,
+      "conflicts": 0
+    },
+    "outfit_bindings": {
+      "inserted": 339,
+      "skipped": 0,
+      "conflicts": 0,
+      "unmatched": 7365,
+      "missing": 2740,
+      "ambiguous": 0
+    }
+  },
+  "reconciliation": {
+    "inserted": 12506,
+    "existing": 20,
+    "by_rule": {
+      "outfit_item_tag_unknown": 10,
+      "outfit_item_tag_missing": 1138,
+      "interaction_actor_target_missing": 1253,
+      "outfit_binding_unmatched": 7365,
+      "outfit_binding_missing": 2740
+    },
+    "by_severity": {
+      "warning": 3888,
+      "blocked": 8618
+    }
+  },
+  "checks": {
+    "quick_check": [
+      "ok"
+    ],
+    "quick_check_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true
+  },
+  "backup": null,
+  "errors": [],
+  "source_counts": {
+    "projects": 31,
+    "characters": 574,
+    "shots": 7099
+  },
+  "interactions_by_source": {
+    "sequence": 149,
+    "interaction": 1011
+  }
+}

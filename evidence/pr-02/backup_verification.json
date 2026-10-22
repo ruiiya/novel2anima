@@ -1,0 +1,60 @@
+{
+  "generated_at_utc": "2026-10-22T04:48:25.715314+00:00",
+  "backups": [
+    {
+      "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-02\\staging_pre_007.db",
+      "size_bytes": 362307584,
+      "ledger": [
+        "002_shot_state",
+        "003_shot_finding",
+        "004_observation_publication",
+        "005_db_first",
+        "006_normalization"
+      ],
+      "quick_check": [
+        "ok"
+      ],
+      "quick_check_ok": true,
+      "foreign_key_ok": true,
+      "counts": {
+        "project_document_revision": 0,
+        "character_identity_revision": 0,
+        "outfit_revision": 0,
+        "outfit_item": 0,
+        "shot_spec_revision": 0,
+        "shot_participant": 0,
+        "shot_interaction": 0,
+        "shot_outfit_binding": 0,
+        "reconciliation_item": null
+      }
+    },
+    {
+      "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-02\\staging_pre_backfill.db",
+      "size_bytes": 362328064,
+      "ledger": [
+        "002_shot_state",
+        "003_shot_finding",
+        "004_observation_publication",
+        "005_db_first",
+        "006_normalization",
+        "007_reconciliation_queue"
+      ],
+      "quick_check": [
+        "ok"
+      ],
+      "quick_check_ok": true,
+      "foreign_key_ok": true,
+      "counts": {
+        "project_document_revision": 0,
+        "character_identity_revision": 0,
+        "outfit_revision": 0,
+        "outfit_item": 0,
+        "shot_spec_revision": 0,
+        "shot_participant": 0,
+        "shot_interaction": 0,
+        "shot_outfit_binding": 0,
+        "reconciliation_item": 0
+      }
+    }
+  ]
+}

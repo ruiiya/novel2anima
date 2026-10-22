@@ -196,10 +196,65 @@ class MigrationRunnerTests(unittest.TestCase):
         self.assertIn("CREATE TRIGGER", statements[1])
         self.assertTrue(statements[1].rstrip().endswith("END;"))
 
+    def test_reconciliation_queue_migration(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            db = root / "staging.db"
+            create_base_db(db)
+            migrations = root / "migrations"
+            migrations.mkdir()
+            for name in ("005_db_first.sql", "006_normalization.sql", "007_reconciliation_queue.sql"):
+                shutil.copy2(ROOT / "sql/migrations" / name, migrations / name)
+
+            report = apply_migrations(db, migrations, backup_path=root / "pre.db")
+            self.assertEqual(report["status"], "ok")
+            self.assertEqual(len(report["applied"]), 3)
+
+            connection = sqlite3.connect(db)
+            try:
+                columns = {
+                    row[1]
+                    for row in connection.execute("PRAGMA table_info(reconciliation_item)")
+                }
+                self.assertTrue(
+                    {
+                        "gap_key",
+                        "domain",
+                        "severity",
+                        "project_id",
+                        "shot_id",
+                        "character_id",
+                        "rule_code",
+                        "evidence_json",
+                        "status",
+                    }.issubset(columns)
+                )
+                connection.execute(
+                    "INSERT INTO reconciliation_item(gap_key,domain,rule_code) "
+                    "VALUES ('test:gap','other','test_rule')"
+                )
+                with self.assertRaises(sqlite3.IntegrityError):
+                    connection.execute(
+                        "INSERT INTO reconciliation_item(gap_key,domain,rule_code) "
+                        "VALUES ('test:gap','other','test_rule')"
+                    )
+            finally:
+                connection.close()
+
     def test_real_migrations_discover_and_parse(self):
         discovered = discover_migrations(ROOT / "sql/migrations")
         versions = [item.version for item in discovered]
-        self.assertEqual(versions, ["002_shot_state", "003_shot_finding", "004_observation_publication", "005_db_first", "006_normalization"])
+        self.assertEqual(
+            versions,
+            [
+                "002_shot_state",
+                "003_shot_finding",
+                "004_observation_publication",
+                "005_db_first",
+                "006_normalization",
+                "007_reconciliation_queue",
+            ],
+        )
         for item in discovered:
             self.assertGreater(len(split_statements(item.sql)), 0)
 
