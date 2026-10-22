@@ -1,45 +1,39 @@
-# -*- coding: utf-8 -*-
-"""Import vai character tag con thieu tu source pinned (danbooru_taxonomy/tags.csv).
+"""Compatibility wrapper for src/novel2anima/catalog/importers/tags.py.
 
-Usage: python etl/import_tags.py shinra_tsubaki meguri_tomoe
-Khong bia id: chi lay row co that trong data/sources/danbooru_taxonomy/tags.csv.
+Deprecated compatibility shim. Import the package module instead:
+    novel2anima.catalog.importers.tags
 """
-import csv, sys, pathlib
+from __future__ import annotations
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import build
+import importlib
+import importlib.util
+import pathlib
+import runpy
+import sys
+import types
 
-DB = "db/novel_anima.db"
-CSV = pathlib.Path("data/sources/danbooru_taxonomy/tags.csv")
-STATUS = {"approved": "approved", "needs_review": "needs_review"}
+_ROOT = pathlib.Path(__file__).resolve().parents[1]
+_SRC = _ROOT / "src"
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
 
-
-def main(names):
-    want = {n.lower() for n in names}
-    rows = [r for r in csv.DictReader(CSV.open(encoding="utf-8", newline=""))
-            if r["tag"].lower() in want]
-    con = build.connect(DB)
-    snap = con.execute("SELECT id FROM source_snapshot WHERE source_key=? ORDER BY id DESC LIMIT 1",
-                       ("danbooru_taxonomy",)).fetchone()
-    if snap is None:
-        raise SystemExit("no danbooru_taxonomy snapshot in db")
-    w = build.TagWriter(con)
-    for r in rows:
-        tid = w.ensure(r["tag"], r["danbooru_category"], int(r["post_count"]),
-                       STATUS.get(r["status"], "unreviewed"), snap[0], "tags.csv",
-                       {"category": r["category"], "subcategory": r["subcategory"],
-                        "slot": r["slot"], "confidence": float(r["confidence"]),
-                        "status": r["status"], "imported_by": "import_tags.py"})
-        n_alias = sum(w.alias(a.strip(), tid, snap[0])
-                      for a in r["aliases"].split(",") if a.strip())
-        print("%s -> id=%s category=%s post_count=%s aliases+%d"
-              % (r["tag"], tid, r["danbooru_category"], r["post_count"], n_alias))
-    missing = want - {r["tag"].lower() for r in rows}
-    if missing:
-        print("not in source (khong the them):", sorted(missing))
-    con.commit()
-    con.close()
-
+_TARGET = "novel2anima.catalog.importers.tags"
+_TARGET_FILE = ''
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    if _TARGET_FILE:
+        runpy.run_path(_TARGET_FILE, run_name="__main__")
+    else:
+        runpy.run_module(_TARGET, run_name="__main__", alter_sys=True)
+else:
+    if _TARGET_FILE:
+        _spec = importlib.util.spec_from_file_location("_n2a_compat_" + pathlib.Path(_TARGET_FILE).stem, _TARGET_FILE)
+        _module = importlib.util.module_from_spec(_spec)
+        assert _spec.loader is not None
+        _spec.loader.exec_module(_module)
+    else:
+        _module = importlib.import_module(_TARGET)
+    for _name, _value in vars(_module).items():
+        if not _name.startswith("_") and not isinstance(_value, types.ModuleType):
+            globals()[_name] = _value
+    sys.modules[__name__] = _module

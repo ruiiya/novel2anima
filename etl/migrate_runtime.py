@@ -1,46 +1,39 @@
-"""Apply the idempotent QA/continuity migration to an EXISTING catalog DB.
-Creates a SQLite backup by default, never rebuilds or deletes tables.
+"""Compatibility wrapper for scripts/migrations/migrate_runtime.py.
+
+Deprecated compatibility shim. Import the package module instead:
+    scripts.migrations.migrate_runtime
 """
-import argparse
+from __future__ import annotations
+
+import importlib
+import importlib.util
 import pathlib
-import sqlite3
+import runpy
 import sys
-from datetime import datetime
+import types
 
+_ROOT = pathlib.Path(__file__).resolve().parents[1]
+_SRC = _ROOT / "src"
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
 
-def main():
-    root = pathlib.Path(__file__).resolve().parent.parent
-    ap = argparse.ArgumentParser()
-    ap.add_argument('--db', default=str(root / 'db/novel_anima.db'))
-    ap.add_argument('--skip-backup', action='store_true')
-    args = ap.parse_args()
-    path = pathlib.Path(args.db)
-    if not path.is_file():
-        ap.error('database missing: ' + str(path))
-    sql = (root / 'sql/migrations/002_shot_state.sql').read_text(encoding='utf-8')
-    with sqlite3.connect(str(path)) as con:
-        con.execute('PRAGMA foreign_keys=ON')
-        if not args.skip_backup:
-            backup = path.with_name(path.name + '.before_story_upgrade_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.sqlite')
-            with sqlite3.connect(str(backup)) as dest:
-                con.backup(dest)
-            print('Backup:', backup)
-        con.executescript(sql)
-        con.commit()
-        tables = {x[0] for x in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        missing = {'shot_state','act_continuity'} - tables
-        if missing:
-            raise RuntimeError('migration incomplete: ' + repr(missing))
-        errors = con.execute('PRAGMA foreign_key_check').fetchall()
-        if errors:
-            raise RuntimeError('foreign keys invalid: %r' % errors[:8])
-    print('PASS: runtime QA schema applied, FK valid')
-    return 0
+_TARGET = "scripts.migrations.migrate_runtime"
+_TARGET_FILE = 'C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\scripts\\migrations\\migrate_runtime.py'
 
-
-if __name__ == '__main__':
-    try:
-        sys.exit(main())
-    except (OSError, sqlite3.Error, RuntimeError) as exc:
-        print('MIGRATION_FAILED:', exc, file=sys.stderr)
-        sys.exit(1)
+if __name__ == "__main__":
+    if _TARGET_FILE:
+        runpy.run_path(_TARGET_FILE, run_name="__main__")
+    else:
+        runpy.run_module(_TARGET, run_name="__main__", alter_sys=True)
+else:
+    if _TARGET_FILE:
+        _spec = importlib.util.spec_from_file_location("_n2a_compat_" + pathlib.Path(_TARGET_FILE).stem, _TARGET_FILE)
+        _module = importlib.util.module_from_spec(_spec)
+        assert _spec.loader is not None
+        _spec.loader.exec_module(_module)
+    else:
+        _module = importlib.import_module(_TARGET)
+    for _name, _value in vars(_module).items():
+        if not _name.startswith("_") and not isinstance(_value, types.ModuleType):
+            globals()[_name] = _value
+    sys.modules[__name__] = _module

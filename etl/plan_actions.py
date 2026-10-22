@@ -1,33 +1,39 @@
-"""Identify missing bridge actions without hallucinating catalog tag IDs or adding arbitrary shots.
+"""Compatibility wrapper for src/novel2anima/story/action_planner.py.
 
-Usage: python etl/plan_actions.py --plan data/plans/example.json [--json-out review.json]
+Deprecated compatibility shim. Import the package module instead:
+    novel2anima.story.action_planner
 """
-import argparse
-import json
+from __future__ import annotations
+
+import importlib
+import importlib.util
 import pathlib
-import story_logic
+import runpy
+import sys
+import types
 
+_ROOT = pathlib.Path(__file__).resolve().parents[1]
+_SRC = _ROOT / "src"
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
 
-def main():
-    p = argparse.ArgumentParser()
-    p.add_argument('--plan', required=True)
-    p.add_argument('--json-out')
-    args = p.parse_args()
-    plan = json.loads(pathlib.Path(args.plan).read_text(encoding='utf-8-sig'))
-    issues = story_logic.validate_plan(plan)
-    actionable = [i.to_dict() for i in issues if i.code in (
-        'POSE_BRIDGE_MISSING', 'PRECONDITION_POSE', 'MISSING_REQUIRED_REACTION',
-        'PROP_TRANSFER_WITHOUT_ACTION', 'PROP_OWNERSHIP_JUMP', 'ACTION_REQUIRED',
-        'NO_STORY_PROGRESS', 'MISSING_SHOT_PURPOSE',
-        'INTERACTION_ROLE_MISMATCH', 'INTERACTION_ACTOR_ACTION_MISSING',
-        'INTERACTION_TARGET_REQUIRED', 'INTERACTION_TARGET_NOT_IN_SHOT',
-        'INTERACTION_TARGET_MISMATCH', 'INTERACTION_PRIMARY_ACTION_MISMATCH',
-        'INTERACTION_PROMPT_DIRECTION_MISMATCH')]
-    for i in actionable:
-        print('shot %s: %s: %s' % (i['shot'], i['code'], i['suggestion'] or i['detail']))
-    if args.json_out:
-        pathlib.Path(args.json_out).write_text(json.dumps(actionable, indent=2, ensure_ascii=False), encoding='utf-8')
-    return int(any(x['level'] == 'ERROR' for x in actionable))
+_TARGET = "novel2anima.story.action_planner"
+_TARGET_FILE = ''
 
-if __name__ == '__main__':
-    raise SystemExit(main())
+if __name__ == "__main__":
+    if _TARGET_FILE:
+        runpy.run_path(_TARGET_FILE, run_name="__main__")
+    else:
+        runpy.run_module(_TARGET, run_name="__main__", alter_sys=True)
+else:
+    if _TARGET_FILE:
+        _spec = importlib.util.spec_from_file_location("_n2a_compat_" + pathlib.Path(_TARGET_FILE).stem, _TARGET_FILE)
+        _module = importlib.util.module_from_spec(_spec)
+        assert _spec.loader is not None
+        _spec.loader.exec_module(_module)
+    else:
+        _module = importlib.import_module(_TARGET)
+    for _name, _value in vars(_module).items():
+        if not _name.startswith("_") and not isinstance(_value, types.ModuleType):
+            globals()[_name] = _value
+    sys.modules[__name__] = _module
