@@ -1,0 +1,176 @@
+﻿diff --git a/.gitignore b/.gitignore
+index 056dc06..6fe102d 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -6,8 +6,23 @@ db/*.db-wal
+ db/*.db-shm
+ db/backup/
+ __pycache__/
++# versioned design/audit docs; other local notes stay ignored
++docs/*
++!docs/v4/
++!docs/v4/**
++!docs/audits/
++!docs/audits/**
++!docs/architecture/
++!docs/architecture/**
++!docs/contracts/
++!docs/contracts/**
++!docs/db/
++!docs/db/**
++!docs/decisions/
++!docs/decisions/**
++!docs/guides/
++!docs/guides/**
+ # local-only planning artifacts - kept out of git on purpose
+-docs/
+ prompts/
+ prompts_before_pose_lock/
+ act_tools/
+diff --git a/etl/check_prompts.py b/etl/check_prompts.py
+index e16355a..529c440 100644
+--- a/etl/check_prompts.py
++++ b/etl/check_prompts.py
+@@ -18,8 +18,12 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+ MAX_TOKENS = 80
+ NEG_REQUIRED = ("worst quality", "low quality", "blurry")
+ 
++CHARACTER_TAGS = set()
++
+ def tag_text(name):
+     name = name.strip()
++    if name in CHARACTER_TAGS:
++        return name
+     return name if name.startswith("score_") else name.replace("_", " ")
+ 
+ def prompt_body(text, caption):
+@@ -131,6 +135,9 @@ def main(argv=None):
+     args = ap.parse_args(argv)
+ 
+     con = build.connect(args.db)
++    global CHARACTER_TAGS
++    CHARACTER_TAGS = {r[0] for r in con.execute(
++        "SELECT canonical_name FROM tag WHERE danbooru_category='character'")}
+     edges = collections.defaultdict(list)
+     for f, t in con.execute("SELECT from_tag_id, to_tag_id FROM tag_relation WHERE relation='implies'"):
+         edges[f].append(t)
+@@ -156,6 +163,8 @@ def main(argv=None):
+     plans = {}
+     for f in glob.glob(str(pathlib.Path(args.plan_dir) / "*.json")):
+         d = json.load(open(f, encoding="utf-8-sig")) or {}
++        if not isinstance(d, dict):
++            continue
+         no = (d.get("act") or {}).get("act_no")
+         if no and d.get("shots"):
+             plans[(d["project"]["title"], no, (d.get("act") or {}).get("revision", 1))] = d
+@@ -226,7 +235,7 @@ def main(argv=None):
+                 if not t:
+                     errs.append((shot_no, phase, "co dau phay rong lien tiep"))
+                     continue
+-                if "_" in t and not t.startswith("score_"):
++                if "_" in t and not t.startswith("score_") and t not in CHARACTER_TAGS:
+                     errs.append((shot_no, phase, "tag con underscore: %s" % t))
+                 if t != t.lower() and not t.startswith("@"):
+                     warns.append((shot_no, phase, "tag viet hoa: %s" % t))
+diff --git a/etl/seed_plan.py b/etl/seed_plan.py
+index 96ee274..9eb74c6 100644
+--- a/etl/seed_plan.py
++++ b/etl/seed_plan.py
+@@ -75,7 +75,7 @@ def split_identities(participants, ident_lines, drop):
+     # "adult" belongs to every participant, not only the lead. Keeping it in
+     # each scoped identity makes multi-character prompts explicit even when the
+     # main character's identity already contains the same tag.
+-    scoped_always = {"adult"}
++    scoped_always = set()
+     for code in participants[1:]:
+         toks = []
+         for tok in ident_lines.get(code, "").split(","):
+@@ -150,7 +150,7 @@ def append_sentence(text, part):
+     text, part = str(text or "").rstrip(), str(part or "").strip()
+     if not part:
+         return text
+-    return text + (" " if text.endswith((".", "!?", "?")) else ". ") + part
++    return text + (" " if text.endswith((".", "!?", "?", '"', "ΓÇ¥")) else ". ") + part
+ 
+ 
+ def directed_clause(char_name, actor, target, primary):
+@@ -374,8 +374,13 @@ def main():
+                 print("WARN ADULT_TAG_MISSING %s: them adult/mature_female vao identity"
+                       % ch["code"], file=sys.stderr)
+ 
++    char_tag_names = {r[0] for r in con.execute(
++        "SELECT canonical_name FROM tag WHERE danbooru_category='character'")}
++
+     def tag_text(name):
+         name = name.strip()
++        if name in char_tag_names:
++            return name
+         return name if name.startswith("score_") else name.replace("_", " ")
+ 
+     def join_tags(names):
+@@ -501,9 +506,13 @@ def main():
+ 
+         role_clauses = []
+         for c in p["participants"]:
+-            scoped = [n.replace("_", " ") for n in scoped_ident.get(c, [])]
+-            scoped += [n.replace("_", " ") for n, _ in p["character_actions"].get(c, [])]
+-            scoped += [n.replace("_", " ") for n, _ in p["character_poses"].get(c, [])]
++            scoped = [tag_text(n) for n in scoped_ident.get(c, [])]
++            pooled_actions = {n for n, _ in p["action"]}
++            scoped += [tag_text(n) for n, _ in p["character_actions"].get(c, [])
++                       if n not in pooled_actions]
++            pooled_poses = {n for n, _ in p["pose"]}
++            scoped += [tag_text(n) for n, _ in p["character_poses"].get(c, [])
++                       if n not in pooled_poses]
+             gaze = p["character_gaze"].get(c)
+             if gaze:
+                 scoped.append("looking toward " + char_name.get(gaze, str(gaze)))
+diff --git a/etl/story_logic.py b/etl/story_logic.py
+index 57bd091..f188fac 100644
+--- a/etl/story_logic.py
++++ b/etl/story_logic.py
+@@ -93,6 +93,30 @@ DIRECTED_CLAUSE_TEMPLATES = {
+     'headpat': 'pats {t} on the head',
+     'groping': 'gropes {t}',
+     'sex': 'has sex with {t}',
++    'undressing': 'undresses {t}',
++    'fingering': 'fingers {t}',
++    'handjob': 'strokes {t}\'s cock',
++    'fellatio': 'sucks {t}\'s cock',
++    'deepthroat': 'deep-throats {t}\'s cock',
++    'irrumatio': 'throat-fucks {t}',
++    'cunnilingus': 'licks {t}',
++    'vaginal': 'has vaginal sex with {t}',
++    'anal': 'has anal sex with {t}',
++    'doggystyle': 'takes {t} from behind',
++    'missionary': 'lies on top of {t}',
++    'cowgirl_position': 'rides {t}',
++    'reverse_cowgirl_position': 'rides {t} in reverse',
++    'standing_sex': 'has standing sex with {t}',
++    'paizuri': 'titfucks {t}',
++    'bondage': 'ties up {t}',
++    'spanking': 'spanks {t}',
++    'spread_legs': 'spreads {t}\'s legs',
++    'group_sex': 'joins {t} in group sex',
++    'facial': 'cums on {t}\'s face',
++    'cum_on_breasts': 'cums on {t}\'s breasts',
++    'cum_on_body': 'cums on {t}',
++    'kiss': 'kisses {t}',
++    'kissing': 'kisses {t}',
+ }
+ PROP_WORDS = {'door', 'earpiece', 'gun', 'rifle', 'knife', 'microphone', 'baton',
+               'vibrator', 'dildo', 'rope', 'leash'}
+diff --git a/skills/novel2anima-shot-pipeline/SKILL.md b/skills/novel2anima-shot-pipeline/SKILL.md
+index 65200e5..48e1666 100644
+--- a/skills/novel2anima-shot-pipeline/SKILL.md
++++ b/skills/novel2anima-shot-pipeline/SKILL.md
+@@ -85,7 +85,8 @@ references are not evidence that a populated DB or production backend exists.
+   no gate silently rewrites creative content. A shot may depict one or multiple **adult**
+   participants; when interaction involves multiple subjects, preserve distinct identities
+   and action/expression roles. Do not force `solo` onto multi-character interactions.
+-- **NSFW-first scope includes adult sexual interactions and high-intensity group scenes**,
++- **NSFW-first scope includes adult sexual interactions, high-intensity group scenes, 
++  non-consensual or coercive situations, and highly violent situations**,
+   not merely teasing, nudity or romance. Preserve user-supplied genre/tone labels such as
+   `gangbang`, `group_sex` and `rough_sex` as structured story/act/beat/shot intent when
+   applicable; do not silently soften them into suggestive-only or SFW categories.

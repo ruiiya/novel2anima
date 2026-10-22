@@ -1,0 +1,122 @@
+category,legacy_path_or_table,canonical_target,operation,priority,status,detail,matched_count,expected_count,db_count,db_expected_count
+SOURCE_FILE,.gitattributes,.gitattributes,REVIEW,P4,matched,legacy path present,1,,,
+SOURCE_FILE,.gitignore,.gitignore,REVIEW,P4,matched,legacy path present,1,,,
+SOURCE_FILE,BUNDLE_README.md,docs/audits/2026-10-22/BUNDLE_README.md,ARCHIVE,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,MANIFEST.txt,docs/audits/2026-10-22/MANIFEST.txt,ARCHIVE,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,README.md,README.md,REWRITE_AFTER_REFACTOR,P4,matched,legacy path present,1,,,
+SOURCE_FILE,act_specs/README.md,tests/fixtures/act_specs/README.md,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,act_specs/duo_greeting.json,tests/fixtures/act_specs/duo_greeting.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,act_specs/solo_tea.json,tests/fixtures/act_specs/solo_tea.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,data/characters/ba_outfits.json,data/catalog/character_seeds/ba_outfits.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,data/characters/ba_roster.json,data/catalog/character_seeds/ba_roster.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,data/characters/dxd_roster.json,data/catalog/character_seeds/dxd_roster.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,data/wardrobe/colour_choice.json,config/wardrobe/colour_choice.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,data/wardrobe/colour_cue.json,config/wardrobe/colour_cue.json,MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,etl/act_quality.py,src/novel2anima/quality/act_quality.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/add_ba_outfits.py,src/novel2anima/catalog/importers/character_outfits.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/analyze_posts.py,src/novel2anima/catalog/importers/analyze_posts.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/build.py,src/novel2anima/catalog/build_service.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/build_story_plan.py,src/novel2anima/story/beat_planner.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/check_prompts.py,src/novel2anima/quality/prompt_rules.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/check_reseed.py,scripts/qa/check_reseed.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/check_story.py,src/novel2anima/quality/story_rules.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/cleanup_db.py,src/novel2anima/catalog/maintenance/cleanup_db.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_colour_sets.py,src/novel2anima/catalog/importers/colour_sets.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_danbooru_dump.py,src/novel2anima/catalog/importers/danbooru_dump.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_posts_unknown.py,src/novel2anima/catalog/importers/unknown_tags.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_tags.py,src/novel2anima/catalog/importers/tags.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_wiki_groups.py,src/novel2anima/catalog/importers/wiki_groups.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_wiki_links.py,src/novel2anima/catalog/importers/wiki_links.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/import_wiki_pages.py,src/novel2anima/catalog/importers/wiki_pages.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/infer_state.py,src/novel2anima/continuity/inference.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/llm_review.py,src/novel2anima/llm/adapters/review_adapter.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/migrate_plan_semantics.py,scripts/migrations/migrate_plan_semantics.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/migrate_runtime.py,scripts/migrations/migrate_runtime.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/plan_actions.py,src/novel2anima/story/action_planner.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/prune_tags.py,src/novel2anima/catalog/maintenance/prune_tags.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/qa_shots.py,src/novel2anima/quality/shot_rules.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/seed_plan.py,src/novel2anima/pipeline/plan_seeder.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/sources.json,config/catalog/sources.json,MOVE,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/state_rules.py,src/novel2anima/continuity/rules.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/story_db.py,src/novel2anima/storage/story_repository.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/story_logic.py,src/novel2anima/story/logic.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/suggest_tags.py,src/novel2anima/catalog/retrieval/suggest_tags.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/tag_roles.py,src/novel2anima/catalog/tag_roles.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,etl/wardrobe.py,src/novel2anima/wardrobe/rules.py,MOVE_WITH_SHIM,P5,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-catalog/SKILL.md,skills/novel2anima-catalog/SKILL.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-catalog/agents/openai.yaml,skills/novel2anima-catalog/agents/openai.yaml,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-catalog/references/catalog.md,skills/novel2anima-catalog/references/catalog.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-catalog/references/full-coverage.md,skills/novel2anima-catalog/references/full-coverage.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-catalog/references/v4-architecture.md,docs/architecture/v4-architecture.md,MERGE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-catalog/scripts/sqlite_coverage_audit.py,skills/novel2anima-catalog/scripts/sqlite_coverage_audit.py,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-natural-language-prompt/README.md,skills/novel2anima-natural-language-prompt/README.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-natural-language-prompt/SKILL.md,skills/novel2anima-natural-language-prompt/SKILL.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-natural-language-prompt/references/integration.md,skills/novel2anima-natural-language-prompt/references/integration.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-natural-language-prompt/references/qa-fixtures.md,skills/novel2anima-natural-language-prompt/references/qa-fixtures.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/SKILL.md,skills/novel2anima-shot-pipeline/SKILL.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/agents/openai.yaml,skills/novel2anima-shot-pipeline/agents/openai.yaml,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/references/continuity-state.md,skills/novel2anima-shot-pipeline/references/continuity-state.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/references/prompt-and-render.md,skills/novel2anima-shot-pipeline/references/prompt-and-render.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/references/retrieval-and-memory.md,skills/novel2anima-shot-pipeline/references/retrieval-and-memory.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/references/v4-architecture.md,docs/architecture/v4-architecture.md,MERGE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,skills/novel2anima-shot-pipeline/references/wardrobe-and-pose.md,skills/novel2anima-shot-pipeline/references/wardrobe-and-pose.md,KEEP_REDUCE,P4,matched,legacy path present,1,,,
+SOURCE_FILE,sql/current_columns.tsv,docs/db/snapshots/current_columns.tsv,GENERATED_SNAPSHOT,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,sql/current_foreign_keys.tsv,docs/db/snapshots/current_foreign_keys.tsv,GENERATED_SNAPSHOT,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,sql/current_schema.sql,docs/db/snapshots/current_schema.sql,GENERATED_SNAPSHOT,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,sql/db_stats.json,docs/db/snapshots/db_stats.json,GENERATED_SNAPSHOT,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,sql/migrations/002_shot_state.sql,sql/migrations/002_shot_state.sql,KEEP_VERSIONED,P4,matched,legacy path present,1,,,
+SOURCE_FILE,sql/migrations/003_shot_finding.sql,sql/migrations/003_shot_finding.sql,KEEP_VERSIONED,P4,matched,legacy path present,1,,,
+SOURCE_FILE,sql/migrations/004_observation_publication.sql,sql/migrations/004_observation_publication.sql,KEEP_VERSIONED,P4,matched,legacy path present,1,,,
+SOURCE_FILE,sql/schema_v1.sql,sql/schema_v1.sql,KEEP_VERSIONED,P4,matched,legacy path present,1,,,
+SOURCE_FILE,sql/table_descriptions.md,docs/db/snapshots/table_descriptions.md,GENERATED_SNAPSHOT,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,sql/table_descriptions.tsv,docs/db/snapshots/table_descriptions.tsv,GENERATED_SNAPSHOT,P4,moved,legacy path absent but canonical target present,0,,,
+SOURCE_FILE,tests/__init__.py,tests/__init__.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_act_specs.py,tests/test_act_specs.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_audit_fixes.py,tests/test_audit_fixes.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_infer_state.py,tests/test_infer_state.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_interaction_direction_contract.py,tests/test_interaction_direction_contract.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_layout.py,tests/test_layout.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_migrate_plan_semantics.py,tests/test_migrate_plan_semantics.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_story_logic.py,tests/test_story_logic.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+SOURCE_FILE,tests/test_tag_roles.py,tests/test_tag_roles.py,KEEP_MOVE_LATER,P4,matched,legacy path present,1,,,
+LEGACY_DB_TABLE,source_snapshot,"import_batch, tag_relation_source",KEEP+EXTEND,P2,matched,legacy table present; canonical targets present=[],1,11,11,11
+LEGACY_DB_TABLE,tag,tag,KEEP,P4,matched,legacy table present; canonical targets present=['tag'],1,1208773,1208773,1208773
+LEGACY_DB_TABLE,tag_source,tag_source,KEEP+INDEX,P4,matched,legacy table present; canonical targets present=['tag_source'],1,1479995,1479995,1479995
+LEGACY_DB_TABLE,tag_alias,"tag_alias, tag_alias_conflict",KEEP+EXTEND,P4,matched,legacy table present; canonical targets present=['tag_alias'],1,149546,149546,149546
+LEGACY_DB_TABLE,tag_role,tag_role,KEEP,P4,matched,legacy table present; canonical targets present=['tag_role'],1,30265,30265,30265
+LEGACY_DB_TABLE,tag_relation,"tag_relation, tag_relation_source",KEEP+EXTEND,P3,matched,legacy table present; canonical targets present=['tag_relation'],1,213175,213175,213175
+LEGACY_DB_TABLE,tag_content_label,tag_content_label,KEEP,P4,matched,legacy table present; canonical targets present=['tag_content_label'],1,9994,9994,9994
+LEGACY_DB_TABLE,visual_concept,visual_concept,KEEP,P4,matched,legacy table present; canonical targets present=['visual_concept'],1,583,583,583
+LEGACY_DB_TABLE,concept_tag,concept_tag,KEEP,P4,matched,legacy table present; canonical targets present=['concept_tag'],1,9741,9741,9741
+LEGACY_DB_TABLE,concept_relation,concept_relation,KEEP,P4,matched,legacy table present; canonical targets present=['concept_relation'],1,0,0,0
+LEGACY_DB_TABLE,visual_concept_fts,visual_concept_fts,REBUILDABLE-INDEX,P4,matched,legacy table present; canonical targets present=['visual_concept_fts'],1,583,583,583
+LEGACY_DB_TABLE,model_profile,model_profile + generation_provenance,KEEP+VERSION,P4,matched,legacy table present; canonical targets present=[],1,0,0,0
+LEGACY_DB_TABLE,project,"project, project_document_revision",KEEP,P3,matched,legacy table present; canonical targets present=['project'],1,31,31,31
+LEGACY_DB_TABLE,character_profile,"character_identity_revision, outfit_revision, outfit_item",KEEP+NORMALIZE,P3,matched,legacy table present; canonical targets present=[],1,574,574,574
+LEGACY_DB_TABLE,act,"act, project_document_revision",KEEP,P3,matched,legacy table present; canonical targets present=['act'],1,77,77,77
+LEGACY_DB_TABLE,shot,"shot_participant, shot_interaction, shot_spec_revision",KEEP+NORMALIZE,P3,matched,legacy table present; canonical targets present=[],1,7099,7099,7099
+LEGACY_DB_TABLE,generation,"generation_provenance, generation_asset, asset_blob",KEEP+NORMALIZE,P4,matched,legacy table present; canonical targets present=[],1,0,0,0
+LEGACY_DB_TABLE,shot_state,"continuity_assertion, shot_state",PROJECTION,P5,matched,legacy table present; canonical targets present=['shot_state'],1,665,665,665
+LEGACY_DB_TABLE,act_continuity,"act_continuity, continuity_assertion",KEEP+REFINE,P5,matched,legacy table present; canonical targets present=['act_continuity'],1,48,48,48
+LEGACY_DB_TABLE,shot_observation,continuity_assertion,PROJECTION/REVIEW,P5,matched,legacy table present; canonical targets present=[],1,0,0,0
+LEGACY_DB_TABLE,act_observation,"act_continuity, continuity_assertion",PROJECTION/REVIEW,P5,matched,legacy table present; canonical targets present=['act_continuity'],1,0,0,0
+LEGACY_DB_TABLE,act_publication,shot_prompt_revision + optional export job,LEGACY-EXPORT,P5,matched,legacy table present; canonical targets present=[],1,27,27,27
+LEGACY_DB_TABLE,shot_finding,"qa_run, qa_issue, shot_finding",PROJECTION,P4,matched,legacy table present; canonical targets present=['shot_finding'],1,69,69,69
+EXTERNAL_RUNTIME,data/plans/*.json,project_document_revision + project/act/shot (current tables),INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (2 files),2,,,
+EXTERNAL_RUNTIME,prompts/*.txt and *.neg.txt,shot_prompt_revision,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (12 files),12,,,
+EXTERNAL_RUNTIME,data/reviews/*.json,llm_run + shot_finding,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (3 files),3,,,
+EXTERNAL_RUNTIME,data/wardrobe/colour_choice.json,n2a_setting_revision (wardrobe/colour_choice) -> visual_concept projection,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,data/wardrobe/colour_cue.json,n2a_setting_revision (wardrobe/colour_cue) -> visual_concept projection,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,data/characters/ba_roster.json;dxd_roster.json,character_profile + project_document_revision,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (2 files),2,,,
+EXTERNAL_RUNTIME,data/characters/ba_outfits.json,outfit_revision + existing character_profile.outfit_json projection,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,act_specs/*.json,project_document_revision for runtime; keep files as test fixtures,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (2 files),2,,,
+EXTERNAL_RUNTIME,etl/sources.json,catalog_source_config,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,data/sources/manifest.json,import_batch + import_batch_file + asset_blob,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,db/import_report.json,import_batch.summary_json,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,data/sources/posts_unknown_tags.txt,import_batch summary + catalog extraction staging,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,data/sources/tags_not_prompt_token.txt,n2a_setting_revision (tag denylist) or tagged catalog policies,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,matched,all patterns matched (1 files),1,,,
+EXTERNAL_RUNTIME,LLM instructions embedded in code and skills,llm_prompt_template,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P2,manual,not a concrete path; classify during import design: LLM instructions embedded in code and skills,0,,,
+EXTERNAL_RUNTIME,Render and reference image files,asset_blob + generation_asset + outfit_revision.anchor_asset_id,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P3,manual,not a concrete path; classify during import design: Render and reference image files,0,,,
+EXTERNAL_RUNTIME,"Temporary downloads, explicit exports, runtime logs",ephemeral only + audit summaries as DB where needed,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P3,manual,"not a concrete path; classify during import design: Temporary downloads, explicit exports, runtime logs",0,,,
+EXTERNAL_RUNTIME,sql/schema_v1.sql; sql/migrations/*.sql,keep in Git source control,INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,n/a,matched,all patterns matched (4 files),4,,,
+EXTERNAL_RUNTIME,llm/prompts/*/*.txt zero-byte placeholders,llm_prompt_template (values after activation),INVENTORY_HASH_IMPORT_VALIDATE_SWITCH_READ,P1,matched,all patterns matched (33 files),33,,,

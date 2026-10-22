@@ -1,0 +1,12 @@
+﻿stage,input,output,canonical_db_target,invariant,default_state
+01_brief,User requirements / previous decisions,brief revision,project_document_revision,Conserve approved user decisions,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+02_story,Approved brief,story outline revision,project_document_revision,"1–2 character short story, action-led",DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+03_character,Story + catalog candidate,character identity revision,character_identity_revision,Explicit character IDs and attributes,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+04_wardrobe,Character + outfit intent,outfit spec/items + anchor,"outfit_revision, outfit_item, asset_blob","Version pinned: cut, material, silhouette, details",DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+05_act_beats,Story + character/outfit revisions,ordered acts + beats,"project_document_revision, act",One panel is one shot,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+06_shot_direction,Approved acts + selected character revisions,ShotSpec + directed actions,"shot_spec_revision, shot_participant, shot_interaction",actor/target cannot invert; slot identities,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+07_catalog_selection,ShotSpec + top-k DB candidate evidence,approved selected tag IDs,"shot_prompt_tag, tag, tag_source",Never invent tag IDs; validate provenance,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+08_natural_prompt,Compiled tag prompt + pinned render model,optional natural-language prompt,shot_prompt_revision,Must retain original tag/negative prompt,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+09_semantic_review,Original user intent + complete revisions,review findings,"llm_run, qa_run, qa_issue",Do not auto-approve or overwrite,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+10_visual_qc,Rendered image + ShotSpec + anchor,visual findings,"qa_run, qa_issue, generation_asset",Compare exact outfit/detail and actor/target,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED
+11_targeted_revision,Review issues + immutable source revisions,draft proposed changes,"llm_run, shot_spec_revision/shot_prompt_revision",Only new revisions after approval,DISABLED_UNTIL_DB_TEMPLATE_AND_SCHEMA_APPROVED

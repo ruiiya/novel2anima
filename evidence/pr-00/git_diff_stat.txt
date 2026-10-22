@@ -1,0 +1,6 @@
+﻿ .gitignore                                | 17 ++++++++++++++++-
+ etl/check_prompts.py                      | 11 ++++++++++-
+ etl/seed_plan.py                          | 19 ++++++++++++++-----
+ etl/story_logic.py                        | 24 ++++++++++++++++++++++++
+ skills/novel2anima-shot-pipeline/SKILL.md |  3 ++-
+ 5 files changed, 66 insertions(+), 8 deletions(-)

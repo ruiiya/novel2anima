@@ -1,0 +1,24 @@
+﻿old_table,rows_in_2026_10_22_snapshot,strategy,current_issue,v3_target,migration_rule,phase
+source_snapshot,11,KEEP+EXTEND,Source import provenance,"import_batch, tag_relation_source",Keep IDs/revisions; never delete accepted sources; raw bytes into asset_blob when required,P2
+tag,1208773,KEEP,Canonical tag dictionary,tag,No mass rebuild; normalize only verified names; preserve canonical_name and all tag IDs,P4
+tag_source,1479995,KEEP+INDEX,Tag-to-source provenance,tag_source,Retain composite PK; audit source FK indexes & ON DELETE CASCADE; restrict destructive source deletions,P4
+tag_alias,149546,KEEP+EXTEND,Only one winning alias is stored,"tag_alias, tag_alias_conflict",Capture collisions in conflict table; do not silently replace winner,P4
+tag_role,30265,KEEP,Multi-role tag classification,tag_role,Preserve role PK and source,P4
+tag_relation,213175,KEEP+EXTEND,One source_id for a relation from potentially many sources,"tag_relation, tag_relation_source",Backfill source link; preserve relation IDs/composite key,P3
+tag_content_label,9994,KEEP,Tag moderation labels,tag_content_label,Preserve curated and derived provenance,P4
+visual_concept,583,KEEP,Search/plan concept,visual_concept,Keep approved and derived concept IDs; provenance audit,P4
+concept_tag,9741,KEEP,Concept-tag mapping,concept_tag,Retain usage and priority,P4
+concept_relation,0,KEEP,Concept compatibility relations,concept_relation,Keep empty table for future behavior; no delete solely because empty,P4
+visual_concept_fts,583,REBUILDABLE-INDEX,FTS5 search index,visual_concept_fts,Keep view/index derived from visual_concept; rebuild and check row parity,P4
+model_profile,0,KEEP+VERSION,Render model mutable profile,model_profile + generation_provenance,Pin params/workflow for each render; model_profile remains reference table,P4
+project,31,KEEP,Project record and mutable style_json,"project, project_document_revision",Keep IDs; brief/story source comes from document revisions,P3
+character_profile,574,KEEP+NORMALIZE,identity_json/outfit_json without revision,"character_identity_revision, outfit_revision, outfit_item","Backfill draft revisions, preserve legacy columns during dual-read transition",P3
+act,77,KEEP,"Act version, status","act, project_document_revision",Keep act_no and revision; enforce published freeze in service,P3
+shot,7099,KEEP+NORMALIZE,"Single character_id, shot_spec_json; no directed interaction","shot_participant, shot_interaction, shot_spec_revision",Backfill only unambiguous participants; duo mappings go to manual reconciliation,P3
+generation,0,KEEP+NORMALIZE,"prompt text, image_path without DB content","generation_provenance, generation_asset, asset_blob",Keep legacy path only as export; pin prompt_revision and blob,P4
+shot_state,665,PROJECTION,Inferred latest state; experimental,"continuity_assertion, shot_state",Keep derived state as projection; backfill assertions with provenance when verifiable,P5
+act_continuity,48,KEEP+REFINE,Initial state for an act,"act_continuity, continuity_assertion",Keep initial user decisions separate from inferred states,P5
+shot_observation,0,PROJECTION/REVIEW,Per-shot observation currently empty,continuity_assertion,"New input writes assertions, old table only compat until parity",P5
+act_observation,0,PROJECTION/REVIEW,Per-act observations currently empty,"act_continuity, continuity_assertion",Do not delete; define read compatibility and test before retire,P5
+act_publication,27,LEGACY-EXPORT,File paths/hashes for published prompt TXT,shot_prompt_revision + optional export job,Preserve records; remove file paths from source of truth; migrate only after verified prompt parsing,P5
+shot_finding,69,PROJECTION,Upsert overwrites repeated QA findings,"qa_run, qa_issue, shot_finding",Append immutable per-run findings; legacy table becomes latest projection,P4

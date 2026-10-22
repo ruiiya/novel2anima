@@ -1,0 +1,91 @@
+{
+  "pr": "PR-00",
+  "status": "complete",
+  "date_utc": "2026-10-22",
+  "branch": "rebuild/v4",
+  "base_commit": "e64835f388a5a87a59d5706dd2ca7d15b6187f4f",
+  "scope": [
+    "archive V4 unified design pack",
+    "read-only DB audit",
+    "SQLite Backup API backup and restore rehearsal",
+    "full runtime inventory including 765/ and act_tools/",
+    "121-row master mapping versus checkout and live DB",
+    "baseline test capture"
+  ],
+  "db": {
+    "path": "db/novel_anima.db",
+    "size_bytes": 360968192,
+    "sha256": "2cd296ce9be953a85d77acc4d18d46ca7f1531121b4a2d3645e76461fe3b0eac",
+    "expected_tables": 23,
+    "quick_check": "ok",
+    "foreign_key_violations": 0,
+    "shot_character_wrong_project": 0,
+    "shot_missing_character_id": 0,
+    "generation_rows": 0,
+    "act_publication_rows": 27,
+    "shot_finding_rows": 69,
+    "tag_rows": 1208773,
+    "shot_rows": 7099,
+    "project_rows": 31,
+    "character_rows": 574,
+    "act_rows": 77
+  },
+  "backup": {
+    "path": "db/backup/pr-00/pr-00_20261022T034615Z.db",
+    "size_bytes": 361881600,
+    "sha256": "8f2335e8643b1b02d75ed92a128cd866a41f172b2299fa77cab28605dcd9fabb",
+    "source_unchanged": true,
+    "integrity_ok": true,
+    "foreign_key_ok": true,
+    "restore_rehearsal_ok": true
+  },
+  "inventory": {
+    "files": 352,
+    "total_bytes": 419750731,
+    "tracked": 72,
+    "untracked": 280,
+    "ignored": 137,
+    "includes_untracked_765": true
+  },
+  "tests": {
+    "baseline_repo": {
+      "ran": 79,
+      "failed": 0,
+      "status": "ok"
+    },
+    "v4_bundle": {
+      "ran": 14,
+      "failed": 0,
+      "status": "ok"
+    },
+    "v4_static_validation": "PASS"
+  },
+  "mapping": {
+    "rows": 121,
+    "coverage_ok": true,
+    "source_files": {
+      "total": 80,
+      "matched": 72,
+      "moved": 8,
+      "missing": 0
+    },
+    "legacy_db_tables": {
+      "total": 23,
+      "matched": 23,
+      "count_mismatch": 0
+    },
+    "external_runtime": {
+      "total": 18,
+      "matched": 15,
+      "manual": 3,
+      "missing": 0
+    },
+    "manual_dispositions": "evidence/pr-00/mapping_dispositions.csv"
+  },
+  "decisions": {
+    "render_storage": "Not stored. The user runs ComfyUI manually; asset_blob is deferred until persisted references/renders exist.",
+    "live_db_writes": "None. No migration applied.",
+    "dirty_user_changes": "Preserved and captured in evidence/pr-00/git_diff.patch."
+  },
+  "next": "PR-01 migration runner and staging-copy schema test"
+}

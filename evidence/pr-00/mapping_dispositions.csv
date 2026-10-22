@@ -1,0 +1,4 @@
+category,legacy_path_or_table,status,decision,owner_phase
+EXTERNAL_RUNTIME,LLM instructions embedded in code and skills,manual,"Import executable runtime instructions into llm_prompt_template; keep skills as thin agent-facing facades.",PR-06
+EXTERNAL_RUNTIME,Render and reference image files,manual,"User decision 2026-10-22: renders are not stored; ComfyUI is run manually outside the pipeline. Keep asset_blob design for references, revisit when persisted images exist.",DEFERRED
+EXTERNAL_RUNTIME,"Temporary downloads, explicit exports, runtime logs",manual,"Ephemeral only. Keep audit summaries in DB where needed; do not treat cache/output files as canonical business data.",ONGOING

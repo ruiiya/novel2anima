@@ -1,0 +1,14 @@
+﻿# branch.oid e64835f388a5a87a59d5706dd2ca7d15b6187f4f
+# branch.head rebuild/v4
+1 .M N... 100644 100644 100644 056dc067bed0d2fb2d69c30084beb2b9701248c3 056dc067bed0d2fb2d69c30084beb2b9701248c3 .gitignore
+1 .M N... 100644 100644 100644 e16355ae654b61aa816f2ff2c4c2e1a4f6e1b919 e16355ae654b61aa816f2ff2c4c2e1a4f6e1b919 etl/check_prompts.py
+1 .M N... 100644 100644 100644 96ee274db85423ee2c8e0be8eb044cacbbf7ccf8 96ee274db85423ee2c8e0be8eb044cacbbf7ccf8 etl/seed_plan.py
+1 .M N... 100644 100644 100644 57bd091107ee2bddcd4be60826100361617c2f4e 57bd091107ee2bddcd4be60826100361617c2f4e etl/story_logic.py
+1 .M N... 100644 100644 100644 65200e5963742daf729f36725e98e560097bf308 65200e5963742daf729f36725e98e560097bf308 skills/novel2anima-shot-pipeline/SKILL.md
+? 765/
+? dist/
+? docs/
+? evidence/
+? llm/
+? scripts/
+? tests/test_pr00_tools.py

@@ -1,0 +1,24 @@
+table	group	rows	short_description
+source_snapshot	Catalog / provenance	11	Mỗi lần nhập một nguồn dữ liệu (5 nguồn pinned + các dump local).
+tag	Catalog / vocabulary	1208773	Từ điển tag canonical dùng làm cú pháp prompt.
+tag_source	Catalog / provenance	1479995	Provenance chi tiết của từng tag theo từng nguồn.
+tag_alias	Catalog / vocabulary	149546	Alias name trỏ về một tag canonical.
+tag_role	Catalog / vocabulary	30265	Vai trò của tag khi dựng prompt.
+tag_relation	Catalog / relations	213175	Quan hệ có hướng giữa hai tag.
+tag_content_label	Catalog / content metadata	9994	Nhãn nội dung gắn với tag.
+visual_concept	Catalog / concepts	583	Khái niệm thị giác dùng cho planning và retrieval.
+concept_tag	Catalog / concepts	9741	Map khái niệm sang tag cú pháp.
+concept_relation	Catalog / concepts	0	Quan hệ có hướng giữa hai visual concept.
+visual_concept_fts	Catalog / search index	583	FTS5 virtual table cho visual_concept.
+model_profile	Runtime / render config	0	Cấu hình model và workflow render.
+project	Runtime / project	31	Dự án truyện.
+character_profile	Runtime / project	574	Nhân vật trong một project.
+act	Runtime / story	77	Act trong một project.
+shot	Runtime / story	7099	Một shot cụ thể trong act.
+generation	Runtime / history	0	Lịch sử render của shot.
+shot_state	Runtime / continuity	665	Continuity state theo shot/axis (experimental).
+act_continuity	Runtime / continuity	48	Continuity gốc của act theo axis.
+shot_finding	Runtime / QA	69	Finding QA cho một shot.
+shot_observation	Runtime / inference	0	Observation suy luận theo shot/axis/source.
+act_observation	Runtime / inference	0	Observation suy luận cấp act/axis/source.
+act_publication	Runtime / publication	27	Outbox publish prompt file cho act/revision.

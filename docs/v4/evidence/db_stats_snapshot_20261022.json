@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-10-22T09:06:22",
+  "database": "db/novel_anima.db",
+  "database_bytes": 360968192,
+  "git_branch": "main",
+  "git_commit": "e64835f388a5a87a59d5706dd2ca7d15b6187f4f",
+  "git_status": [
+    "M etl/check_prompts.py",
+    " M etl/seed_plan.py",
+    " M etl/story_logic.py",
+    " M skills/novel2anima-shot-pipeline/SKILL.md",
+    "?? 765/"
+  ],
+  "tables": {
+    "source_snapshot": 11,
+    "tag": 1208773,
+    "tag_source": 1479995,
+    "tag_alias": 149546,
+    "tag_role": 30265,
+    "tag_relation": 213175,
+    "tag_content_label": 9994,
+    "visual_concept": 583,
+    "concept_tag": 9741,
+    "concept_relation": 0,
+    "model_profile": 0,
+    "project": 31,
+    "character_profile": 574,
+    "act": 77,
+    "shot": 7099,
+    "generation": 0,
+    "shot_state": 665,
+    "act_continuity": 48,
+    "visual_concept_fts": 583,
+    "shot_observation": 0,
+    "act_observation": 0,
+    "act_publication": 27,
+    "shot_finding": 69
+  },
+  "derived": {
+    "visual_concept_total": 583,
+    "visual_concept_derived": 583,
+    "visual_concept_by_prefix": {
+      "POSE_": 297,
+      "TG_": 48,
+      "WC_": 238
+    },
+    "tag_relation_by_type": {
+      "implies": 102535,
+      "recommends": 82820,
+      "compatible": 24526,
+      "conflicts": 3294
+    },
+    "tag_content_label_by_scope": {
+      "adult": 4994,
+      "contextual": 4452,
+      "blocked": 548
+    },
+    "tag_content_label_derived_posts": 9446,
+    "tags_category_null": 20562,
+    "tags_post_count_zero": 95196
+  },
+  "runtime": {
+    "projects": 31,
+    "acts": 77,
+    "shots": 7099,
+    "generations": 0
+  }
+}

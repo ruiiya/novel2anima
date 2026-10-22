@@ -6,9 +6,32 @@ db/*.db-wal
 db/*.db-shm
 db/backup/
 __pycache__/
+# versioned design/audit docs; other local notes stay ignored
+docs/*
+!docs/v4/
+!docs/v4/**
+!docs/audits/
+!docs/audits/**
+!docs/architecture/
+!docs/architecture/**
+!docs/contracts/
+!docs/contracts/**
+!docs/db/
+!docs/db/**
+!docs/decisions/
+!docs/decisions/**
+!docs/guides/
+!docs/guides/**
 # local-only planning artifacts - kept out of git on purpose
-docs/
 prompts/
 prompts_before_pose_lock/
 act_tools/
+# LLM prompt placeholders are intentionally zero-byte but versioned
+!llm/prompts/
+!llm/prompts/**
+!docs/v4/llm/prompts/
+!docs/v4/llm/prompts/**
+# never version bytecode, including inside archived design trees
+**/__pycache__/
+**/*.pyc
 

@@ -1,0 +1,43 @@
+{
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\novel_anima.db",
+  "audited_at_utc": "2026-10-22T03:51:59.875061+00:00",
+  "size_bytes": 360968192,
+  "sqlite_version": "3.49.1",
+  "missing_expected_tables": [],
+  "table_counts": {
+    "source_snapshot": 11,
+    "tag": 1208773,
+    "tag_source": 1479995,
+    "tag_alias": 149546,
+    "tag_role": 30265,
+    "tag_relation": 213175,
+    "tag_content_label": 9994,
+    "visual_concept": 583,
+    "concept_tag": 9741,
+    "concept_relation": 0,
+    "model_profile": 0,
+    "project": 31,
+    "character_profile": 574,
+    "act": 77,
+    "shot": 7099,
+    "generation": 0,
+    "shot_state": 665,
+    "act_continuity": 48,
+    "visual_concept_fts": 583,
+    "shot_observation": 0,
+    "act_observation": 0,
+    "act_publication": 27,
+    "shot_finding": 69
+  },
+  "warnings": [],
+  "checks": {
+    "quick_check": "ok",
+    "foreign_key_check_first_20": [],
+    "foreign_key_check_more_than_20": false,
+    "shot_character_wrong_project": 0,
+    "shot_missing_character_id": 0,
+    "generation_with_path_only": 0,
+    "legacy_file_publications": 27,
+    "tags_without_category": 20562
+  }
+}

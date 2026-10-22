@@ -1,0 +1,36 @@
+table	id	seq	to_table	from_col	to_col	on_update	on_delete	match
+tag_source	0	0	source_snapshot	source_id	id	NO ACTION	CASCADE	NONE
+tag_source	1	0	tag	tag_id	id	NO ACTION	CASCADE	NONE
+tag_alias	0	0	source_snapshot	source_id	id	NO ACTION	NO ACTION	NONE
+tag_alias	1	0	tag	tag_id	id	NO ACTION	CASCADE	NONE
+tag_role	0	0	source_snapshot	source_id	id	NO ACTION	NO ACTION	NONE
+tag_role	1	0	tag	tag_id	id	NO ACTION	CASCADE	NONE
+tag_relation	0	0	source_snapshot	source_id	id	NO ACTION	NO ACTION	NONE
+tag_relation	1	0	tag	to_tag_id	id	NO ACTION	CASCADE	NONE
+tag_relation	2	0	tag	from_tag_id	id	NO ACTION	CASCADE	NONE
+tag_content_label	0	0	tag	tag_id	id	NO ACTION	CASCADE	NONE
+concept_tag	0	0	tag	tag_id	id	NO ACTION	CASCADE	NONE
+concept_tag	1	0	visual_concept	concept_id	id	NO ACTION	CASCADE	NONE
+concept_relation	0	0	visual_concept	to_concept_id	id	NO ACTION	CASCADE	NONE
+concept_relation	1	0	visual_concept	from_concept_id	id	NO ACTION	CASCADE	NONE
+character_profile	0	0	project	project_id	id	NO ACTION	CASCADE	NONE
+act	0	0	project	project_id	id	NO ACTION	CASCADE	NONE
+shot	0	0	visual_concept	camera_concept_id	id	NO ACTION	NO ACTION	NONE
+shot	1	0	visual_concept	pose_concept_id	id	NO ACTION	NO ACTION	NONE
+shot	2	0	visual_concept	expression_concept_id	id	NO ACTION	NO ACTION	NONE
+shot	3	0	visual_concept	action_concept_id	id	NO ACTION	NO ACTION	NONE
+shot	4	0	character_profile	character_id	id	NO ACTION	NO ACTION	NONE
+shot	5	0	act	act_id	id	NO ACTION	CASCADE	NONE
+generation	0	0	model_profile	model_profile_id	id	NO ACTION	NO ACTION	NONE
+generation	1	0	shot	shot_id	id	NO ACTION	CASCADE	NONE
+shot_state	0	0	tag	value_tag_id	id	NO ACTION	NO ACTION	NONE
+shot_state	1	0	shot	shot_id	id	NO ACTION	CASCADE	NONE
+act_continuity	0	0	tag	initial_tag_id	id	NO ACTION	NO ACTION	NONE
+act_continuity	1	0	act	act_id	id	NO ACTION	CASCADE	NONE
+shot_finding	0	0	tag	value_tag_id	id	NO ACTION	NO ACTION	NONE
+shot_finding	1	0	shot	shot_id	id	NO ACTION	CASCADE	NONE
+shot_observation	0	0	tag	value_tag_id	id	NO ACTION	NO ACTION	NONE
+shot_observation	1	0	shot	shot_id	id	NO ACTION	CASCADE	NONE
+act_observation	0	0	tag	initial_tag_id	id	NO ACTION	NO ACTION	NONE
+act_observation	1	0	act	act_id	id	NO ACTION	CASCADE	NONE
+act_publication	0	0	act	act_id	id	NO ACTION	CASCADE	NONE

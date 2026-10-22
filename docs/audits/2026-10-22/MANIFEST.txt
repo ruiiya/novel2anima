@@ -1,0 +1,21 @@
+Novel2Anima bundle
+Generated: 2026-10-22T09:06:23
+Git branch: main
+Git commit: e64835f388a5a87a59d5706dd2ca7d15b6187f4f
+Working tree: DIRTY (5 paths)
+  M etl/check_prompts.py
+   M etl/seed_plan.py
+   M etl/story_logic.py
+   M skills/novel2anima-shot-pipeline/SKILL.md
+  ?? 765/
+Tracked files copied: 72
+Missing tracked files: none
+Database (read-only for schema): C:\Users\user\Documents\ChatGPT\comfy 2\db\novel_anima.db
+Database bytes: 360968192
+Tables described: 23
+Zip: C:\Users\user\Documents\ChatGPT\comfy 2\dist\novel2anima_git_sql_20261022_090622.zip
+
+Contents: git-tracked working tree + sql/current_schema.sql + sql/current_columns.tsv
+          + sql/current_foreign_keys.tsv + sql/table_descriptions.md
+          + sql/table_descriptions.tsv + sql/db_stats.json + BUNDLE_README.md
+Excluded: .git/, db/*.db, *-wal, *-shm, untracked data/, docs/, 765/, act_tools/, db/backup/, caches

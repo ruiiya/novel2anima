@@ -1,0 +1,19 @@
+test_duo_actor_target_and_cross_project_rejection (test_schema_v3.SqlContractTest.test_duo_actor_target_and_cross_project_rejection) ... ok
+test_frozen_shot_cannot_swap_participants_or_interactions (test_schema_v3.SqlContractTest.test_frozen_shot_cannot_swap_participants_or_interactions) ... ok
+test_generation_must_match_shot_prompt (test_schema_v3.SqlContractTest.test_generation_must_match_shot_prompt) ... ok
+test_invariant_revisions (test_schema_v3.SqlContractTest.test_invariant_revisions) ... ok
+test_locked_revision_cannot_downgrade_and_edit (test_schema_v3.SqlContractTest.test_locked_revision_cannot_downgrade_and_edit) ... ok
+test_outfit_approved_immutable (test_schema_v3.SqlContractTest.test_outfit_approved_immutable) ... ok
+test_outfit_character_and_participant_binding (test_schema_v3.SqlContractTest.test_outfit_character_and_participant_binding) ... ok
+test_prompt_spec_same_shot (test_schema_v3.SqlContractTest.test_prompt_spec_same_shot) ... ok
+test_schema_is_healthy (test_schema_v3.SqlContractTest.test_schema_is_healthy) ... ok
+test_contract_schemas_are_json (test_v4_bundle.TestV4Packaging.test_contract_schemas_are_json) ... ok
+test_inventory_is_readonly_of_source (test_v4_bundle.TestV4Packaging.test_inventory_is_readonly_of_source) ... ok
+test_master_coverage (test_v4_bundle.TestV4Packaging.test_master_coverage) ... ok
+test_prompt_placeholders_are_zero_byte (test_v4_bundle.TestV4Packaging.test_prompt_placeholders_are_zero_byte) ... ok
+test_staging_tool_on_copy (test_v4_bundle.TestV4Packaging.test_staging_tool_on_copy) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.350s
+
+OK

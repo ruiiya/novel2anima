@@ -1,0 +1,2 @@
+V4 static validation: mapping= 121  stages= 11  prompt_files=33
+PASS: V4 bundle integrity (does not prove runtime DB data migrated).

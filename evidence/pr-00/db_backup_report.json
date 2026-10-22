@@ -1,0 +1,93 @@
+{
+  "generated_at_utc": "2026-10-22T03:48:14.315964+00:00",
+  "label": "pr-00",
+  "source": {
+    "path": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\novel_anima.db",
+    "size_bytes": 360968192,
+    "mtime_ns": 1792577498023347800,
+    "sha256": "2cd296ce9be953a85d77acc4d18d46ca7f1531121b4a2d3645e76461fe3b0eac",
+    "unchanged": true
+  },
+  "backup": {
+    "path": "db\\backup\\pr-00\\pr-00_20261022T034615Z.db",
+    "size_bytes": 361881600,
+    "sha256": "8f2335e8643b1b02d75ed92a128cd866a41f172b2299fa77cab28605dcd9fabb",
+    "integrity_check": [
+      "ok"
+    ],
+    "integrity_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true,
+    "table_counts": {
+      "act": 77,
+      "act_continuity": 48,
+      "act_observation": 0,
+      "act_publication": 27,
+      "character_profile": 574,
+      "concept_relation": 0,
+      "concept_tag": 9741,
+      "generation": 0,
+      "model_profile": 0,
+      "project": 31,
+      "shot": 7099,
+      "shot_finding": 69,
+      "shot_observation": 0,
+      "shot_state": 665,
+      "source_snapshot": 11,
+      "tag": 1208773,
+      "tag_alias": 149546,
+      "tag_content_label": 9994,
+      "tag_relation": 213175,
+      "tag_role": 30265,
+      "tag_source": 1479995,
+      "visual_concept": 583,
+      "visual_concept_fts": 583,
+      "visual_concept_fts_config": 1,
+      "visual_concept_fts_data": 30,
+      "visual_concept_fts_docsize": 583,
+      "visual_concept_fts_idx": 28
+    }
+  },
+  "restore_check": {
+    "restored_copy": "C:\\Users\\user\\AppData\\Local\\Temp\\n2a-restore-1zdvvsnr\\restored.db",
+    "temp_copy_removed": true,
+    "integrity_check": [
+      "ok"
+    ],
+    "integrity_ok": true,
+    "foreign_key_violations_first_20": [],
+    "foreign_key_ok": true,
+    "table_counts": {
+      "act": 77,
+      "act_continuity": 48,
+      "act_observation": 0,
+      "act_publication": 27,
+      "character_profile": 574,
+      "concept_relation": 0,
+      "concept_tag": 9741,
+      "generation": 0,
+      "model_profile": 0,
+      "project": 31,
+      "shot": 7099,
+      "shot_finding": 69,
+      "shot_observation": 0,
+      "shot_state": 665,
+      "source_snapshot": 11,
+      "tag": 1208773,
+      "tag_alias": 149546,
+      "tag_content_label": 9994,
+      "tag_relation": 213175,
+      "tag_role": 30265,
+      "tag_source": 1479995,
+      "visual_concept": 583,
+      "visual_concept_fts": 583,
+      "visual_concept_fts_config": 1,
+      "visual_concept_fts_data": 30,
+      "visual_concept_fts_docsize": 583,
+      "visual_concept_fts_idx": 28
+    },
+    "table_counts_match": true,
+    "ok": true
+  },
+  "status": "ok"
+}

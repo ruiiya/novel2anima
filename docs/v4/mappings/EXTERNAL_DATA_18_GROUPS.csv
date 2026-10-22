@@ -1,0 +1,19 @@
+Legacy data,Code/consumers,Canonical DB target,Priority,Migration notes
+data/plans/*.json,"seed_plan.py, check_story.py, check_prompts.py, qa_shots.py, prune_tags.py, migrate_plan_semantics.py, check_reseed.py",project_document_revision + project/act/shot (current tables),P1,Import immutable snapshot; publish normalized entities transactionally; replace CLI --plan with --plan-id; file import remains optional
+prompts/*.txt and *.neg.txt,"seed_plan.py, check_prompts.py, check_reseed.py",shot_prompt_revision,P1,"Split block by shot_no using original plan order and validate count/hash, keep raw legacy TXT in asset_blob if needed"
+data/reviews/*.json,"llm_review.py, check_reseed.py",llm_run + shot_finding,P1,"Archive original JSON, preserve existing findings; replay DB-to-DB and no JSON requirement"
+data/wardrobe/colour_choice.json,import_colour_sets.py,n2a_setting_revision (wardrobe/colour_choice) -> visual_concept projection,P1,Store explicit choices with revision; catalog derived rows remain projections; prevent code defaults silently overwriting
+data/wardrobe/colour_cue.json,import_colour_sets.py,n2a_setting_revision (wardrobe/colour_cue) -> visual_concept projection,P1,Same approach with source provenance
+data/characters/ba_roster.json;dxd_roster.json,seed_plan.py and optional roster management,character_profile + project_document_revision,P1,Upsert characters by project/code; preserve raw source and existing identity_json; avoid duplicate profiles
+data/characters/ba_outfits.json,add_ba_outfits.py,outfit_revision + existing character_profile.outfit_json projection,P2,Migrate report data separately; only curated outfit details become canonical; old generated report stored import summary
+act_specs/*.json,tests and build_story_plan.py,project_document_revision for runtime; keep files as test fixtures,P2,"CI fixture files remain versioned test inputs, not runtime state"
+etl/sources.json,build.py,catalog_source_config,P2,"Populate pinned configs, keep source_snapshot for actual imported revisions"
+data/sources/manifest.json,build.py,import_batch + import_batch_file + asset_blob,P2,Dedup content with sha256; optional raw upstream binaries archived as BLOB for complete reproducibility
+db/import_report.json,build.py,import_batch.summary_json,P2,"Report generated from DB, export optional"
+data/sources/posts_unknown_tags.txt,"analyze_posts.py, import_posts_unknown.py",import_batch summary + catalog extraction staging,P2,Persist original unknown tag list as asset_blob; import rows using staging tables on subsequent iteration
+data/sources/tags_not_prompt_token.txt,cleanup_db.py,n2a_setting_revision (tag denylist) or tagged catalog policies,P2,Do not use filesystem denylist as policy after DB switch
+LLM instructions embedded in code and skills,"llm_review.py, skills/*",llm_prompt_template,P2,Move only executable runtime instructions; keep skill docs/agent instructions in Git for reference
+Render and reference image files,"generation.image_path, references/export folders",asset_blob + generation_asset + outfit_revision.anchor_asset_id,P3,Store bytes in DB then reference ID; no approved image depends on a local path
+"Temporary downloads, explicit exports, runtime logs","build.py, ComfyUI, CLI tooling",ephemeral only + audit summaries as DB where needed,P3,External temporary files may be cleaned safely once DB commit/hash validation completes
+sql/schema_v1.sql; sql/migrations/*.sql,"build.py, migrate_runtime.py",keep in Git source control,n/a,"Schema scripts are application code, not business data: should remain in repo"
+llm/prompts/*/*.txt zero-byte placeholders,LLM workspace/editor,llm_prompt_template (values after activation),P1,Keep 33 empty TXT files for user requirement; runtime never reads template files as authoritative values
