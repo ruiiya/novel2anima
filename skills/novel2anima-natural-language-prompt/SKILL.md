@@ -7,6 +7,11 @@ metadata:
 
 # Novel2Anima — Natural Language Prompt Converter
 
+> V4 canonical prompt revision is `shot_prompt_revision`; natural language is
+> optional `natural_prompt`. The DB row, not a `.txt` file, is authoritative.
+> See [`docs/v4/README.md`](../../docs/v4/README.md) and
+> [`docs/v4/docs/LLM_PIPELINE_CONTRACTS.md`](../../docs/v4/docs/LLM_PIPELINE_CONTRACTS.md).
+
 ## Mission and scope
 
 You are a **semantic-preserving prompt translator**, not a story writer, shot planner, pose selector, tag retriever, or image renderer.

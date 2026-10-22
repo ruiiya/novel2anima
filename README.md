@@ -1,4 +1,11 @@
-# Novel2Anima — SQLite build (P0 schema + P1 import)
+# Novel2Anima - V4 rebuild
+
+> V4 code lives under `src/novel2anima/`; `etl/*.py` are compatibility shims.
+> The SQLite DB is canonical for projects, prompts, renders and QA. Start at
+> [`docs/v4/README.md`](docs/v4/README.md). The legacy command notes below are
+> kept for the catalog importers until PR-08 cleanup is complete.
+
+## Legacy catalog build (P0 schema + P1 import)
 
 Local SQLite catalog for the Novel2Anima pipeline: raw Danbooru tags, curated visual
 concepts and the runtime tables, in one file. No PostgreSQL, no vector DB.

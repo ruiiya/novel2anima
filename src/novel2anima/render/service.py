@@ -63,8 +63,8 @@ def create_render(
     full_prompt = f"{prompt['positive_tags']}\nNegative: {prompt['negative_prompt']}"
     cur = con.execute(
         "INSERT INTO generation"
-        "(shot_id,model_profile_id,prompt,seed,image_path,image_sha256,evaluation_json,decision)"
-        " VALUES(?,?,?,?,NULL,?,'{}','pending')",
+        "(shot_id,model_profile_id,prompt,seed,image_sha256,evaluation_json,decision)"
+        " VALUES(?,?,?,?,?,'{}','pending')",
         (shot_id, model_profile_id, full_prompt, seed, sha),
     )
     generation_id = int(cur.lastrowid)

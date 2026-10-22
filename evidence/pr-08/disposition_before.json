@@ -1,0 +1,201 @@
+{
+  "database": "C:\\Users\\user\\Documents\\ChatGPT\\comfy 2\\db\\backup\\pr-01\\staging_live.db",
+  "legacy_table_count": 23,
+  "disposition_count": 23,
+  "missing_from_csv": [],
+  "missing_disposition": [],
+  "tables": [
+    {
+      "table": "source_snapshot",
+      "present": true,
+      "rows": 18,
+      "disposition": "keep",
+      "note": "import provenance",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "tag",
+      "present": true,
+      "rows": 1208773,
+      "disposition": "keep",
+      "note": "canonical catalog",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "tag_source",
+      "present": true,
+      "rows": 1479995,
+      "disposition": "keep",
+      "note": "provenance",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "tag_alias",
+      "present": true,
+      "rows": 149546,
+      "disposition": "keep",
+      "note": "winning alias plus conflict table",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "tag_role",
+      "present": true,
+      "rows": 30265,
+      "disposition": "keep",
+      "note": "multi-role catalog",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "tag_relation",
+      "present": true,
+      "rows": 213175,
+      "disposition": "keep",
+      "note": "catalog relation plus source table",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "tag_content_label",
+      "present": true,
+      "rows": 9994,
+      "disposition": "keep",
+      "note": "catalog labels",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "visual_concept",
+      "present": true,
+      "rows": 583,
+      "disposition": "keep",
+      "note": "concept catalog",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "concept_tag",
+      "present": true,
+      "rows": 9741,
+      "disposition": "keep",
+      "note": "concept mapping",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "concept_relation",
+      "present": true,
+      "rows": 0,
+      "disposition": "keep",
+      "note": "empty but reserved",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "visual_concept_fts",
+      "present": true,
+      "rows": 583,
+      "disposition": "keep",
+      "note": "rebuildable FTS index",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "model_profile",
+      "present": true,
+      "rows": 0,
+      "disposition": "keep",
+      "note": "render model reference",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "project",
+      "present": true,
+      "rows": 0,
+      "disposition": "keep",
+      "note": "project root",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "character_profile",
+      "present": true,
+      "rows": 0,
+      "disposition": "transitional",
+      "note": "drop identity_json/outfit_json after all readers use revisions",
+      "duplicate_columns": {
+        "identity_json": true,
+        "outfit_json": true
+      }
+    },
+    {
+      "table": "act",
+      "present": true,
+      "rows": 0,
+      "disposition": "keep",
+      "note": "act root",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "shot",
+      "present": true,
+      "rows": 0,
+      "disposition": "transitional",
+      "note": "drop character_id/shot_spec_json after all readers use participants/spec revisions",
+      "duplicate_columns": {
+        "character_id": true,
+        "shot_spec_json": true
+      }
+    },
+    {
+      "table": "generation",
+      "present": true,
+      "rows": 0,
+      "disposition": "cleanup",
+      "note": "image_path removed; bytes in asset_blob",
+      "duplicate_columns": {
+        "image_path": true
+      }
+    },
+    {
+      "table": "shot_state",
+      "present": true,
+      "rows": 0,
+      "disposition": "projection",
+      "note": "latest continuity state",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "act_continuity",
+      "present": true,
+      "rows": 0,
+      "disposition": "keep",
+      "note": "initial act state",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "shot_observation",
+      "present": true,
+      "rows": 0,
+      "disposition": "projection",
+      "note": "compat until assertion parity",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "act_observation",
+      "present": true,
+      "rows": 0,
+      "disposition": "projection",
+      "note": "compat until assertion parity",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "act_publication",
+      "present": true,
+      "rows": 0,
+      "disposition": "transitional",
+      "note": "file export history; not current prompt authority",
+      "duplicate_columns": {}
+    },
+    {
+      "table": "shot_finding",
+      "present": true,
+      "rows": 0,
+      "disposition": "projection",
+      "note": "latest QA finding",
+      "duplicate_columns": {}
+    }
+  ]
+}

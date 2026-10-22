@@ -7,6 +7,11 @@ metadata:
 
 # Novel2Anima Shot Pipeline — V4 full-catalog planning
 
+> V4 backend: `src/novel2anima/story`, `prompting`, `render`, `quality`.
+> `shot_prompt_revision` and `qa_issue` are canonical; legacy `shot_spec_json`
+> and `shot_finding` are transitional/projection only. Read
+> [`docs/v4/README.md`](../../docs/v4/README.md) before using legacy commands.
+
 Read [references/v4-architecture.md](references/v4-architecture.md) for the V4 architecture
 and schema, [references/continuity-state.md](references/continuity-state.md) for the
 experimental continuity model, plus

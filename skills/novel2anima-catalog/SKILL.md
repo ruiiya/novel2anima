@@ -7,6 +7,12 @@ metadata:
 
 # Novel2Anima Catalog — V4 full-data contract
 
+> V4 implementation lives under `src/novel2anima/`; legacy `etl/` commands are
+> compatibility shims. Canonical schema and disposition are documented in
+> [`docs/v4/P8_LEGACY_DISPOSITION.md`](../../docs/v4/P8_LEGACY_DISPOSITION.md).
+> Do not treat legacy `character_profile.*_json`, `shot.shot_spec_json`,
+> `shot_finding` or `shot_state` as the only authority.
+
 Read [references/v4-architecture.md](references/v4-architecture.md) for the architecture
 and table inventory extracted from the user-provided V4 handoff. POC settings and
 historical counts are not live measurements.
