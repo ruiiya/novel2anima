@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/novel2anima/v4/01_brief.schema.json",
+  "title": "BriefProposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "stage",
+    "status",
+    "decisions",
+    "uncertainties",
+    "evidence_refs",
+    "brief"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-1"
+    },
+    "stage": {
+      "const": "01_brief"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "needs_review"
+      ]
+    },
+    "decisions": {
+      "type": "object"
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "brief": {
+      "type": "object"
+    }
+  }
+}

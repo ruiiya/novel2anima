@@ -254,6 +254,7 @@ class MigrationRunnerTests(unittest.TestCase):
                 "006_normalization",
                 "007_reconciliation_queue",
                 "008_import_ledger",
+                "009_llm_registry",
             ],
         )
         for item in discovered:

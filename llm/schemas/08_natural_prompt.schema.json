@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/novel2anima/v4/08_natural_prompt.schema.json",
+  "title": "NaturalPromptProposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "stage",
+    "status",
+    "decisions",
+    "uncertainties",
+    "evidence_refs",
+    "natural_prompt",
+    "negative_prompt"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-1"
+    },
+    "stage": {
+      "const": "08_natural_prompt"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "needs_review"
+      ]
+    },
+    "decisions": {
+      "type": "object"
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "natural_prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "negative_prompt": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/novel2anima/v4/05_act_beats.schema.json",
+  "title": "ActBeatsProposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "stage",
+    "status",
+    "decisions",
+    "uncertainties",
+    "evidence_refs",
+    "acts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-1"
+    },
+    "stage": {
+      "const": "05_act_beats"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "needs_review"
+      ]
+    },
+    "decisions": {
+      "type": "object"
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "act_no",
+          "beats"
+        ],
+        "properties": {
+          "act_no": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "beats": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}
