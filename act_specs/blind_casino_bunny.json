@@ -1,0 +1,328 @@
+{
+  "provenance": {
+    "source": "hand-written CI fixture",
+    "version": 1
+  },
+  "blind_mode": true,
+  "project": {
+    "title": "Blind Casino Bunny",
+    "idea": "Blind mode: bunny hostess serves a suit gambler; flirt, VIP room, sex. Two wardrobe states only: full bunny, nude + accessories.",
+    "content_profile": "nsfw",
+    "style_json": {
+      "render_style": "anime",
+      "background": "casino"
+    }
+  },
+  "characters": [
+    {
+      "code": "LEAD",
+      "name": "woman",
+      "role": "placeholder",
+      "gender": "girl",
+      "adult": true,
+      "identity_line": "1girl, adult, long hair, black hair, green eyes",
+      "identity_json": {
+        "adult": true,
+        "attributes": ["long_hair", "black_hair", "green_eyes"]
+      },
+      "outfit_json": {}
+    },
+    {
+      "code": "PARTNER_A",
+      "name": "man",
+      "role": "placeholder",
+      "gender": "boy",
+      "adult": true,
+      "identity_line": "1boy, adult, short hair, brown hair, stubble",
+      "identity_json": {
+        "adult": true,
+        "attributes": ["short_hair", "brown_hair", "stubble"]
+      }
+    }
+  ],
+  "act": {
+    "act_no": 1,
+    "title": "Casino Bunny",
+    "outline": "blind mode; cast unbound. Bunny hostess serves the gambler, he flirts, VIP room, sex, afterglow.",
+    "status": "planned",
+    "revision": 1,
+    "phase_contract": [
+      {"id": "public", "start": 1, "end": 5, "wardrobe": "dressed"},
+      {"id": "vip_nude", "start": 6, "end": 9, "wardrobe": "nude"}
+    ]
+  },
+  "quality_line": "masterpiece, best quality, very aesthetic, absurdres, anime illustration, clean lineart",
+  "safety_tag": "explicit",
+  "scene": {
+    "location": "casino floor",
+    "background_line": "indoors, casino, gambling, night, slot_machine, roulette, chandelier, detailed_background"
+  },
+  "prompt_file": "out/prompts/blind_casino_bunny.txt",
+  "beats": [
+    {
+      "id": "b01_serve",
+      "description": "The bunny hostess serves cocktails at his poker table.",
+      "purpose": "action",
+      "shots": [
+        {
+          "participants": ["LEAD"],
+          "purpose": "action",
+          "phase": "public",
+          "exposure_level": "L0",
+          "outfit": ["playboy_bunny", "black_leotard", "black_fishnet_legwear",
+                     "rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels"],
+          "action": ["holding_tray", "holding_cocktail"],
+          "pose": ["standing"],
+          "expression": ["smile"],
+          "camera": ["upper_body"],
+          "props": ["tray", "cocktail"],
+          "caption": "The bunny waitress crosses the casino floor with a tray of cocktails."
+        },
+        {
+          "participants": ["LEAD", "PARTNER_A"],
+          "purpose": "action",
+          "phase": "public",
+          "exposure_level": "L0",
+          "outfit": ["playboy_bunny", "black_leotard", "black_fishnet_legwear",
+                     "rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels",
+                     "black_suit", "white_dress_shirt", "black_necktie"],
+          "action": ["holding_tray"],
+          "character_actions": {
+            "LEAD": ["holding_tray", "holding_cocktail"],
+            "PARTNER_A": ["holding_card", "smirk"]
+          },
+          "character_poses": {
+            "LEAD": ["standing"],
+            "PARTNER_A": ["sitting"]
+          },
+          "expressions": {
+            "LEAD": ["smile"],
+            "PARTNER_A": ["smirk"]
+          },
+          "camera": ["from_side"],
+          "props": ["poker_chip", "cocktail"],
+          "caption": "She sets a cocktail by his poker chips; he looks up from his cards."
+        }
+      ]
+    },
+    {
+      "id": "b02_flirt",
+      "description": "He leans in and whispers; she bites back a smile.",
+      "purpose": "action",
+      "shots": [
+        {
+          "participants": ["PARTNER_A"],
+          "purpose": "action",
+          "phase": "public",
+          "exposure_level": "L0",
+          "outfit": ["black_suit", "white_dress_shirt", "black_necktie"],
+          "action": ["leaning_forward", "looking_at_another"],
+          "pose": ["sitting"],
+          "expression": ["smirk"],
+          "camera": ["close-up"],
+          "props": [],
+          "caption": "He leans forward over the felt, already watching her."
+        },
+        {
+          "participants": ["LEAD", "PARTNER_A"],
+          "purpose": "interaction",
+          "phase": "public",
+          "exposure_level": "L0",
+          "outfit": ["playboy_bunny", "black_leotard", "black_fishnet_legwear",
+                     "rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels",
+                     "black_suit", "white_dress_shirt", "black_necktie"],
+          "action": ["whispering"],
+          "character_actions": {
+            "PARTNER_A": ["whispering"],
+            "LEAD": ["finger_to_mouth"]
+          },
+          "character_poses": {
+            "LEAD": ["standing"],
+            "PARTNER_A": ["sitting"]
+          },
+          "character_gaze": {
+            "LEAD": "PARTNER_A"
+          },
+          "expressions": {
+            "LEAD": ["blush", "one_eye_closed"],
+            "PARTNER_A": ["smirk"]
+          },
+          "camera": ["close-up"],
+          "props": [],
+          "caption": "He whispers beside her ear; she presses a finger to her lips.",
+          "sequence": {
+            "actor": "PARTNER_A",
+            "target": "LEAD",
+            "purpose": "interaction",
+            "reactionRequired": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "b03_vip_entry",
+      "description": "She walks him to the VIP room and opens the door.",
+      "purpose": "transition",
+      "shots": [
+        {
+          "participants": ["LEAD", "PARTNER_A"],
+          "purpose": "transition",
+          "phase": "public",
+          "exposure_level": "L0",
+          "outfit": ["playboy_bunny", "black_leotard", "black_fishnet_legwear",
+                     "rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels",
+                     "black_suit", "white_dress_shirt", "black_necktie"],
+          "action": ["walking_together"],
+          "character_actions": {
+            "LEAD": ["walking_together"],
+            "PARTNER_A": ["walking_together"]
+          },
+          "character_poses": {
+            "LEAD": ["standing"],
+            "PARTNER_A": ["standing"]
+          },
+          "character_gaze": {
+            "PARTNER_A": "LEAD"
+          },
+          "expressions": {
+            "LEAD": ["blush", "smile"],
+            "PARTNER_A": ["smirk"]
+          },
+          "camera": ["upper_body"],
+          "props": ["door"],
+          "caption": "She leads him past the roulette wheel toward the curtained VIP door.",
+          "sequence": {
+            "purpose": "transition",
+            "reactionTo": "b02_flirt:4",
+            "cut": "scene_cut"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b04_strip",
+      "description": "Inside the VIP room the bunny suit comes off; only the accessories stay.",
+      "purpose": "action",
+      "shots": [
+        {
+          "participants": ["LEAD"],
+          "purpose": "action",
+          "phase": "vip_nude",
+          "exposure_level": "L1",
+          "outfit": ["rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels"],
+          "body_state": ["completely_nude"],
+          "action": ["undressing", "clothes_lift"],
+          "pose": ["standing"],
+          "expression": ["blush"],
+          "camera": ["upper_body"],
+          "props": [],
+          "caption": "The leotard drops to the carpet; ears, cuffs, collar and heels stay.",
+          "sequence": {
+            "purpose": "action",
+            "cut": "scene_cut"
+          }
+        },
+        {
+          "participants": ["LEAD"],
+          "purpose": "action",
+          "phase": "vip_nude",
+          "exposure_level": "L1",
+          "outfit": ["rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels"],
+          "body_state": ["completely_nude"],
+          "action": ["arm_up", "looking_at_viewer"],
+          "pose": ["standing"],
+          "expression": ["blush", "open_mouth"],
+          "camera": ["upper_body"],
+          "props": [],
+          "caption": "She raises her arms and meets his eyes across the velvet sofa.",
+          "sequence": {
+            "purpose": "action"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b05_sex",
+      "description": "She rides him on the sofa.",
+      "purpose": "interaction",
+      "shots": [
+        {
+          "participants": ["LEAD", "PARTNER_A"],
+          "purpose": "interaction",
+          "phase": "vip_nude",
+          "exposure_level": "L2",
+          "outfit": ["rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels",
+                     "black_suit", "white_dress_shirt", "black_necktie"],
+          "body_state": ["completely_nude", "sweat"],
+          "action": ["sex", "vaginal"],
+          "character_actions": {
+            "PARTNER_A": ["sex"],
+            "LEAD": ["cowgirl_position"]
+          },
+          "character_poses": {
+            "LEAD": ["girl_on_top"],
+            "PARTNER_A": ["sitting"]
+          },
+          "character_gaze": {
+            "LEAD": "PARTNER_A"
+          },
+          "expressions": {
+            "LEAD": ["blush", "open_mouth"],
+            "PARTNER_A": ["smirk"]
+          },
+          "camera": ["from_side"],
+          "props": [],
+          "caption": "She rides him on the sofa, heels planted, ears still on.",
+          "sequence": {
+            "actor": "PARTNER_A",
+            "target": "LEAD",
+            "primaryAction": "sex",
+            "purpose": "interaction",
+            "reactionRequired": false,
+            "cut": "time_cut"
+          }
+        }
+      ]
+    },
+    {
+      "id": "b06_afterglow",
+      "description": "They catch their breath on the sofa.",
+      "purpose": "result",
+      "shots": [
+        {
+          "participants": ["LEAD", "PARTNER_A"],
+          "purpose": "result",
+          "phase": "vip_nude",
+          "exposure_level": "L1",
+          "outfit": ["rabbit_ears", "black_bowtie", "white_cuffs",
+                     "detached_collar", "black_high_heels",
+                     "black_suit", "white_dress_shirt", "black_necktie"],
+          "body_state": ["completely_nude", "sweat"],
+          "action": ["after_sex"],
+          "character_actions": {
+            "LEAD": ["after_sex", "lying_down"],
+            "PARTNER_A": ["after_sex"]
+          },
+          "character_poses": {
+            "LEAD": ["lying_on_back"],
+            "PARTNER_A": ["sitting"]
+          },
+          "expressions": {
+            "LEAD": ["blush"],
+            "PARTNER_A": ["smile"]
+          },
+          "camera": ["from_behind"],
+          "props": [],
+          "caption": "She lies back on the sofa, breathing hard; he watches her settle."
+        }
+      ]
+    }
+  ]
+}

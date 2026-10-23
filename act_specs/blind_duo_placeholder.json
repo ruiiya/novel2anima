@@ -1,0 +1,124 @@
+{
+  "provenance": {
+    "source": "hand-written CI fixture",
+    "version": 1
+  },
+  "blind_mode": true,
+  "project": {
+    "title": "Blind placeholder fixture",
+    "idea": "story first, cast unbound",
+    "content_profile": "nsfw",
+    "style_json": {}
+  },
+  "characters": [
+    {
+      "code": "LEAD",
+      "name": "woman",
+      "role": "placeholder",
+      "gender": "girl",
+      "adult": true,
+      "identity_line": "1girl, adult, long hair, black hair, green eyes",
+      "identity_json": {
+        "adult": true,
+        "attributes": [
+          "long_hair",
+          "black_hair",
+          "green_eyes"
+        ]
+      },
+      "outfit_json": {}
+    },
+    {
+      "code": "PARTNER_A",
+      "name": "man",
+      "role": "placeholder",
+      "gender": "boy",
+      "adult": true,
+      "identity_line": "1boy, adult, short hair, brown hair",
+      "identity_json": {
+        "adult": true,
+        "attributes": [
+          "short_hair",
+          "brown_hair"
+        ]
+      },
+      "outfit_json": {}
+    }
+  ],
+  "act": {
+    "act_no": 1,
+    "title": "Blind meeting",
+    "outline": "blind mode; cast unbound",
+    "status": "draft",
+    "revision": 1,
+    "phase_contract": [
+      {
+        "id": "meet",
+        "start": 1,
+        "end": 2
+      }
+    ]
+  },
+  "beats": [
+    {
+      "id": "meet",
+      "description": "The woman takes the man's hand; he smiles.",
+      "purpose": "interaction",
+      "shots": [
+        {
+          "participants": [
+            "LEAD",
+            "PARTNER_A"
+          ],
+          "action": [
+            "holding_hands"
+          ],
+          "pose": [
+            "standing"
+          ],
+          "expression": [
+            "smile"
+          ],
+          "caption": "The woman takes the man's hand; he smiles.",
+          "sequence": {
+            "actor": "LEAD",
+            "target": "PARTNER_A",
+            "purpose": "interaction",
+            "reactionRequired": true
+          },
+          "character_actions": {
+            "LEAD": [
+              "holding_hands"
+            ],
+            "PARTNER_A": [
+              "smile"
+            ]
+          },
+          "props": []
+        },
+        {
+          "participants": [
+            "PARTNER_A"
+          ],
+          "action": [
+            "looking_at_viewer"
+          ],
+          "pose": [
+            "standing"
+          ],
+          "expression": [
+            "smile"
+          ],
+          "caption": "The man looks toward the viewer.",
+          "sequence": {
+            "purpose": "reaction",
+            "reactionTo": "meet:1",
+            "actor": "PARTNER_A",
+            "reactionRequired": false
+          },
+          "props": []
+        }
+      ]
+    }
+  ]
+}

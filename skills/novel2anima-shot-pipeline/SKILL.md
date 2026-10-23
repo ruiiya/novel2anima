@@ -16,6 +16,8 @@ Dress, stance and prompt hygiene are enforced at seed time by `etl/wardrobe.py` 
 `etl/seed_plan.py`; whatever those gates cannot decide is reported by `etl/qa_shots.py` into
 `shot_state` instead of being forced - see
 [references/wardrobe-and-pose.md](references/wardrobe-and-pose.md).
+No chosen cast yet? Use [`novel2anima-blind-story`](../novel2anima-blind-story/SKILL.md)
+placeholders, then return here for binding and normal planning.
 The catalog skill owns ETL/table semantics. Inspect the actual SQLite schema; skill
 references are not evidence that a populated DB or production backend exists.
 

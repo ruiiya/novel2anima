@@ -27,7 +27,8 @@ class ActSpecs(unittest.TestCase):
 
     def test_fixtures_are_tracked_source(self):
         names = sorted(p.name for p in (ROOT / "act_specs").glob("*.json"))
-        self.assertEqual(names, ["duo_greeting.json", "solo_tea.json"])
+        self.assertEqual(names, ["blind_casino_bunny.json", "blind_duo_placeholder.json",
+                                 "duo_greeting.json", "solo_tea.json"])
 
 if __name__ == "__main__":
     unittest.main()

@@ -5,6 +5,7 @@ checkout can compile an act without `data/plans/`, `act_tools/` or the live DB.
 
 - `solo_tea.json`: one participant, one shot.
 - `duo_greeting.json`: two participants, interaction + reaction.
+- `blind_duo_placeholder.json`: blind mode, role placeholders, no canon identity.
 
 Compile with `python etl/build_story_plan.py --input <spec> --output data/plans/...`.
 The spec holds project/characters/act plus `beats[]`; shot count is derived from

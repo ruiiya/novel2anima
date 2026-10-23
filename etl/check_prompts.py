@@ -238,12 +238,24 @@ def main(argv=None):
             refs += [(x["name"], x["tagId"]) for tx in spec.get("participants") or []
                      for x in tx.get("expression") or []]
             inside = {tid for name, tid in refs if tag_text(name) in words}   # tag co mat trong prompt
+            # Per-character expressions may legally live in that character's role
+            # clause instead of the pooled tag zone; accept clause tokens for them.
+            characters = (plan or {}).get("characters") or []
+            names = {c.get("code"): (c.get("name") or c.get("code") or "") for c in characters}
+            clauses = clause_map(text, spec.get("caption") or "")
+            clause_words = {}
+            for tx in spec.get("participants") or []:
+                entry = clauses.get(names.get(tx.get("code") or "", ""), "")
+                cw = {t.strip().lower() for t in entry.split(",")} if entry else set()
+                for x in tx.get("expression") or []:
+                    clause_words.setdefault(tag_text(x.get("name")), set()).update(cw)
             all_ids = {tid for _name, tid in refs}
             pruned = set()                                   # seed bo tag bi tag khac imply
             for tid in all_ids:
                 pruned |= closure(tid) & (all_ids - {tid})
             for name, tid in refs:
-                if tag_text(name) not in words and tid not in pruned:
+                tok = tag_text(name)
+                if tok not in words and tok not in clause_words.get(tok, set()) and tid not in pruned:
                     errs.append((shot_no, phase, "tag thieu trong prompt: %s" % name))
             for tid in inside:
                 red = closure(tid) & (inside - {tid})
@@ -277,7 +289,7 @@ def main(argv=None):
             elif boys > 1:
                 want.update({"multiple boys", "%dboys" % boys})
             if girls == 0:
-                want = {"%dboys" % boys} if boys else set()
+                want = {"1boy" if boys == 1 else "%dboys" % boys} if boys else set()
             if want and not (want & words):
                 warns.append((shot_no, phase, "thieu dong so nguoi (%s)" % "/".join(sorted(want))))
             for msg in caption_prompt_issues(caption, words, codes, gender):

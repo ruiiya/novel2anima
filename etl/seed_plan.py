@@ -504,6 +504,12 @@ def main():
             scoped = [n.replace("_", " ") for n in scoped_ident.get(c, [])]
             scoped += [n.replace("_", " ") for n, _ in p["character_actions"].get(c, [])]
             scoped += [n.replace("_", " ") for n, _ in p["character_poses"].get(c, [])]
+            # Non-lead expressions otherwise vanish: the global expression line
+            # carries the lead only, and check_prompts requires every scoped
+            # participant expression to appear in the prompt.
+            if len(p["participants"]) > 1 and c != p["participants"][0]:
+                scoped += [n.replace("_", " ")
+                           for n, _ in p.get("expressions", {}).get(c, [])]
             gaze = p["character_gaze"].get(c)
             if gaze:
                 scoped.append("looking toward " + char_name.get(gaze, str(gaze)))
