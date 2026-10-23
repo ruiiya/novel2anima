@@ -36,7 +36,7 @@ CREATE INDEX idx_tag_alias_target ON tag_alias(tag_id);
 CREATE TABLE tag_role (
   tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK(role IN (
-    'identity','outfit','action','expression','pose','motion','camera',
+    'identity','outfit','body_state','action','expression','pose','motion','camera',
     'composition','background','style','interaction','other'
   )),
   confidence REAL NOT NULL DEFAULT 1.0 CHECK(confidence BETWEEN 0 AND 1),
