@@ -14,20 +14,46 @@ from pathlib import Path
 
 SET_RE = re.compile(r"\bSET_[A-Za-z0-9_]+\b")
 NEG_RE = re.compile(
-    r"(?i)(no panels?|no split[- ]screen|no comic grid|no extra limbs|no duplicate"
+    r"(?i)(no panels?|no split[- ]screen|no comic grid|no grid|no extra limbs|no duplicate"
     r"|no spectators?|no crew|no captions?|no watermarks?|no text\b|no underexposure"
     r"|no low-key|no dark falloff|not a grid or (collage|rows)|overlap shoulders"
     r"|stagger head heights|heads and torsos fill|all participants are adults"
-    r"|explicit adult group sex)")
+    r"|explicit adult group sex|no other person(?: in frame)?|no one else(?: in frame)?|no one else visible)")
 LABEL_RE = re.compile(
     r"(?i)^(explicit|nsfw|adult|consensual|bdsm|d/s|tpe|yuri|straight|editorial"
     r"|professional_photoshoot|bright_lighting|rough_sex|bdsm_light)$")
 CLOTHES_RE = re.compile(
-    r"(?i)^(?:(?:a|an|the|his|her|their)\s+)?"
+    r"(?i)^(?:(?:and|a|an|the|his|her|their)\s+)?"
     r"(?:(?:tight|torn|ripped|navy|black|white|red|blue|dark|fitted|short|long"
-    r"|school|gym|pleated|lace)\s+)*"
-    r"(?:uniform|blazer|shirt|skirt|thighhighs|lingerie|jacket|bloomers|dress|bra|panties)\b")
+    r"|school|gym|pleated|lace|denim|straw|leather|knit|plaid|bath|bunny|summer)\s+)*"
+    r"(?:uniform|blazer|shirt|t-shirt|sundress|suit|swimsuit|dress|skirt|shorts|thighhighs"
+    r"|sneakers|lingerie|jacket|coat|sweater|bloomers|bikini|towel|bra|panties)\b")
 ORPHAN_RE = re.compile(r"(?i)^(?:tight |torn |school |gym |navy )?uniform$")
+CAMERA_LABEL_RE = re.compile(r"(?i)^(camera|framing|shot)\s*:\s*(.+)$")
+# Framing/focus phrasing that leaks into character captions and dilutes the
+# camera clause when left where it was written. Classified, emitted once.
+LENS_RE = re.compile(r"(?i)\b(\d{2,3}\s?mm)\b")
+CAMERA_KINDS = (
+    ("angle", re.compile(r"(?i)\b(top-?down|overhead|bird'?s[- ]eye)\b"),
+     "directly overhead, looking straight down"),
+    ("angle", re.compile(r"(?i)\b(low[- ]angle|worm'?s[- ]eye)\b"), "low angle, looking up"),
+    ("angle", re.compile(r"(?i)\bhigh[- ]angle\b"), "high angle, looking down"),
+    ("angle", re.compile(r"(?i)\brear three[- ]quarter\b"), "rear three-quarter view"),
+    ("framing", re.compile(r"(?i)\b(full body, head to feet[^.]*|full body|wide shot)\b"),
+     "full body, head to feet"),
+    ("framing", re.compile(r"(?i)\b(upper body, head to hips|upper body|medium shot)\b"), "upper body"),
+    ("framing", re.compile(r"(?i)\b(face and shoulders visible|face and shoulders)\b"), "face and shoulders"),
+    ("framing", re.compile(r"(?i)\b(tight detail crop[^.]*|detail crop)\b"), "tight detail crop"),
+    ("framing", re.compile(r"(?i)\bface close-?up\b"), "face close-up"),
+)
+FILLER_RE = re.compile(r"(?i)\b(?:bright editorial set|evenly lit and fully visible)\b")
+ANGLE_CANONS = {canon for kind, _, canon in CAMERA_KINDS if kind == "angle"}
+RESIDUE_RE = re.compile(
+    r"(?i)\b(?:view from (?:above|below)|(?<!quarter )view|all limbs visible|"
+    r"head to (?:feet|hips)|back and hips visible|crop on the action)\b")
+# Most specific framing wins; keeps one clause instead of stacking contradictions.
+FRAMING_PRIORITY = ("tight detail crop", "face close-up", "face and shoulders",
+                    "upper body", "full body, head to feet")
 
 
 def _segments(text):
@@ -36,10 +62,53 @@ def _segments(text):
 
 def _clean_segment(seg):
     seg = SET_RE.sub("", seg)
+    seg = NEG_RE.sub("", seg)
+    seg = FILLER_RE.sub("", seg)
     seg = re.sub(r"\s{2,}", " ", seg).strip(" .;:-")
-    if not seg or LABEL_RE.match(seg) or NEG_RE.search(seg) or ORPHAN_RE.match(seg):
+    if not seg or LABEL_RE.match(seg) or ORPHAN_RE.match(seg):
         return ""
     return seg
+
+
+def _take_camera(text):
+    """Return (text without camera phrasing, canonical camera parts found)."""
+    label = CAMERA_LABEL_RE.match(text.strip())
+    if not label:
+        return text, []
+
+    rest = label.group(2)
+    parts, seen = [], {}
+    lens = LENS_RE.search(rest)
+    if lens:
+        parts.append(lens.group(1).replace(" ", "").lower())
+    for kind, pat, canon in CAMERA_KINDS:
+        if pat.search(rest) and kind not in seen:
+            seen[kind] = canon
+    parts.extend(seen[k] for k in ("angle", "framing") if k in seen)
+    return "", parts
+
+
+def _strip_framing(text):
+    """Pull framing phrases out of a free sentence, keep the canonical part."""
+    parts, seen = [], {}
+    for kind, pat, canon in CAMERA_KINDS:
+        if pat.search(text) and kind not in seen:
+            seen[kind] = canon
+            text = pat.sub(" ", text)
+        elif pat.search(text):
+            text = pat.sub(" ", text)
+    text = RESIDUE_RE.sub(" ", text)
+    parts.extend(seen[k] for k in ("angle", "framing") if k in seen)
+    return text, parts
+
+
+def _camera_clause(parts):
+    """One camera clause: lens, one angle, one framing."""
+    parts = _dedupe([p.strip(" .") for p in parts if p.strip(" .")])
+    lens = [p for p in parts if LENS_RE.fullmatch(p)]
+    angles = _dedupe([p for p in parts if p in ANGLE_CANONS])
+    framing = next((f for f in FRAMING_PRIORITY if f in parts), None)
+    return ", ".join(lens + angles + ([framing] if framing else []))
 
 
 def _dedupe(segs):
@@ -54,6 +123,16 @@ def _dedupe(segs):
 
 def _sentences(text):
     return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+
+
+OUTFIT_VERB_RE = re.compile(
+    r"(?i)\b(?:lifted|drawn|pulled|tucked|braced|resting|holding|open|worn|tied"
+    r"|wrapped|around|by the)\b")
+
+
+def _is_outfit(seg):
+    """True only for a plain clothing noun phrase, not a pose/state clause."""
+    return bool(CLOTHES_RE.match(seg)) and not OUTFIT_VERB_RE.search(seg)
 
 
 def _fix_outfit_verb(seg):
@@ -87,21 +166,32 @@ def _overlap(sent, captions):
     return best
 
 
-def _character_sentence(caption):
-    segs = _dedupe([s for s in (_clean_segment(x) for x in _segments(caption)) if s])
+def _character_sentence(caption, camera=None):
+    segs = []
+    for sent in _sentences(caption):
+        sent, cam = _strip_framing(sent)
+        if camera is not None:
+            camera.extend(cam)
+        cleaned = _dedupe([s for s in (_clean_segment(x) for x in _segments(sent)) if s])
+        for i, seg in enumerate(cleaned):
+            segs.append((seg, i == len(cleaned) - 1))
     if not segs:
         return None
-    name, rest = segs[0], segs[1:]
+    name, rest = segs[0][0], segs[1:]
     split = next(
-        (i for i, seg in enumerate(rest)
-         if CLOTHES_RE.match(seg) and not seg.lower().startswith("wearing")),
+        (i for i, (seg, _) in enumerate(rest)
+         if _is_outfit(seg) and not seg.lower().startswith("wearing")),
         None)
     if split is None:
-        body = ", ".join(rest)
+        head, worn = rest, []
     else:
-        head = ", ".join(rest[:split])
-        worn = ", ".join(rest[split:])
-        body = f"{head}, wearing {worn}" if head else f"wearing {worn}"
+        head, worn = rest[:split], rest[split:]
+    body = ""
+    for i, (seg, end) in enumerate(head):
+        sep = "" if i == 0 else (", " if not head[i - 1][1] else ". ")
+        body += sep + seg
+    if worn:
+        body = (body + ", wearing " if body else "wearing ") + ", ".join(s for s, _ in worn)
     return f"{name}, {body}.".replace(", .", ".") if body else f"{name}."
 
 
@@ -112,9 +202,16 @@ def flatten(layout):
     captions = [i.get("caption", "") for i in chars]
     parts, dropped = [], []
     text_items = []
+    camera = []
 
     scene = _clean_sentences(summary.get("caption", ""))
     for sent in scene:
+        sent, cam = _take_camera(sent)
+        camera.extend(cam)
+        sent = ", ".join(s for s in (_clean_segment(x) for x in _segments(sent)) if s)
+        if not sent:
+            continue
+        sent = sent.rstrip(".") + "."
         if chars and _overlap(sent, captions) >= 0.75:
             dropped.append(sent)
             continue
@@ -126,21 +223,24 @@ def flatten(layout):
             for sent in _clean_sentences(cap):
                 if chars and _overlap(sent, captions) >= 0.75:
                     continue
-                if parts and _overlap(sent, [" ".join(parts)]) >= 0.8:
+                if parts and _overlap(sent, [" ".join(parts)]) >= 0.7:
                     continue
                 parts.append(sent)
         elif item.get("label") == "text":
             text_items.append(item.get("text", ""))
             parts.append(f'The image shows the text "{item.get("text", "")}".')
 
-    for item in chars:
-        sent = _character_sentence(item.get("caption", ""))
-        if sent:
-            parts.append(sent)
+    char_sentences = [s for s in (_character_sentence(i.get("caption", ""), camera)
+                                  for i in chars) if s]
+    cam_clause = _camera_clause(camera)
+    if cam_clause:
+        parts.append(f"Camera: {cam_clause}.")
+    parts.extend(char_sentences)
 
     prose = " ".join(parts)
     prose = re.sub(r"\s{2,}", " ", prose).replace("..", ".")
     prose = re.sub(r"\s+([.,;])", r"\1", prose)
+    prose = re.sub(r"\.{2,}", ".", prose)
     prose = re.sub(r"\ba (athletic|adult|older|eager|explicit)\b", r"an \1", prose)
     prose = re.sub(
         r"(?i)\b(blazer|shirt|skirt|dress|jacket) (?:school|gym) uniform\b", r"\1", prose)
@@ -165,6 +265,7 @@ def flatten(layout):
     return prose, {
         "status": status,
         "characters": [c.get("caption", "").split(",")[0].strip() for c in chars],
+        "camera": cam_clause,
         "text_items": text_items,
         "dropped_summary_segments": dropped,
         "issues": sorted(set(issues)),

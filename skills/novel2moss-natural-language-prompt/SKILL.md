@@ -34,6 +34,8 @@ natural.prompt.txt        # một đoạn prose, tiếng Anh
 natural.prompt.json       # sidecar: status, hash nguồn/đích, danh sách nhân vật, text item, lỗi
 ```
 
+Ngoài bundle, xuất bản gộp để paste/render hàng loạt: `prompts.all.nl.txt` (toàn bộ Shot hiện hành) và `prompts_nl/<act_id>.txt` (mỗi Act một file), **mỗi prompt cách nhau đúng một dòng trống**, không header/metadata, kết thúc bằng một `\n`.
+
 Không ghi đè `layout.prompt.json` hay lịch sử export. Cùng input phải cho cùng output (byte-identical).
 
 ## Quy trình
@@ -61,8 +63,9 @@ Flattener và người viết phải bỏ khỏi prose:
 4. Token nội bộ: `SET_A/B/C`, `SET_C_TORN`, `role_key`, `character:...`, ID, revision, width/height.
 5. Trùng lặp: summary lặp lại item, cụm lặp trong cùng caption, object item trùng setting.
 6. Outfit rút gọn: `X is school uniform` → dùng mô tả trang phục đầy đủ trong item; không xuất `uniform` trơ.
+7. Camera: gộp `Camera:`/`Framing:`/focus rải rác thành **một** câu `Camera: <lens>, <angle>, <framing>.` đặt ngay trước câu nhân vật; xoá mọi bản sao ở giữa prompt. Chuẩn hoá cụm yếu thành literal: `top-down view from above` → `directly overhead, looking straight down`, `low-angle view from below` → `low angle, looking up`. Framing trùng thì giữ mức cụ thể nhất (detail > close-up > face/shoulders > upper body > full body).
 
-Giữ nguyên: danh tính, tuổi đã xác nhận, trang phục/màu, biểu cảm, pose, vị trí tương đối, chiều hành động, chữ cần hiển thị (verbatim).
+Giữ nguyên: danh tính, tuổi đã xác nhận, trang phục/màu, biểu cảm, pose, vị trí tương đối, chiều hành động, chữ cần hiển thị (verbatim). Với nhân vật thuộc tác phẩm cụ thể, giữ nguyên định danh kèm tác phẩm, ví dụ `Asuna (Blue Archive)`; không rút gọn thành tên trần vì sẽ mất khả năng xác định nhân vật.
 
 ## Cổng kiểm
 

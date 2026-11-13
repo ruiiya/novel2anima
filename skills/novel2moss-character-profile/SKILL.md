@@ -20,6 +20,14 @@ Quản lý profile nhân vật **độc lập với từng Story** và cung cấ
 6. Giữ nguyên nhãn phân loại nguồn trong metadata; không lấy nhãn catalog để suy ra tuổi hoặc quyết định của policy.
 7. Xuất *visual anchor* ngắn gọn cho caption ngôn ngữ tự nhiên, có tham chiếu tới bằng chứng gốc. Thuộc tính canon chưa rõ phải giữ là chưa rõ.
 
+## Định danh trong prompt (bắt buộc)
+
+- Với nhân vật lấy từ một tác phẩm/parody cụ thể, prompt phải ghi **tên + tác phẩm trong ngoặc**, ví dụ `Asuna (Blue Archive)`, `Rias Gremory (High School DxD)`. Chỉ viết tên trần (`Asuna`, `Rias`) là **không đủ**: tên trùng giữa nhiều nguồn nên không xác định được nhân vật, và catalog có nhiều biến thể cùng tên.
+- Nếu là biến thể trong cùng tác phẩm, ghi cả biến thể: `Asuna (bunny) (Blue Archive)`, `Asuna (school uniform) (Blue Archive)`; trang phục của Story vẫn mô tả riêng, không thay bằng tên biến thể.
+- Chỉ nhân vật **original/không thuộc tác phẩm nào** mới được bỏ phần ngoặc; khi đó dùng mô tả nhận diện đầy đủ và `character_id` curated làm bằng chứng.
+- Dạng chuẩn lấy từ `characters.display_name` (đã có hậu tố tác phẩm) hoặc `universes.slug`; không tự bịa tên tác phẩm, không dịch tên tác phẩm.
+- Kiểm QA: mọi `character` item và `summary.caption` phải chứa định danh đầy đủ; thiếu thì `NEEDS_REVIEW` với issue `IDENTITY_NOT_DISAMBIGUATED`.
+
 ## Xử lý xung đột
 
 Nếu nguồn profile mâu thuẫn chi tiết Shot đã xác nhận, tạo `PROFILE_CONFLICT`; không tự sửa nguồn hay diễn giải lại trang phục. Việc thay đồ có chủ đích phải lưu như một sự kiện.
