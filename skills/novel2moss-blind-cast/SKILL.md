@@ -33,5 +33,5 @@ Sau khi gán profile, caption biên dịch không được còn placeholder mồ
 
 - `stories.cast_mode=BLIND` là dấu hiệu chọn nhánh. Tạo role trong `story_roles` ngay khi tạo Story, cho phép `story_castings` rỗng khi Story/Shot được lập.
 - Actor, target trong `story_events`/`shot_interactions` **luôn** trỏ `story_role_id` cùng Story, không lưu trực tiếp `character_id`; vì thế gán nhân vật sau không thay nội dung sự kiện cũ.
-- Sau khi người dùng chọn catalog profile thật, gọi `n2m_db.py bind-role`, lưu `character_id/outfit_id/from_revision`; bản cũ có `until_revision`. Tạo prompt/layout revision mới nếu điểm nhận diện thay đổi; giữ nguyên Shot và export lịch sử.
+- Sau khi người dùng chọn catalog profile thật, gọi `n2m_db.py bind-role`, lưu `character_id/outfit_id/from_revision`; bản cũ có `until_revision`. Tạo natural prompt revision mới nếu điểm nhận diện thay đổi; giữ nguyên Shot và export lịch sử.
 - Không tự tạo nhân vật giả để lấp FK, không coi chưa casting là lỗi dữ liệu; báo `UNASSIGNED_ROLE` cho những bước thực sự cần identity. Đọc `DATABASE_CONTRACT.md`.

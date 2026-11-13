@@ -71,6 +71,33 @@ def main():
                 dest.parent.mkdir(parents=True,exist_ok=True)
                 shutil.copy2(file,dest)
             copied+=1
+    # Retire only known V2 files. Always back them up before removal.
+    if args.upgrade:
+        obsolete = [
+            Path('docs/novel2moss/MOSS_LAYOUT.md'),
+            Path('tools/novel2moss/compile_layout.py'),
+            Path('tools/novel2moss/flatten_layout.py'),
+            Path('examples/novel2moss/layout_draft.example.json'),
+            Path('examples/novel2moss/layout_prompt.example.json'),
+            Path('examples/novel2moss/layout_manifest.example.json'),
+        ]
+        if args.mode in ('claude','both'):
+            obsolete.append(Path('.claude/skills/novel2moss-layout-planner/SKILL.md'))
+        if args.mode in ('portable','both'):
+            obsolete.append(Path('skills/novel2moss-layout-planner/SKILL.md'))
+        for rel in obsolete:
+            old = target / rel
+            if not old.is_file():
+                continue
+            backup = backup_root / rel
+            print(f'{"PLAN RETIRE" if args.dry_run else "RETIRE"}: {old} -> {backup}')
+            if not args.dry_run:
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(old, backup)
+                old.unlink()
+                if old.parent.name == 'novel2moss-layout-planner' and not any(old.parent.iterdir()):
+                    old.parent.rmdir()
+            backed_up += 1
     print(f'{"DRY-RUN" if args.dry_run else "PASS"}: copied={copied}, backup={backed_up}, skipped={skipped}')
 
 if __name__=='__main__':main()

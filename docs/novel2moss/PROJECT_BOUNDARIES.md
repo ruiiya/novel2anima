@@ -7,7 +7,7 @@
 
 Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and codebase*), không phải fork, bản migration, plugin, adapter, lớp tương thích, tiện ích mở rộng hay biến thể triển khai của bất kỳ dự án chuyển truyện thành ảnh nào trước đây.
 
-**Đầu ra duy nhất dự kiến gửi model ở V1 là MOSS-Image Layout Prompts (Experimental).** Logic giữ nguyên nội dung Story/Act/Beat/ShotSpec thuộc Novel2Moss và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
+**Đầu ra duy nhất gửi model ở V3 là MOSS-Image natural-language positive prompt dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/ShotSpec thuộc Novel2Moss và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
 
 ## Các phụ thuộc bị cấm
 
@@ -19,9 +19,9 @@ Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and c
 ## Sở hữu toàn bộ hợp đồng
 
 - Hợp đồng truyện: nguồn, Story, Act, Beat, Event, ShotSpec, chuyển trạng thái, revision và provenance.
-- Hợp đồng prompt: bản nháp layout, JSON gửi model, chuyển đổi bbox và validator hình học.
+- Hợp đồng prompt: ShotSpec → natural-language prompt, kiểm tra văn xuôi và semantic fidelity.
 - Hợp đồng QA: phát hiện sai lệch và điều kiện nội dung **trước export**; đối chiếu ảnh sinh ra (nếu có) là quy trình ngoài DB.
-- Hợp đồng runtime: export bundle (`layout.prompt.json`, `prompt.manifest.json`, `fidelity_report.json`), renderer adapter/generation manifest ngoài DB.
+- Hợp đồng runtime: export bundle (`natural.prompt.txt`, `prompt.manifest.json`, `fidelity_report.json`), renderer adapter/generation manifest ngoài DB.
 
 Đường dẫn artifact có thể cấu hình, nhưng mặc định phải nằm trong workspace Novel2Moss được chỉ định rõ, trừ khi người dùng chọn thư mục export ngoài. Được dùng chung endpoint render (ví dụ ComfyUI), nhưng đây phải là **tích hợp backend tùy chọn**, không phải phụ thuộc source hoặc database ứng dụng khác.
 
@@ -35,4 +35,4 @@ Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and c
 
 ## Tiêu chí nghiệm thu tính độc lập
 
-Novel2Moss phải build/test được trên máy sạch chỉ với **repository của chính nó**, các phụ thuộc công khai đã khai báo và renderer tùy chọn. Khi ngắt mọi tích hợp tùy chọn, vẫn phải có thể lập kế hoạch truyện, xuất Layout JSON, kiểm tra QA cấu trúc và chạy test local (sau khi các chức năng ứng dụng tương ứng được triển khai).
+Novel2Moss phải build/test được trên máy sạch chỉ với **repository của chính nó**, các phụ thuộc công khai đã khai báo và renderer tùy chọn. Khi ngắt mọi tích hợp tùy chọn, vẫn phải có thể lập kế hoạch truyện, xuất natural prompt UTF-8, kiểm tra QA cấu trúc và chạy test local (sau khi các chức năng ứng dụng tương ứng được triển khai).

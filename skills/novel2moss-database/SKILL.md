@@ -1,34 +1,25 @@
 ---
 name: novel2moss-database
-description: "Khởi tạo, migration, kiểm tra toàn vẹn và quản lý transaction/revision cho SQLite Novel2Moss, dùng database làm nguồn dữ liệu chuẩn."
+description: "Quản lý SQLite migration, Story/Shot revisions, catalog và natural prompt export; DB kết thúc ở prompt, không liên quan render."
 ---
 # Novel2Moss — Database Manager
 
-> Đọc `docs/novel2moss/DATABASE_CONTRACT.md`, `DATABASE_SKILL_MAPPING.md`, `DATABASE_OPERATIONS.md` và `docs/novel2moss/CONTENT_POLICY.md` trước khi tác động dữ liệu.
+> Đọc `docs/novel2moss/CONTENT_POLICY.md`, `docs/novel2moss/DATABASE_CONTRACT.md`, `docs/novel2moss/DATABASE_SKILL_MAPPING.md` và `docs/novel2moss/DATABASE_OPERATIONS.md`.
 
-## Khi nào kích hoạt
+## Khi dùng
 
-- Khởi tạo repository/database mới, nâng schema, lỗi FK/SQLite, kiểm tra integrity, quản lý revision, backup hoặc quyết định chiến lược persistence.
-- Trước khi orchestrator bắt đầu Story trong repository chưa có DB. Không bắt buộc gọi lại khi schema đã kiểm tra trong cùng phiên.
+Khởi tạo/migrate DB, kiểm tra integrity, truy vấn catalog, lưu Story/Act/Beat/Event/Shot/Continuity, lưu natural prompt revisions, QA trước export.
 
-## Quy trình bắt buộc
+## Thực thi
 
-1. Kiểm tra repository hiện tại; tuyệt đối không kết nối database từ dự án khác. Xác nhận đường dẫn SQLite, quyền truy cập và migration version. Không suy ra DB tồn tại chỉ từ tên file.
-2. Chạy `python database/src/n2m_db.py init`. Migration chỉ chạy nếu chưa có phiên bản trong `schema_migrations`; không chỉnh sửa migration cũ sau khi đã áp dụng.
-3. Kiểm tra `PRAGMA foreign_keys`, `PRAGMA integrity_check`, `PRAGMA foreign_key_check`, danh sách migration. Nếu có lỗi, báo chứng cứ; không tự phá/reset database để sửa.
-4. Gắn phiên bản schema và ID dữ liệu vào ngữ cảnh các skill còn lại. Mọi update phải dùng prepared statements, transaction và expected revision ở thao tác có thể chạy song song.
-5. Tách schema/catalog dữ liệu chung khỏi Story/Shot; đừng dùng outfit/tag của dự án khác nếu không có bước import có provenance.
-6. Hỗ trợ backup DB bằng API SQLite/`VACUUM INTO` theo điều kiện runtime; khi bảo trì phải đảm bảo không mất thay đổi WAL. Không dùng copy file DB đang ghi để coi là backup nhất quán.
-7. Nếu schema chưa đủ cho workflow, tạo migration mới + test, không phát minh cột trong câu SQL hoặc nhồi dữ liệu không cùng ý nghĩa vào trường cũ.
+1. Chỉ sử dụng repo và DB Novel2Moss, không phụ thuộc project khác.
+2. `python database/src/n2m_db.py init`: áp dụng migration 001–007 theo thứ tự. Migration 007 tạo `shot_prompts`, mở QA `PROMPT` và giữ nguyên bảng Layout cũ dạng lịch sử.
+3. `python database/src/n2m_db.py seed`: seed vocabulary và đăng ký các nguồn catalog; **không** thêm layout templates và không tải dataset ngoài mạng.
+4. `PRAGMA integrity_check; PRAGMA foreign_key_check;` và kiểm tra lịch sử revision trước/sau ghi.
+5. Lưu ShotSpec qua `n2m_workflow.py save-shot`, continuity qua `save-continuity`; lưu natural prompt text qua `save-natural-prompt` (idempotent, append-only khi đổi nội dung).
+6. Lưu báo cáo `save-qa --kind PROMPT`. Export bundle `n2m_db.py export-bundle --prompt-id ...`, hoặc cả Story `export-story-prompts --story-id ...`.
+7. DB dừng tại `natural.prompt.txt` + sidecar. Không ghi render job, seed, checkpoint, ảnh, hậu render QA.
 
-## Công cụ
+## Nguyên tắc
 
-- Mặc định Python 3.10+ stdlib SQLite, file `database/src/n2m_db.py`, `n2m_workflow.py`, `catalog_imports.py`, `collect_sources.py`, `catalog_report.py`. Có thể thay ORM, backend hoặc shell nếu giữ nguyên schema mapping, foreign key, history và test.
-- Migration hiện hành: `001_init` → `002_integrity` → `003_history_guards` → `004_catalog_enrichment` → `005_db_boundary` → `006_qa_history_guards`. Không sửa migration đã áp dụng; dùng migration mới.
-- CLI cung cấp `init`, `seed`, `stats --detailed`, collector metadata, import DeepGHS/tag CSV/JSON/costume, tạo Story/role/casting, Plan/Act/Beat/Event/Shot/Continuity/Layout/QA, `export-layout` và `export-bundle`.
-- **DB boundary V2:** không có `render_jobs`, `render_assets`; `qa_reports` chỉ nhận `STORY/SHOT/LAYOUT`. `export-bundle` ghi `layout.prompt.json`, `prompt.manifest.json`, `fidelity_report.json`; renderer là downstream file-only.
-- Migration `005_db_boundary` tự export render rows cũ ra `database/data/backups/render-export-*.json` trước khi drop, và giữ lại QA không-RENDER. Không tự xóa dữ liệu render mà không có backup.
-
-## Trả kết quả
-
-`db_path`, migration versions, integrity status, số record có bằng chứng, thao tác đã commit, ID/revision, lỗi và bước còn chưa triển khai. Không lấy dữ liệu từ một DB giả định hoặc tự sửa policy.
+Không sửa migrations cũ hoặc layout lịch sử. Không tự chuyển bbox cũ sang prompt mới để thay thế ShotSpec. Mọi dữ liệu có nguồn rõ ràng; transaction/foreign key/sha256/revision phải chính xác. Không tuyên bố `PASS` khi chỉ mới chạy kiểm tra cấu trúc.

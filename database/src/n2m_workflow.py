@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Giao diện ghi dữ liệu Story/Shot/Layout/QA cho Novel2Moss, SQLite chuẩn thư viện.
+"""Giao diện ghi dữ liệu Story/Shot/Natural Prompt/QA cho Novel2Moss, SQLite chuẩn thư viện.
 
 Không chạy LLM / network / renderer. Không tự tạo nội dung truyện; chỉ xác thực và lưu artifact.
 Dùng cùng SQLite schema với n2m_db.py. Ghi thay đổi trong transaction, append-only với revision.
@@ -12,7 +12,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from n2m_db import connect, apply_migrations, uid, js, DEFAULT_DB
+from n2m_db import connect, apply_migrations, uid, js, DEFAULT_DB, save_natural_prompt
 
 
 def load_json(path: Path):
@@ -186,64 +186,8 @@ def save_continuity(con, shot_id, obj):
     return result
 
 
-def save_layout(con,shot_id,draft):
-    story_id=story_from_shot(con,shot_id)
-    width,height=draft.get('width'),draft.get('height')
-    if not isinstance(width,int) or not isinstance(height,int) or width<=0 or height<=0 or width%16 or height%16:
-        raise ValueError('Layout width/height must be positive multiples of 16')
-    if draft.get('bbox_format') != 'xyxy' or draft.get('bbox_coord_space') != 'abs':
-        raise ValueError('Draft layout must use abs/xyxy')
-    summary=draft.get('summary',{})
-    if not isinstance(summary,dict) or not summary.get('caption'):
-        raise ValueError('Layout needs summary.caption')
-    items=draft.get('items',[])
-    if not isinstance(items,list) or not items:
-        raise ValueError('Layout needs at least one item')
-    mapped=[]
-    participants={r[0] for r in con.execute('SELECT story_role_id FROM shot_participants WHERE shot_id=?',(shot_id,))}
-    for i,item in enumerate(items,1):
-        bbox=item.get('bbox',[])
-        if len(bbox)!=4 or not all(type(v) is int for v in bbox):
-            raise ValueError('BBox must be 4 integers in xyxy')
-        x1,y1,x2,y2=bbox
-        if not (0<=x1<x2<=width and 0<=y1<y2<=height):
-            raise ValueError('BBox must be inside canvas')
-        label=item.get('label')
-        if label not in ('character','object','text') or not item.get('caption'):
-            raise ValueError('Invalid label or empty caption')
-        r=role_id(con,story_id,item.get('role_key'))
-        if label=='character' and r and r not in participants:
-            raise ValueError('Layout character role is not a shot participant')
-        text=item.get('text')
-        if label=='text' and not text:
-            raise ValueError('Text item needs text')
-        mapped.append((i,label,r,item['caption'],text,x1,y1,x2,y2))
-    body=js({'width':width,'height':height,'canvas':summary.get('canvas','single'),
-             'meta':summary.get('meta',[]),'caption':summary['caption'],'items':mapped})
-    with con:
-        prev=con.execute('SELECT * FROM shot_layouts WHERE shot_id=? ORDER BY revision DESC LIMIT 1',(shot_id,)).fetchone()
-        if prev:
-            pi=con.execute('SELECT * FROM shot_layout_items WHERE layout_id=? ORDER BY item_order',(prev['id'],)).fetchall()
-            prev_body=js({'width':prev['width'],'height':prev['height'],'canvas':prev['canvas'],
-                          'meta':json.loads(prev['meta_json']),'caption':prev['summary_caption'],
-                          'items':[(v['item_order'],v['label'],v['story_role_id'],v['caption'],v['text_content'],
-                                   v['x_min'],v['y_min'],v['x_max'],v['y_max']) for v in pi]})
-            if body==prev_body:
-                return prev['id'],prev['revision']
-        revision=prev['revision']+1 if prev else 1
-        id_=uid('layout')
-        con.execute('''INSERT INTO shot_layouts(id,shot_id,revision,width,height,canvas,meta_json,summary_caption)
-                       VALUES(?,?,?,?,?,?,?,?)''',(id_,shot_id,revision,width,height,summary.get('canvas','single'),
-                                                     js(summary.get('meta',[])),summary['caption']))
-        for row in mapped:
-            con.execute('''INSERT INTO shot_layout_items(id,layout_id,item_order,label,story_role_id,caption,
-                          text_content,x_min,y_min,x_max,y_max) VALUES(?,?,?,?,?,?,?,?,?,?,?)''',
-                        (uid('item'),id_,*row))
-        return id_,revision
-
-
 def save_qa(con,kind,subject_id,verdict,report,policy_ref=None):
-    tables={'STORY':'stories','SHOT':'shots','LAYOUT':'shot_layouts'}
+    tables={'STORY':'stories','SHOT':'shots','PROMPT':'shot_prompts'}
     table=tables[kind]
     required(con,f'SELECT id FROM {table} WHERE id=?',(subject_id,),kind)
     with con:
@@ -269,8 +213,8 @@ def main():
     q=sub.add_parser('add-event');q.add_argument('--beat-id',required=True);q.add_argument('--order',type=int,required=True);q.add_argument('--file',type=Path,required=True)
     q=sub.add_parser('save-shot');q.add_argument('--beat-id',required=True);q.add_argument('--shot-key',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--event-id')
     q=sub.add_parser('save-continuity');q.add_argument('--shot-id',required=True);q.add_argument('--file',type=Path,required=True)
-    q=sub.add_parser('save-layout');q.add_argument('--shot-id',required=True);q.add_argument('--file',type=Path,required=True)
-    q=sub.add_parser('save-qa');q.add_argument('--kind',choices=('STORY','SHOT','LAYOUT'),required=True);q.add_argument('--subject-id',required=True);q.add_argument('--verdict',choices=('PASS','WARN','BLOCKED','SKIP'),required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--policy-ref')
+    q=sub.add_parser('save-natural-prompt');q.add_argument('--shot-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--language',choices=('en','vi','zh'),default='en')
+    q=sub.add_parser('save-qa');q.add_argument('--kind',choices=('STORY','SHOT','PROMPT'),required=True);q.add_argument('--subject-id',required=True);q.add_argument('--verdict',choices=('PASS','WARN','BLOCKED','SKIP'),required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--policy-ref')
     args=p.parse_args()
     con=connect(args.db)
     try:
@@ -282,7 +226,7 @@ def main():
         elif c=='add-event':value=add_event(con,args.beat_id,args.order,load_json(args.file))
         elif c=='save-shot':value=save_shot(con,args.beat_id,args.shot_key,load_json(args.file),args.event_id)
         elif c=='save-continuity':value=save_continuity(con,args.shot_id,load_json(args.file))
-        elif c=='save-layout':value=save_layout(con,args.shot_id,load_json(args.file))
+        elif c=='save-natural-prompt':value=save_natural_prompt(con,args.shot_id,args.file.read_text(encoding='utf-8'),args.language)
         elif c=='save-qa':value=save_qa(con,args.kind,args.subject_id,args.verdict,load_json(args.file),args.policy_ref)
         print(json.dumps({'status':'PASS','result':value},ensure_ascii=False))
     finally:con.close()

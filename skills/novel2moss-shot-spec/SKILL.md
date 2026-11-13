@@ -35,12 +35,12 @@ Chỉnh sửa người dùng > ghi đè Shot đã duyệt > Beat đã duyệt > 
 
 - Gộp nhiều hành động khác thời điểm thành một cử chỉ đồng thời gây nhầm chiều tương tác.
 - Bịa nhân vật thứ hai, đổi tay/đạo cụ đang hoạt động, thay outfit khác hoặc âm thầm xóa trạng thái cơ thể tích lũy.
-- Chép ID/nhãn phân loại nội bộ của ứng dụng trực tiếp vào MOSS Layout JSON.
+- Chép ID/nhãn phân loại nội bộ của ứng dụng trực tiếp vào MOSS positive natural prompt.
 - Coi nhãn NSFW chung chung là đủ chứng cứ về tuổi hoặc điều kiện nội dung.
 
 ## Bàn giao
 
-Trả `ShotSpec` kèm các phát hiện `UNRESOLVED` hoặc `CONFLICT` nếu có. Skill này không tự phân loại điều kiện render; việc đó thuộc scope `PROMPT_DERIVATION` của policy. Tiếp theo là Continuity Check và Layout Planner.
+Trả `ShotSpec` kèm các phát hiện `UNRESOLVED` hoặc `CONFLICT` nếu có. Skill này không tự phân loại điều kiện render; việc đó thuộc scope `PROMPT_DERIVATION` của policy. Tiếp theo là Continuity Check và Natural Language Prompt.
 
 ## Shot persistence trong Database
 

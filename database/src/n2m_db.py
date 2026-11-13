@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Novel2Moss DB starter: stdlib-only SQLite migrations, curated seeds, imports, layout compiler.
+"""Novel2Moss DB: stdlib-only SQLite, catalog imports and natural prompt export.
 
 No network requests are made. Fetch external data explicitly after checking source terms.
 """
@@ -105,7 +105,7 @@ SOURCES = [
     ('deepghs', 'DeepGHS anime character index', 'dataset', 'https://huggingface.co/datasets/deepghs/character_index', 'MIT (dataset listing); character IP separately', 'https://huggingface.co/datasets/deepghs/character_index', 'Import names/core tags only; these are candidates, NOT verified original outfits. Check dataset and third-party rights.'),
     ('danbooru', 'Danbooru tag taxonomy API', 'api', 'https://danbooru.donmai.us/wiki_pages/api:tags', 'Check current site terms and individual content rights', 'https://danbooru.donmai.us/wiki_pages/help:api', 'Import tag metadata only; not images; rate-limit and use proper User-Agent for collecting.'),
     ('wikidata', 'Wikidata structured entities', 'api', 'https://www.wikidata.org/wiki/Wikidata:Data_access', 'CC0 for structured data', 'https://www.wikidata.org/wiki/Wikidata:Licensing', 'Prefer targeted SPARQL export, not bulk fuzzy search; verify identifiers.'),
-    ('moss_official', 'OpenMOSS Layout examples', 'documentation', 'https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md', 'Code repository rights may differ from generated images', '', 'Read official spec as reference, use original layout templates in this project.'),
+    ('moss_official', 'OpenMOSS Natural Caption Prompt Guide', 'documentation', 'https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md', 'Code repository rights may differ from generated images', '', 'Read official guidance for natural-language captions; this is documentation, not an imported dataset.'),
     ('posescript', 'PoseScript pose descriptions', 'dataset', 'https://github.com/naver/posescript', 'CC BY-NC-SA 4.0 dataset', 'https://github.com/naver/posescript/blob/main/LICENSE', 'Optional manual import only; non-commercial/SA and AMASS dependencies.'),
     ('dbr_e621_lists', 'Danbooru tag list archive (DraconicDragon; V2 uses Danbooru namespace)', 'dataset', 'https://github.com/DraconicDragon/dbr-e621-lists-archive', 'Repository license plus upstream Danbooru terms', 'https://github.com/DraconicDragon/dbr-e621-lists-archive/blob/main/LICENSE', 'V2 imports only selected Danbooru tags; no e621 or merged list.'),
     ('ai_pose_gallery', 'AI Pose Gallery metadata', 'dataset', 'https://github.com/anhao/ai-pose-gallery-zh', 'Code MIT; image/data rights may differ per asset', 'https://github.com/anhao/ai-pose-gallery-zh', 'Import JSON metadata only. Do not download or redistribute images before checking per-asset terms.'),
@@ -178,28 +178,6 @@ VOCAB = {
   ],
 }
 
-TEMPLATES = [
-    ('solo_center', 1, {'width':1024,'height':1024,'bbox_coord_space':'abs','bbox_format':'xyxy',
-                       'summary':{'meta':['anime illustration'],'canvas':'single','caption':'A character in a softly lit scene.'},
-                       'items':[{'label':'character','caption':'One character, full body, centered.','bbox':[260,60,764,970]}]}),
-    ('duo_side_by_side', 2, {'width':1024,'height':1024,'bbox_coord_space':'abs','bbox_format':'xyxy',
-                       'summary':{'meta':['anime illustration'],'canvas':'single','caption':'Two characters standing side by side.'},
-                       'items':[{'label':'character','caption':'A character on the left.','bbox':[80,96,560,960]},
-                                {'label':'character','caption':'A character on the right.','bbox':[470,96,950,960]}]}),
-    ('duo_interaction', 2, {'width':1024,'height':1024,'bbox_coord_space':'abs','bbox_format':'xyxy',
-                       'summary':{'meta':['anime illustration'],'canvas':'single','caption':'Two characters interact in a room.'},
-                       'items':[{'label':'character','caption':'Actor stands on the left and reaches toward the other person.','bbox':[110,100,625,950]},
-                                {'label':'character','caption':'Recipient is seated on the right.','bbox':[510,270,955,970]}]}),
-    ('solo_wide_1536x1024', 1, {'width':1536,'height':1024,'bbox_coord_space':'abs','bbox_format':'xyxy',
-                       'summary':{'meta':['anime illustration'],'canvas':'single','caption':'A character in a wide landscape scene.'},
-                       'items':[{'label':'character','caption':'One character, full body, centered in a wide frame.','bbox':[500,70,1036,960]}]}),
-    ('duo_wide_1536x1024', 2, {'width':1536,'height':1024,'bbox_coord_space':'abs','bbox_format':'xyxy',
-                       'summary':{'meta':['anime illustration'],'canvas':'single','caption':'Two characters share a wide landscape frame.'},
-                       'items':[{'label':'character','caption':'A character on the left side of a wide frame.','bbox':[110,90,650,970]},
-                                {'label':'character','caption':'A character on the right side of a wide frame.','bbox':[820,90,1380,970]}]}),
-]
-
-
 def seed(con):
     for s in SOURCES:
         register_source(con, *s)
@@ -209,13 +187,8 @@ def seed(con):
                 (id,category,code,label_en,label_vi,description_en,source_record_id)
                 VALUES(?,?,?,?,?,?,NULL)''',
                 (f'vocab:{category.lower()}:{code}',category,code,en,vi,description))
-    for name, count, template in TEMPLATES:
-        con.execute('''INSERT OR IGNORE INTO layout_templates
-          (id,name,participant_count,scene_tags_json,draft_json,verified)
-          VALUES(?,?,?,?,?,1)''',
-          (f'layout:{name}',name,count,js([]),js(template)))
     con.commit()
-    print(f'Seeded {sum(map(len, VOCAB.values()))} vocabulary items + {len(TEMPLATES)} templates + {len(SOURCES)} sources (idempotent).')
+    print(f'Seeded {sum(map(len, VOCAB.values()))} vocabulary items + {len(SOURCES)} source registrations (idempotent).')
 
 
 def track_source_record(con, source_id, external_key, entity_kind, payload, run_id):
@@ -536,87 +509,151 @@ def bind_role(con,story_id,role_key,character_id,outfit_id=None):
     return newrev
 
 
-def compile_layout(con,layout_id):
-    layout=con.execute('SELECT * FROM shot_layouts WHERE id=?',(layout_id,)).fetchone()
-    if not layout:
-        raise ValueError('Layout not found')
-    width,height=layout['width'],layout['height']
-    elements=con.execute('SELECT * FROM shot_layout_items WHERE layout_id=? ORDER BY item_order',(layout_id,)).fetchall()
-    if not elements:
-        raise ValueError('A MOSS layout must have at least one item')
-    result={'summary':{'meta':json.loads(layout['meta_json']), 'canvas':layout['canvas'],
-                       'caption':layout['summary_caption']},'items':[],
-            'bbox_coord_space':'abs_centralized','bbox_format':'yxyx'}
-    for item in elements:
-        x1,y1,x2,y2=(item['x_min'],item['y_min'],item['x_max'],item['y_max'])
-        if not (0<=x1<x2<=width and 0<=y1<y2<=height):
-            raise ValueError(f'Invalid item bbox for {item["id"]}: out of canvas')
-        converted=[y1-height//2,x1-width//2,y2-height//2,x2-width//2]
-        obj={'label':item['label'],'caption':item['caption'],'bbox':converted}
-        if item['label']=='text':
-            obj['text']=item['text_content']
-        result['items'].append(obj)
-    body=js(result)
-    digest=sha(body)
-    con.execute('''INSERT OR IGNORE INTO layout_exports(id,layout_id,compiler_version,prompt_json,prompt_sha256)
-                  VALUES(?,?,?,?,?)''',(uid('export'),layout_id,'n2m-layout-db-v1',body,digest))
-    con.commit()
-    return result,digest
+def validate_natural_prompt(prompt: str, language: str = 'en') -> str:
+    """Validate plain prompt text without rewriting its meaning."""
+    if not isinstance(prompt, str):
+        raise ValueError('Natural prompt must be UTF-8 text')
+    if language not in ('en', 'vi', 'zh'):
+        raise ValueError('Unsupported prompt language (en/vi/zh)')
+    text = prompt.replace('\r\n', '\n').replace('\r', '\n').strip()
+    if not text:
+        raise ValueError('Natural prompt must not be empty')
+    if text.startswith('```') or text.endswith('```'):
+        raise ValueError('Natural prompt must not be a fenced code block')
+    if text.startswith('{'):
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError:
+            pass
+        else:
+            if isinstance(payload, dict):
+                raise ValueError('Positive prompt must be plain prose, not a JSON object')
+    if '\x00' in text:
+        raise ValueError('Natural prompt contains a NUL character')
+    return text
 
 
-def export_bundle(con, layout_id, out_dir: Path):
-    """Write the V2 prompt artifact bundle; no renderer/DB dependency downstream."""
-    layout = con.execute('SELECT * FROM shot_layouts WHERE id=?', (layout_id,)).fetchone()
-    if not layout:
-        raise ValueError('Layout not found')
-    shot = con.execute('SELECT * FROM shots WHERE id=?', (layout['shot_id'],)).fetchone()
-    beat = con.execute('SELECT * FROM beats WHERE id=?', (shot['beat_id'],)).fetchone() if shot else None
-    act = con.execute('SELECT * FROM acts WHERE id=?', (beat['act_id'],)).fetchone() if beat else None
-    prompt, digest = compile_layout(con, layout_id)
-    export = con.execute('''SELECT id FROM layout_exports
-                            WHERE layout_id=? AND prompt_sha256=? ORDER BY created_at DESC LIMIT 1''',
-                         (layout_id, digest)).fetchone()
+def save_natural_prompt(con, shot_id: str, prompt_text: str, language: str = 'en'):
+    text = validate_natural_prompt(prompt_text, language)
+    with con:
+        shot = con.execute('SELECT shot_spec_json FROM shots WHERE id=?', (shot_id,)).fetchone()
+        if shot is None:
+            raise ValueError(f'Shot not found: {shot_id}')
+        spec_hash = sha(shot['shot_spec_json'])
+        previous = con.execute('''SELECT * FROM shot_prompts WHERE shot_id=?
+                                  ORDER BY revision DESC LIMIT 1''', (shot_id,)).fetchone()
+        if previous and previous['prompt_text'] == text and previous['language'] == language:
+            return previous['id'], previous['revision']
+        revision = previous['revision'] + 1 if previous else 1
+        prompt_id = uid('prompt')
+        con.execute('''INSERT INTO shot_prompts(id,shot_id,revision,language,prompt_text,
+                         prompt_sha256,shot_spec_sha256,supersedes_prompt_id)
+                         VALUES(?,?,?,?,?,?,?,?)''',
+                    (prompt_id,shot_id,revision,language,text,sha(text),spec_hash,
+                     previous['id'] if previous else None))
+    return prompt_id, revision
+
+
+def _prompt_bundle_data(con, prompt_id: str):
+    prompt = con.execute('''SELECT p.*,s.shot_key,s.revision AS shot_revision,s.shot_spec_json,
+                          s.beat_id,b.beat_order,a.id AS act_id,a.act_order,a.story_id
+                          FROM shot_prompts p JOIN shots s ON s.id=p.shot_id
+                          JOIN beats b ON b.id=s.beat_id JOIN acts a ON a.id=b.act_id
+                          WHERE p.id=?''', (prompt_id,)).fetchone()
+    if prompt is None:
+        raise ValueError(f'Natural prompt not found: {prompt_id}')
+    if sha(prompt['shot_spec_json']) != prompt['shot_spec_sha256']:
+        raise ValueError('Prompt source ShotSpec checksum mismatch')
+    if sha(prompt['prompt_text']) != prompt['prompt_sha256']:
+        raise ValueError('Natural prompt checksum mismatch')
     qa = con.execute('''SELECT verdict,policy_ref,report_json,created_at FROM qa_reports
-                        WHERE subject_kind='LAYOUT' AND subject_id=?
-                        ORDER BY created_at DESC LIMIT 1''', (layout_id,)).fetchone()
+                        WHERE subject_kind='PROMPT' AND subject_id=?
+                        ORDER BY created_at DESC,id DESC LIMIT 1''', (prompt_id,)).fetchone()
+    return prompt, qa
+
+
+def export_bundle(con, prompt_id: str, out_dir: Path):
+    """Export natural text and traceability sidecars, no renderer dependency."""
+    prompt, qa = _prompt_bundle_data(con, prompt_id)
+    if qa and qa['verdict'] == 'BLOCKED':
+        raise ValueError('Blocked QA for natural prompt; export refused')
     out_dir = out_dir.expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    prompt_path = out_dir / 'layout.prompt.json'
+    text_path = out_dir / 'natural.prompt.txt'
     manifest_path = out_dir / 'prompt.manifest.json'
-    fidelity_path = out_dir / 'fidelity_report.json'
-    prompt_path.write_text(js(prompt), encoding='utf-8')
+    qa_path = out_dir / 'fidelity_report.json'
+    text_path.write_text(prompt['prompt_text'], encoding='utf-8', newline='')
     manifest = {
-        'export_id': export['id'] if export else None,
-        'story_id': act['story_id'] if act else None,
-        'shot_id': layout['shot_id'],
-        'shot_key': shot['shot_key'] if shot else None,
-        'shot_revision': shot['revision'] if shot else None,
-        'layout_id': layout_id,
-        'layout_revision': layout['revision'],
-        'width': layout['width'],
-        'height': layout['height'],
-        'compiler_version': 'n2m-layout-db-v1',
-        'prompt_sha256': digest,
-        'prompt_file': 'layout.prompt.json',
+        'format': 'moss-natural-v1',
+        'prompt_id': prompt_id, 'story_id': prompt['story_id'],
+        'shot_id': prompt['shot_id'], 'shot_key': prompt['shot_key'],
+        'shot_revision': prompt['shot_revision'], 'prompt_revision': prompt['revision'],
+        'language': prompt['language'], 'shot_spec_sha256': prompt['shot_spec_sha256'],
+        'prompt_sha256': prompt['prompt_sha256'], 'prompt_file': 'natural.prompt.txt',
         'fidelity_report_file': 'fidelity_report.json',
-        'generated_at': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        'exported_at': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
     }
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
-                             encoding='utf-8')
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     if qa:
-        fidelity = {'subject_kind': 'LAYOUT', 'subject_id': layout_id,
+        fidelity = {'subject_kind': 'PROMPT', 'subject_id': prompt_id,
                     'verdict': qa['verdict'], 'policy_ref': qa['policy_ref'],
-                    'report': json.loads(qa['report_json']),
-                    'created_at': qa['created_at']}
+                    'report': json.loads(qa['report_json']), 'created_at': qa['created_at']}
     else:
-        fidelity = {'subject_kind': 'LAYOUT', 'subject_id': layout_id,
-                    'verdict': 'SKIP',
-                    'reason': 'No pre-export layout QA recorded'}
-    fidelity_path.write_text(json.dumps(fidelity, ensure_ascii=False, indent=2) + '\n',
-                             encoding='utf-8')
-    return {'out_dir': str(out_dir), 'prompt': str(prompt_path),
-            'manifest': str(manifest_path), 'fidelity_report': str(fidelity_path),
-            'prompt_sha256': digest}
+        fidelity = {'subject_kind': 'PROMPT', 'subject_id': prompt_id,
+                    'verdict': 'SKIP', 'reason': 'No pre-export natural prompt QA recorded'}
+    qa_path.write_text(json.dumps(fidelity, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    return {'out_dir': str(out_dir), 'prompt': str(text_path), 'manifest': str(manifest_path),
+            'fidelity_report': str(qa_path), 'prompt_sha256': prompt['prompt_sha256']}
+
+
+def export_story_prompts(con, story_id: str, out_dir: Path):
+    """Export latest Shot revisions, one natural prompt per Shot, grouped by Act.
+
+    All prompts must exist before writing: no silently truncated Story export.
+    """
+    if not con.execute('SELECT 1 FROM stories WHERE id=?', (story_id,)).fetchone():
+        raise ValueError(f'Story not found: {story_id}')
+    shots = con.execute('''SELECT s.*,a.id AS act_id,a.act_order,b.beat_order
+        FROM shots s JOIN beats b ON b.id=s.beat_id JOIN acts a ON a.id=b.act_id
+        WHERE a.story_id=? AND s.revision=(SELECT max(x.revision) FROM shots x
+                 WHERE x.beat_id=s.beat_id AND x.shot_key=s.shot_key)
+        ORDER BY a.act_order,b.beat_order,s.shot_key''', (story_id,)).fetchall()
+    if not shots:
+        raise ValueError('Story has no Shots to export')
+    planned = []
+    for shot in shots:
+        p = con.execute('SELECT id FROM shot_prompts WHERE shot_id=? ORDER BY revision DESC LIMIT 1',
+                        (shot['id'],)).fetchone()
+        if not p:
+            raise ValueError(f'Missing natural prompt for current Shot {shot["shot_key"]} ({shot["id"]})')
+        prompt, qa = _prompt_bundle_data(con, p['id'])
+        if qa and qa['verdict'] == 'BLOCKED':
+            raise ValueError(f'Blocked QA for current Shot {shot["shot_key"]}')
+        planned.append((shot, prompt))
+    out_dir = out_dir.expanduser().resolve()
+    acts = {}
+    all_lines = []
+    for shot, prompt in planned:
+        act_key = f'A{shot["act_order"]:02d}'
+        shot_dir = out_dir / 'bundles' / act_key / f'B{shot["beat_order"]:02d}' / shot['id'] / str(prompt['revision'])
+        export_bundle(con, prompt['id'], shot_dir)
+        shot_spec = json.loads(shot['shot_spec_json'])
+        row = {'shot_key': shot['shot_key'], 'page': shot_spec.get('page'),
+               'act': act_key, 'beat': shot['beat_order'],
+               'camera': shot_spec.get('camera'), 'focus': shot_spec.get('focus'),
+               'bundle_dir': str(shot_dir.relative_to(out_dir)).replace('\\','/'),
+               'prompt_sha256': prompt['prompt_sha256'], 'prompt': prompt['prompt_text']}
+        line = json.dumps(row, ensure_ascii=False, separators=(',', ':'))
+        all_lines.append(line)
+        acts.setdefault(act_key, []).append(line)
+    def write_lines(path: Path, lines):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('\n\n'.join(lines) + '\n', encoding='utf-8', newline='')
+    write_lines(out_dir / 'prompts.all.jsonl', all_lines)
+    for name, lines in acts.items():
+        write_lines(out_dir / 'prompts' / f'{name}.jsonl', lines)
+    return {'story_id': story_id, 'shots': len(planned), 'acts': len(acts),
+            'output': str(out_dir / 'prompts.all.jsonl')}
 
 
 def stats(con):
@@ -625,7 +662,7 @@ def stats(con):
            'catalog_assets','catalog_tag_relations','catalog_tag_taxonomy','catalog_entity_links',
            'catalog_captions','pose_references','pose_reference_views','layout_templates',
            'stories','story_roles','story_castings','acts','beats','story_events','shots',
-           'shot_layouts','layout_exports','qa_reports']
+           'shot_layouts','layout_exports','shot_prompts','qa_reports']
     return {name:con.execute(f'SELECT count(*) FROM {name}').fetchone()[0] for name in names}
 
 
@@ -725,8 +762,8 @@ def main():
     a=sub.add_parser('create-story');a.add_argument('--title',required=True);a.add_argument('--mode',choices=('BLIND','NON_BLIND'),required=True);a.add_argument('--text-file',type=Path,required=True);a.add_argument('--label',action='append',default=[])
     a=sub.add_parser('add-role');a.add_argument('--story-id',required=True);a.add_argument('--key',required=True);a.add_argument('--description',default='')
     a=sub.add_parser('bind-role');a.add_argument('--story-id',required=True);a.add_argument('--key',required=True);a.add_argument('--character-id',required=True);a.add_argument('--outfit-id')
-    a=sub.add_parser('export-layout');a.add_argument('--layout-id',required=True);a.add_argument('--out',type=Path)
-    a=sub.add_parser('export-bundle');a.add_argument('--layout-id',required=True);a.add_argument('--out-dir',type=Path,required=True)
+    a=sub.add_parser('export-bundle');a.add_argument('--prompt-id',required=True);a.add_argument('--out-dir',type=Path,required=True)
+    a=sub.add_parser('export-story-prompts');a.add_argument('--story-id',required=True);a.add_argument('--out-dir',type=Path,required=True)
     a=sub.add_parser('search-characters');a.add_argument('query');a.add_argument('--limit',type=int,default=10)
     a=sub.add_parser('search-catalog');a.add_argument('kind',choices=('tag','character','universe','pose','outfit','action'));a.add_argument('query');a.add_argument('--namespace',choices=('danbooru','e621'));a.add_argument('--limit',type=int,default=20)
     args=p.parse_args()
@@ -770,15 +807,11 @@ def main():
             print(create_story(con,args.title,args.mode,args.text_file.read_text(encoding='utf-8'),args.label))
         elif args.action=='add-role':print(add_role(con,args.story_id,args.key,args.description))
         elif args.action=='bind-role':print('New story revision:',bind_role(con,args.story_id,args.key,args.character_id,args.outfit_id))
-        elif args.action=='export-layout':
-            prompt,digest=compile_layout(con,args.layout_id)
-            if args.out:
-                args.out.parent.mkdir(parents=True,exist_ok=True)
-                args.out.write_text(json.dumps(prompt,ensure_ascii=False,indent=2),encoding='utf-8')
-                print(f'Written: {args.out}, sha256: {digest}')
-            else:print(json.dumps(prompt,indent=2,ensure_ascii=False))
         elif args.action=='export-bundle':
-            print(json.dumps(export_bundle(con,args.layout_id,args.out_dir),
+            print(json.dumps(export_bundle(con,args.prompt_id,args.out_dir),
+                             indent=2,ensure_ascii=False))
+        elif args.action=='export-story-prompts':
+            print(json.dumps(export_story_prompts(con,args.story_id,args.out_dir),
                              indent=2,ensure_ascii=False))
         elif args.action=='search-characters':
             for row in con.execute('''SELECT c.id,c.display_name,c.slug,u.display_name AS universe

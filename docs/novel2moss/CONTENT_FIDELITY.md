@@ -12,7 +12,7 @@
 
 ## Những yếu tố ngữ nghĩa không được tự ý thay đổi
 
-Qua mọi phép chuyển `Story → Act → Beat → ShotSpec → Layout`, theo dõi:
+Qua mọi phép chuyển `Story → Act → Beat → ShotSpec → Natural Prompt`, theo dõi:
 
 - Thứ tự và ID sự kiện; người thực hiện → hành động → người nhận; số lượng, danh tính người tham gia; ai chủ động và ai phản ứng.
 - Trạng thái cơ thể, trang phục, màu từng món đồ, tư thế, hướng nhìn, biểu cảm, quyền sở hữu vật thể và quan hệ không gian của từng nhân vật.
@@ -43,14 +43,14 @@ Mỗi ShotSpec được duyệt **nên có**:
 - `participants[]`: `character_id` ổn định, thông tin tuổi nếu đã xác nhận, vai trò và định danh riêng.
 - `interaction`: `actor_id`, `action`, `target_id`, `recipient_reaction`, `event_id`.
 - `continuity`: `before`, `delta`, `after`, `cut` và nguồn xác nhận.
-- `fidelity_decisions`: ánh xạ và phần cố ý không đưa vào Layout.
+- `fidelity_decisions`: ánh xạ và phần cố ý không đưa vào natural prompt.
 
-Lưu trong sidecar như `shot_spec.json`, `generation_manifest.json`; không đưa các trường của ứng dụng vào MOSS Layout JSON public.
+Lưu trong sidecar như `shot_spec.json`, `prompt.manifest.json`; không đưa các trường của ứng dụng vào positive prompt dạng text.
 
 ## Các dạng sai khác
 
 - `PRESERVED`: Giữ nguyên ý nghĩa; chỉ thay cách diễn đạt.
-- `VISUALIZED`: Ý nghĩa được thể hiện bằng hình ảnh; chỉ rõ vị trí (`summary.caption`, caption của item, bbox).
+- `VISUALIZED`: Ý nghĩa được thể hiện bằng hình ảnh; chỉ rõ câu/cụm mô tả trong `natural.prompt.txt`.
 - `NON_VISUAL_SIDECAR`: Metadata có ý nghĩa được giữ trong sidecar, cố ý không đưa vào prompt ảnh.
 - `UNRESOLVED`: Chưa đủ bằng chứng; không được tự tạo dữ kiện.
 - `CONFLICT`: Các yêu cầu đầu nguồn mâu thuẫn.

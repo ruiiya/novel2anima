@@ -9,7 +9,7 @@ Nguồn được khai báo trong `source_registry` và manifest `database/collec
 | DeepGHS Character Index | **Giữ — P0** | Series, character, core tags, post count | `character-profile`, `blind-cast`, `shot-spec` |
 | DraconicDragon Danbooru CSV | **Giữ có chọn lọc — P1** | Chỉ Danbooru tag gắn với `character_tags` đã import + aliases | `catalog-ingest`, `character-profile` |
 | AI Pose Gallery outfit JSON | **Giữ có chọn lọc — P1** | `costume-zh.json`, `costume-anime-zh.json`: tên/tags/keywords | `character-profile`, `shot-spec`, `continuity` |
-| AI Pose Gallery pose JSON | **Pilot sau — P1** | Chỉ sau khi caption tiếng Anh đã review; hiện `enabled:false` | `shot-spec`, `layout-planner` |
+| AI Pose Gallery pose JSON | **Pilot sau — P1** | Chỉ sau khi caption tiếng Anh đã review; hiện `enabled:false` | `shot-spec`, `natural-language-prompt` |
 | Danbooru API aliases/implications | **P1, thủ công** | Export có sẵn; không bypass Cloudflare | `catalog-ingest` |
 | Wikidata | **Để sau — P2** | ID/alias/series khi cần | `character-profile` |
 | PoseScript | **Để sau — P2** | Caption pose nếu pose gallery chưa đủ | `shot-spec` |
@@ -22,7 +22,7 @@ Nguồn được khai báo trong `source_registry` và manifest `database/collec
 
 ## Thứ tự import V2
 
-1. `seed` vocabulary/layout template/source registry.
+1. `seed` vocabulary/source registry.
 2. DeepGHS `blue_archive.md` → characters/core tags `UNVERIFIED`.
 3. Danbooru CSV với `--from-character-core-tags` → canonical tags + aliases; không e621.
 4. Outfit generic JSON → `outfits/outfit_parts/catalog_captions`, `GENERIC/UNVERIFIED`, không ảnh.

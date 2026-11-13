@@ -1,6 +1,6 @@
 ---
 name: novel2moss-catalog-ingest
-description: "Nhập dữ liệu catalog nhân vật, universe, alias, tag, trang phục, pose, action và layout template vào SQLite với provenance, license và idempotency."
+description: "Nhập dữ liệu catalog nhân vật, universe, alias, tag, trang phục, pose, action vào SQLite với provenance, license và idempotency."
 ---
 # Novel2Moss — Catalog Ingestion
 
@@ -8,12 +8,12 @@ description: "Nhập dữ liệu catalog nhân vật, universe, alias, tag, tran
 
 ## Phạm vi
 
-Phục vụ dữ liệu tái sử dụng độc lập Story: nhân vật, trang phục có text/tags, từ vựng pose/action/expression/camera/spatial, layout template và metadata nguồn. Skill này **không** tạo truyện, không suy diễn canon không có chứng cứ, không thu thập ảnh/portrait/skeleton/render state và không render.
+Phục vụ dữ liệu tái sử dụng độc lập Story: nhân vật, trang phục có text/tags, từ vựng pose/action/expression/camera/spatial và metadata nguồn. Skill này **không** tạo truyện, không suy diễn canon không có chứng cứ, không thu thập ảnh/portrait/skeleton/render state và không render.
 
 ## Quy trình
 
-1. Xác định **consumer** trước khi import: skill nào đọc, bảng/cột nào, bước Story/Shot/Layout nào bị ảnh hưởng. Manifest phải có `consumer_skill`, `target_fields`, `used_in_step`; nếu thiếu thì không import.
-2. Chỉ chọn nguồn có dữ liệu thực sự thay đổi quyết định Story/Shot/Layout. V2 giữ DeepGHS, Danbooru tag **lọc theo core tags**, và outfit generic có text/tags; loại e621, portrait, COCO, OpenPose, Grounded SAM, skeleton và render state.
+1. Xác định **consumer** trước khi import: skill nào đọc, bảng/cột nào, bước Story/Shot/Natural Prompt nào bị ảnh hưởng. Manifest phải có `consumer_skill`, `target_fields`, `used_in_step`; nếu thiếu thì không import.
+2. Chỉ chọn nguồn có dữ liệu thực sự thay đổi quyết định Story/Shot/Natural Prompt. V2 giữ DeepGHS, Danbooru tag **lọc theo core tags**, và outfit generic có text/tags; loại e621, portrait, COCO, OpenPose, Grounded SAM, skeleton và render state.
 3. Đăng ký nguồn trong `source_registry` (URL, loại, license/terms tại thời điểm kiểm tra). Tạo `import_runs`, lưu payload gốc, `external_key`, SHA256 và `source_record_versions`; ghi số đã nhập/đã có/lỗi.
 4. Bản ghi trùng khóa `(source_id, external_key)` phải upsert có kiểm soát và lưu bản nguồn mới nếu hash thay đổi. Không tự merge hai nhân vật khác nhau do gần giống tên; alias phải có nguồn.
 5. Phân biệt **character identity** và **outfit**. DeepGHS/Danbooru chủ yếu là tag ứng viên, không chứng minh origin outfit, màu trang phục hoặc tuổi. Chỉ gắn `VERIFIED` theo chứng cứ rõ. Outfit generic phải `GENERIC/UNVERIFIED`, `character_id=NULL`.

@@ -1,89 +1,54 @@
 ---
 name: novel2moss-natural-language-prompt
-description: "Chuyển layout.prompt.json đã export của Novel2Moss thành một prompt ngôn ngữ tự nhiên cho backend chỉ nhận text; giữ nguyên sự kiện, vai trò và trang phục, không sửa layout canonical."
+description: "Skill canonical: sinh natural-language positive prompt trực tiếp từ ShotSpec, character catalog, casting và continuity cho MOSS-Image; không đi qua JSON Layout/bbox."
 ---
-# Novel2Moss — Chuyển Layout sang prompt ngôn ngữ tự nhiên
+# Novel2Moss — Natural-Language Prompt (canonical)
 
-> **Policy nội dung bắt buộc:** Đọc `docs/novel2moss/CONTENT_POLICY.md` trước khi xử lý. Mọi quyết định nội dung tuân theo scope và phiên bản tại đó; skill này không tự đặt chính sách khác.
+> **Policy:** Luôn đọc `docs/novel2moss/CONTENT_POLICY.md`. Quy tắc nội dung do policy trung tâm quyết định; skill này chỉ điều phối tính chính xác và định dạng.
 
-## Vai trò
+## Khi sử dụng
 
-Đây là **projection dẫn xuất**, không phải định dạng canonical. `layout.prompt.json` vẫn là source of truth; file NL chỉ là bản đọc được cho renderer text-only (API không nhận bbox) hoặc để người kiểm tra đọc nhanh. Không thay `render.prompt.json`, không đổi schema DB, không đổi nội dung truyện.
-
-Chỉ chạy trên bundle đã export và đã có QA trước export. Nếu `fidelity_report.json` là `BLOCKED`, không chuyển.
-
-## Vị trí pipeline
-
-```text
-ShotSpec → Layout draft → layout.prompt.json (canonical)
-         → QA → export-bundle
-         → Natural Language Converter (skill này) → natural.prompt.txt
-         → renderer chỉ nhận text
-```
+Sau khi Story/ShotSpec và Continuity đã có phiên bản rõ ràng, trước QA và export prompt. Áp dụng cho cả Blind và Non-Blind. Đây là **prompt engine duy nhất** của Novel2Moss, không phải bước chuyển tiếp từ Layout.
 
 ## Đầu vào
 
-- `layout.prompt.json`: `summary.caption`, `summary.meta`, `items[]` (`label`, `caption`, `bbox`, `text`).
-- Tùy chọn: `prompt.manifest.json` (hash/kích thước), `fidelity_report.json`, `shot_spec.json` để đối chiếu actor/target.
-- Không đọc SQLite, không yêu cầu DB/CLI còn sống.
+- ShotSpec/revision đã lưu (`shots`, `shot_participants`, `shot_interactions`), Story Event, vai trò actor/target.
+- Profile nhân vật, outfit và casting **đang có hiệu lực tại revision**; nếu Blind chưa cast thì dùng mô tả vai trò có căn cứ, không tự bịa danh tính.
+- `continuity_snapshots` của Shot, catalog `vocabulary`/`catalog_captions`/tag đã được review.
+- Style, camera, scene, visible-text và các ràng buộc đã chốt.
+- `docs/novel2moss/MOSS_NATURAL_PROMPT.md` là hợp đồng định dạng.
 
-## Đầu ra
+## Các bước bắt buộc
 
-```text
-natural.prompt.txt        # một đoạn prose, tiếng Anh
-natural.prompt.json       # sidecar: status, hash nguồn/đích, danh sách nhân vật, text item, lỗi
+1. **Đối chiếu nguồn:** Tải đúng revision, ghi lại source_refs và các điểm chưa rõ. Không tự gán thông tin thiếu trong catalog thành canon.
+2. **Lập visual checklist nội bộ:** Số người, identity, outfit, chủ thể hành động, target, tay/cử chỉ, phản ứng, bố cục tương đối, background, camera, light và chữ thực sự nhìn thấy. Checklist chỉ phục vụ QA, không chèn vào positive prompt.
+3. **Viết một đoạn mô tả cảnh hoàn chỉnh** bằng tiếng Anh mặc định. Bắt đầu bằng medium/cảnh/hành động chính, sau đó định danh và mô tả từng nhân vật, tương tác và vị trí trái/phải; kết thúc với các chi tiết không gian/camera/ánh sáng cần thiết. Không có thứ tự cứng nếu thứ tự khác làm câu tự nhiên và rõ hơn.
+4. **Không kể chuyện thay vì tả hình:** Không viết nguyên diễn biến nhiều bước, lời thoại không hiện trên ảnh, động cơ tâm lý không thể nhìn thấy, hay lệnh kiểu “create/generate”. Không bỏ trạng thái hay vật thể quan trọng đang xuất hiện trong frame.
+5. **Không dùng Layout:** Không có `summary`, `items`, bbox, tọa độ pixel, JSON wrapper, Danbooru tag chain hay lời dẫn `Prompt:`. Câu như “on the left” là mô tả trực quan, không phải Layout JSON.
+6. **QA:** Đọc lại ShotSpec và prompt. Gọi `novel2moss-fidelity-qa`; chỉ ghi `PASS` khi thực sự đã đối chiếu; không coi validator cấu trúc là bằng chứng đủ.
+7. **Lưu bản nháp được duyệt:** Ghi file UTF-8 `natural.prompt.txt`, chạy `n2m_workflow.py save-natural-prompt --shot-id SHOT_ID --file natural.prompt.txt`; lưu prompt ID/revision rồi `save-qa --kind PROMPT`.
+8. **Bàn giao:** `n2m_db.py export-bundle --prompt-id PROMPT_ID --out-dir ...`; export cả Story qua `export-story-prompts` khi đã có prompt cho mọi Shot hiện hành.
+
+## Blind và Non-Blind
+
+- **Blind:** role `LEAD`/`PARTNER_A` ổn định ở Story/Shot; nếu chưa có ngoại hình cụ thể, chỉ mô tả phần đã biết. Có thể yêu cầu bổ sung chi tiết ngoại hình trực quan trước khi sinh prompt chất lượng cao, nhưng không tự chọn franchise/canon.
+- **Non-Blind:** kiểm tra nhân vật, universe, identity tags, outfit **đã xác minh** và trạng thái; tránh chỉ dùng tên ngắn khó phân biệt.
+- Thay casting/outfit cần tạo prompt revision mới và QA lại, không tái sử dụng mô tả cũ làm canon.
+
+## Lệnh mẫu
+
+```powershell
+python tools/novel2moss/validate_natural_prompt.py drafts/S01.txt
+python database/src/n2m_workflow.py save-natural-prompt --shot-id SHOT_ID --file drafts/S01.txt
+python database/src/n2m_workflow.py save-qa --kind PROMPT --subject-id PROMPT_ID --verdict PASS --file reports/S01.qa.json
+python database/src/n2m_db.py export-bundle --prompt-id PROMPT_ID --out-dir exports/STORY_ID/S01/1
 ```
 
-Ngoài bundle, xuất bản gộp để paste/render hàng loạt: `prompts.all.nl.txt` (toàn bộ Shot hiện hành) và `prompts_nl/<act_id>.txt` (mỗi Act một file), **mỗi prompt cách nhau đúng một dòng trống**, không header/metadata, kết thúc bằng một `\n`.
+## Điều không được làm
 
-Không ghi đè `layout.prompt.json` hay lịch sử export. Cùng input phải cho cùng output (byte-identical).
+- Không tự động flatten/convert prompt từ JSON Layout rồi coi đó là source of truth.
+- Không gửi sidecar, JSON metadata hoặc lệnh cho agent vào positive prompt.
+- Không dùng LLM để bịa danh tính, đảo actor/target, xóa continuity hay biến cảnh thành storyboard/grid nếu Shot yêu cầu một ảnh.
+- Không đưa render job/ảnh/model state vào Novel2Moss DB.
 
-## Quy trình
-
-1. Kiểm tra bundle: `layout.prompt.json` đúng schema, có `summary.caption` và `items` không rỗng.
-2. Chạy flattener tất định:
-
-```bash
-python tools/novel2moss/flatten_layout.py \
-  exports/<story_id>/<shot_key>/<rev>/layout.prompt.json \
-  --output exports/<story_id>/<shot_key>/<rev>/natural.prompt.txt \
-  --sidecar exports/<story_id>/<shot_key>/<rev>/natural.prompt.json
-```
-
-3. Nếu cần câu mượt hơn, chỉ được sửa **ngữ pháp**: nối câu, bỏ đại từ mơ hồ, thay bằng tên. Cấm đổi danh từ, động từ, màu, trạng thái, số người, chiều actor→target.
-4. Đọc lại output, đối chiếu danh sách nhân vật và `text` item; nếu sai, sửa layout rồi export revision mới — không vá tay output.
-
-## Luật lọc bắt buộc
-
-Flattener và người viết phải bỏ khỏi prose:
-
-1. Negative prompt: `no panels`, `no split screen`, `no comic grid`, `no extra limbs`, `no duplicate characters`, `no spectators`, `no crew`, `no text`, `no watermark`, `no underexposure`, `no low-key falloff`, `not a grid or collage`.
-2. Chỉ dẫn layout: `overlap shoulders`, `stagger head heights`, `heads and torsos fill their boxes`.
-3. Nhãn phân loại đứng riêng: `explicit`, `nsfw`, `adult`, `consensual`, `bdsm`, `yuri`, `straight`, câu `all participants are adults`.
-4. Token nội bộ: `SET_A/B/C`, `SET_C_TORN`, `role_key`, `character:...`, ID, revision, width/height.
-5. Trùng lặp: summary lặp lại item, cụm lặp trong cùng caption, object item trùng setting.
-6. Outfit rút gọn: `X is school uniform` → dùng mô tả trang phục đầy đủ trong item; không xuất `uniform` trơ.
-7. Camera: gộp `Camera:`/`Framing:`/focus rải rác thành **một** câu `Camera: <lens>, <angle>, <framing>.` đặt ngay trước câu nhân vật; xoá mọi bản sao ở giữa prompt. Chuẩn hoá cụm yếu thành literal: `top-down view from above` → `directly overhead, looking straight down`, `low-angle view from below` → `low angle, looking up`. Framing trùng thì giữ mức cụ thể nhất (detail > close-up > face/shoulders > upper body > full body).
-
-Giữ nguyên: danh tính, tuổi đã xác nhận, trang phục/màu, biểu cảm, pose, vị trí tương đối, chiều hành động, chữ cần hiển thị (verbatim). Với nhân vật thuộc tác phẩm cụ thể, giữ nguyên định danh kèm tác phẩm, ví dụ `Asuna (Blue Archive)`; không rút gọn thành tên trần vì sẽ mất khả năng xác định nhân vật.
-
-## Cổng kiểm
-
-- `PASS`: có prose, đủ mọi `character` item, mọi `text` item verbatim, không còn bbox/số tọa độ, không còn negative/nhãn.
-- `NEEDS_REVIEW`: không có `character` và không có `text` item; hoặc thiếu dữ kiện để diễn đạt trung thực.
-- `BLOCKED`: không tạo được prose, layout sai schema, hoặc mất `text` bắt buộc.
-
-`issues`: `NO_CHARACTER_ITEM`, `TEXT_ITEM_LOST`, `TEXT_VERBATIM_LOST`, `BBOX_IN_PROSE`.
-
-Kiểm nhanh: `python -m unittest tests.test_flatten_layout -v`.
-
-## Không làm
-
-- Không tạo bbox, không đổi bố cục, không thêm nhân vật/vật/mood/ánh sáng.
-- Không chuyển sang tag-only, không ghép `render.prompt.json` elements vào prose.
-- Không ghi DB, không lưu lịch sử render, không tuyên bố đã render.
-- Không coi prompt NL là tương đương Layout: mất kiểm soát vị trí bbox; ghi rõ khi bàn giao.
-
-## Bàn giao
-
-`natural.prompt.txt`, `natural.prompt.json` (status, `source_layout_sha256`, `natural_prompt_sha256`, `characters`, `text_items`, `issues`), và ghi chú `SPATIAL_CONTROL_DEGRADED` khi backend không nhận bbox.
+**Đầu ra:** Một file `.txt` natural prompt cho mỗi Shot; JSON manifest/QA là sidecar **không gửi cho model**.

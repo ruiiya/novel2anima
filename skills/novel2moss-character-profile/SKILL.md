@@ -8,7 +8,7 @@ description: "Quản lý định danh và trang phục của nhân vật Novel2M
 
 ## Vai trò
 
-Quản lý profile nhân vật **độc lập với từng Story** và cung cấp điểm nhận diện trực quan ổn định cho ShotSpec và Layout. Đọc `docs/novel2moss/CONTENT_FIDELITY.md` và `docs/novel2moss/TOOL_FLEXIBILITY.md`.
+Quản lý profile nhân vật **độc lập với từng Story** và cung cấp điểm nhận diện trực quan ổn định cho ShotSpec và Natural Prompt. Đọc `docs/novel2moss/CONTENT_FIDELITY.md` và `docs/novel2moss/TOOL_FLEXIBILITY.md`.
 
 ## Truy xuất thông tin
 

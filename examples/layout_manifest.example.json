@@ -1,8 +1,0 @@
-{
-  "width": 1024,
-  "height": 1024,
-  "draft": "/mnt/data/novel2moss-skills-v1/examples/layout_draft.example.json",
-  "prompt_file": "/mnt/data/novel2moss-skills-v1/examples/layout_prompt.example.json",
-  "prompt_sha256": "2a532af8b7cb5e8393028cba7e538aa723f59872e2c76aa3951896a6d1d799af",
-  "compiler": "novel2moss-stdlib-v1"
-}
