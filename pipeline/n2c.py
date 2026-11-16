@@ -15,7 +15,7 @@ Design rules taken from the sources, not invented:
 
 Usage:
   python pipeline/n2c.py plan   exports/cnc_bunny/01_neru/v1/prompts.all.jsonl --out books/neru
-  python pipeline/n2c.py render books/neru --workflow pipeline/workflows/anima_aesthetic_v11.json --dry
+  python pipeline/n2c.py render books/neru --workflow pipeline/workflows/anima_base_v10.json --dry
   python pipeline/n2c.py bind   books/neru --title "Neru — Bunny Stage"
   python pipeline/n2c.py selftest
 
@@ -287,7 +287,7 @@ def main():
 
     b = sub.add_parser('render')
     b.add_argument('out')
-    b.add_argument('--workflow', default='pipeline/workflows/anima_aesthetic_v11.json')
+    b.add_argument('--workflow', default='pipeline/workflows/anima_base_v10.json')
     b.add_argument('--endpoint', default='http://127.0.0.1:8188')
     b.add_argument('--dry', action='store_true')
     b.add_argument('--dry-source', help='reuse this PNG for every panel')

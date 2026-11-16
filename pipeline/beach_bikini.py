@@ -406,11 +406,12 @@ def main():
                                'evidence': '75 shots, single escalating ladder, one location, one character'}},
               open(OUT / 'seal.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
-    render = {'model': 'anima-aesthetic-v1.1.safetensors',
+    render = {'model': 'anima-base-v1.0.safetensors',
               'text_encoder': 'qwen_3_06b_base.safetensors', 'vae': 'qwen_image_vae.safetensors',
               'width': 864, 'height': 1152, 'aspect': '3:4', 'megapixels': round(864 * 1152 / 1e6, 3),
-              'divisible_by': 16, 'steps': 32, 'cfg': 3.8, 'sampler': 'er_sde', 'scheduler': 'simple',
-              'negative': 'worst quality, low quality, artist name, blurry, jpeg artifacts, chromatic aberration',
+              'divisible_by': 16, 'steps': 40, 'cfg': 4.5, 'sampler': 'er_sde', 'scheduler': 'simple',
+              'negative': 'worst quality, low quality, score_1, score_2, score_3, artist name, '
+                          'blurry, jpeg artifacts, chromatic aberration',
               'seed_policy': 'fixed per shot_key so a prompt edit is the only variable'}
     (OUT / 'render.config.json').write_text(json.dumps(render, indent=1) + '\n', encoding='utf-8')
     print('story', story, 'board', board_id, 'shots', len(ids))

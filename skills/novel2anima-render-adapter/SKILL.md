@@ -1,6 +1,6 @@
 ---
 name: novel2anima-render-adapter
-description: "Bàn giao Anima prompt (tag block + câu bổ trợ) từ file cho backend Anima-Aesthetic-v1.1 local/remote; hoàn toàn ngoài DB; không gửi JSON/bbox."
+description: "Bàn giao Anima prompt (tag block + câu bổ trợ) từ file cho backend Anima-Base-v1.0 local/remote; hoàn toàn ngoài DB; không gửi JSON/bbox."
 ---
 # Novel2Anima — Render Adapter (file-only)
 
@@ -8,21 +8,21 @@ description: "Bàn giao Anima prompt (tag block + câu bổ trợ) từ file cho
 
 ## Vai trò
 
-Backend có thể là `backend_type: local` hoặc `remote`; không tự suy diễn hành vi kiểm duyệt cloud lên local. Khi người dùng yêu cầu render, đọc bundle `natural.prompt.txt`, `prompt.manifest.json`, `fidelity_report.json`. **Không truy vấn SQLite, không tạo render job/ảnh trong DB.** Renderer mặc định: ComfyUI với Anima-Aesthetic-v1.1.
+Backend có thể là `backend_type: local` hoặc `remote`; không tự suy diễn hành vi kiểm duyệt cloud lên local. Khi người dùng yêu cầu render, đọc bundle `natural.prompt.txt`, `prompt.manifest.json`, `fidelity_report.json`. **Không truy vấn SQLite, không tạo render job/ảnh trong DB.** Renderer mặc định: ComfyUI với Anima-Base-v1.0.
 
 ## Cấu hình renderer (giữ ngoài DB)
 
 | Tham số | Giá trị khởi đầu |
 |---|---|
-| diffusion model | `anima-aesthetic-v1.1.safetensors` |
+| diffusion model | `anima-base-v1.0.safetensors` |
 | text encoder | `qwen_3_06b_base.safetensors` |
 | VAE | `qwen_image_vae.safetensors` |
-| steps / CFG | 30 / 3.5–4.5 |
-| sampler / scheduler | `er_sde` / `simple` |
+| steps / CFG | 40 / 4–5 |
+| sampler / scheduler | `er_sde` / `simple` (hoặc `euler_a`, `dpmpp_2m_sde_gpu`) |
 | resolution | 896×1152, 1024×1024; 1–1.5 MP; bội số 16 |
-| negative | `worst quality, low quality, artist name, blurry, jpeg artifacts, chromatic aberration` |
+| negative | `worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, chromatic aberration` |
 
-Workflow API mẫu: `exports/cnc_bunny/workflow/anima_bunny_all.json`. Không thêm LoRA style (đã merge trong Aesthetic); character LoRA weight 0.7–0.9 nếu có.
+Workflow API mẫu: `pipeline/workflows/anima_base_v10.json`. Base không merge style LoRA: style LoRA là tuỳ chọn có kiểm soát, character LoRA weight 0.7–0.9 nếu có; đổi LoRA thì cố định lại seed để so sánh.
 
 ## Điều kiện giao nhận
 

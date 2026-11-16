@@ -8,11 +8,11 @@
 
 | Thành phần | File |
 |---|---|
-| diffusion model | `anima-aesthetic-v1.1.safetensors` (`models/diffusion_models/`) |
+| diffusion model | `anima-base-v1.0.safetensors` (`models/diffusion_models/`) |
 | text encoder | `qwen_3_06b_base.safetensors` (`models/text_encoders/`) |
 | VAE | `qwen_image_vae.safetensors` (`models/vae/`) |
 
-`Anima-Aesthetic-v1.1` là finetune aesthetic của base v1.0 **đã merge style LoRA**, caption huấn luyện đã bỏ nhãn chất lượng. Vì vậy: **không** quality tag, **không** `score_*` (cả positive lẫn negative), **không** stack thêm style LoRA.
+`Anima-Base-v1.0` là base thuần: không aesthetic finetune, không merge style LoRA, style mặc định trung tính. Vì vậy **quality tag có tác dụng thật** — prefix khuyến nghị chính thức là `masterpiece, best quality, score_7, safe, `. `Anima-Turbo-v1.1` chỉ dùng để iterate nhanh (CFG 1, 8–12 steps). `Anima-Aesthetic` không còn dùng trong project này.
 
 ## Nguồn đối chiếu chính thức
 
@@ -23,25 +23,27 @@
 ## Cấu trúc bắt buộc
 
 ```
-[safety] , [subject count] , [character] , [series] , [@artist] , [appearance] ,
+[quality] , [safety] , [subject count] , [character] , [series] , [@artist] , [appearance] ,
 [clothing] , [expression] , [pose/action] , [camera] , [environment] , [lighting]
 <2 câu natural language: vị trí chủ thể trong khung, quan hệ actor→target, độ sâu, ánh sáng>
 ```
 
-Thứ tự trên là thứ tự chính thức của model card. Tag bắt buộc có mặt:
+Thứ tự trên là thứ tự chính thức của model card: `[quality/meta/year/safety] [1girl…] [character] [series] [artist] [general tags]`. Trong cùng một nhóm, thứ tự tuỳ ý. Tag bắt buộc có mặt:
 
-1. **Safety** — đúng một trong `safe`, `sensitive`, `nsfw`, `explicit`. Đặt ở đầu positive prompt; **không** đưa `nsfw` vào negative.
-2. **Subject count** — `1girl`, `1boy`, `2girls`, `1other`… cộng `solo` khi chỉ một người.
-3. **Character + series** — `karin (blue archive)`, Blue Archive. Với biến thể trang phục có tag riêng, dùng tag biến thể (`karin (bunny) (blue archive)`) **và** tag trang phục (`bunny suit`). Không dựa vào mỗi tên.
-4. **Appearance anchors** — tóc, mắt, dấu hiệu nhận diện (halo, mole…), tỷ lệ cơ thể. Đây là thứ giữ identity qua 75 shot; chép từ Visual Bible/catalog, không diễn giải lại.
-5. **Camera** — một tag framing + một tag angle, lấy từ danh sách đóng bên dưới.
-6. **Environment** — địa điểm + 1–2 vật thể nhận diện + thời điểm/thời tiết.
-7. **Lighting** — 1–3 tag ánh sáng vật lý tương thích nhau.
+1. **Quality/meta** (tuỳ chọn, đặt trước safety) — `masterpiece, best quality, score_7`; với Base nên có, vì không có aesthetic tuning.
+2. **Safety** — đúng một trong `safe`, `sensitive`, `nsfw`, `explicit`. Đặt ngay sau quality/meta trong positive prompt; **không** đưa `nsfw` vào negative.
+3. **Subject count** — `1girl`, `1boy`, `2girls`, `1other`… cộng `solo` khi chỉ một người.
+4. **Character + series** — `karin (blue archive)`, Blue Archive. Với biến thể trang phục có tag riêng, dùng tag biến thể (`karin (bunny) (blue archive)`) **và** tag trang phục (`bunny suit`). Không dựa vào mỗi tên.
+5. **Artist** (tuỳ chọn) — `@artistname`; style của Base là trung tính nên artist tag là cách chỉnh style mạnh nhất.
+6. **Appearance anchors** — tóc, mắt, dấu hiệu nhận diện (halo, mole…), tỷ lệ cơ thể. Đây là thứ giữ identity qua 75 shot; chép từ Visual Bible/catalog, không diễn giải lại.
+7. **Camera** — một tag framing + một tag angle, lấy từ danh sách đóng bên dưới.
+8. **Environment** — địa điểm + 1–2 vật thể nhận diện + thời điểm/thời tiết.
+9. **Lighting** — 1–3 tag ánh sáng vật lý tương thích nhau.
 
 ## Quy tắc cú pháp
 
 - **Lowercase** cho mọi tag: `blue hair`, `upper body`, `looking at viewer`. Proprietary noun trong câu natural language giữ hoa bình thường.
-- **Dùng space, không underscore**: `blue hair`, không `blue_hair`. Ngoại lệ duy nhất là `score_*` — nhưng Aesthetic không dùng `score_*` nên prompt đúng **không có underscore nào**.
+- **Dùng space, không underscore**: `blue hair`, không `blue_hair`. Ngoại lệ duy nhất là `score_*` (`score_1`…`score_9`) — đó là tag duy nhất có underscore, dùng ở quality prefix hoặc negative.
 - **Có space sau dấu phẩy**: `1girl, solo, dark skin`. Không `1girl,solo,dark skin`.
 - Canonical spelling/punctuation giữ nguyên khi tag vốn có ký tự đặc biệt (`>_<`, `:3`); không normalize chúng.
 - Danh từ riêng/tag nhân vật: giữ đúng dạng tag gốc, kể cả ngoặc — `karin (bunny) (blue archive)`.
@@ -55,15 +57,16 @@ Thứ tự trên là thứ tự chính thức của model card. Tag bắt buộc
 | Nhóm | Giá trị hợp lệ |
 |---|---|
 | safety | `safe`, `sensitive`, `nsfw`, `explicit` |
+| quality (tuỳ chọn) | `masterpiece`, `best quality`, `good quality`, `normal quality`, `score_9`…`score_1` |
 | meta (tuỳ chọn) | `highres`, `absurdres`, `anime screenshot`, `official art` |
 | era (tuỳ chọn) | `year 2025`, `newest`, `recent`, `mid`, `early`, `old` |
 | framing | `close-up`, `upper body`, `cowboy shot`, `full body`, `wide shot` |
 | angle | `from above`, `from below`, `eye level`, `from side`, `three-quarter view` |
 | lens/composition (tuỳ chọn) | `wide angle`, `telephoto`, `shallow depth of field`, `centered composition`, `asymmetrical composition`, `dynamic composition` |
 | style (tuỳ chọn) | `anime coloring`, `clean lineart`, `flat colors`, `soft cel shading`, `official art` |
-| negative (renderer, không nằm trong file prompt) | `worst quality, low quality, artist name, blurry, jpeg artifacts, chromatic aberration` |
+| negative (renderer, không nằm trong file prompt) | `worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, chromatic aberration` |
 
-`highres`/`absurdres` là **meta tag**, không phải quality tag — baseline Aesthetic chính thức là `safe, highres`. Cấm trong positive chỉ gồm `masterpiece`, `best quality`, `worst quality`, `ultra detailed`, `8k`, `4k` và mọi `score_*`. `year 2025`/`newest`… là aesthetic control, đổi riêng khỏi artist/medium tag.
+Prefix khuyến nghị cho Base: `masterpiece, best quality, score_7, safe, ` — nhưng safety tag của dự án do `CONTENT_POLICY` quyết định (`sensitive`/`nsfw`/`explicit`), nên chỉ giữ `masterpiece, best quality, score_7` rồi tới safety tag thật. `highres`/`absurdres` là meta tag, dùng tự do. Cấm trong positive: `worst quality`, `low quality` (tự mâu thuẫn), `ultra detailed`, `8k`, `4k` (không có trong vocab train, chỉ làm nhiễu). `year 2025`/`newest`… là aesthetic control, đổi riêng khỏi artist/medium tag.
 
 Chỉ một framing và một angle trong một prompt. `close-up` loại trừ `full body`; `from above` loại trừ `from below`.
 
@@ -74,7 +77,7 @@ Anima tokenize hai lần (Qwen-3 0.6B + T5); ngưỡng quan sát thực tế: **
 ## Ví dụ hợp lệ
 
 ```
-sensitive, 1girl, solo, karin (blue archive), dark skin, black hair, very long hair, ponytail, yellow eyes, large breasts, rabbit tail, halo, bunny suit, black leotard, blue bow, wrist cuffs, fake animal ears, fishnet pantyhose, high heels, standing, arms crossed, from side, full body, looking away, backstage, green room, closed door, bright lighting, cel shading
+masterpiece, best quality, score_7, sensitive, 1girl, solo, karin (blue archive), dark skin, black hair, very long hair, ponytail, yellow eyes, large breasts, rabbit tail, halo, bunny suit, black leotard, blue bow, wrist cuffs, fake animal ears, fishnet pantyhose, high heels, standing, arms crossed, from side, full body, looking away, backstage, green room, closed door, bright lighting, cel shading
 Karin stands sideways in the left third of the frame with her arms folded under her chest. The empty green room recedes behind her, and flat daylight from the ceiling keeps every surface evenly lit.
 ```
 
@@ -92,17 +95,17 @@ Karin stands sideways in the left third of the frame with her arms folded under 
 
 ## Renderer (ngoài DB)
 
-| Tham số | Anima-Aesthetic v1.1 | Anima-Base v1.0 | Anima-Turbo v1.1 |
-|---|---|---|---|
-| steps | 30–40 | 35–50 | 8–12 |
-| CFG | 3.5–4.5 | 4.5–5 | 1 |
-| sampler / scheduler | `er_sde` / `simple` | `er_sde` / `simple` | `euler`, hoặc sampler đã test với Turbo |
-| resolution | 896×1152 portrait, 1024×1024 vuông; 1–1.5 MP; bội số 16 (dải chính thức 512–1536) | | |
-| negative | `worst quality, low quality, artist name, blurry, jpeg artifacts, chromatic aberration` | thêm `score_1, score_2, score_3` | CFG 1 làm negative gần như vô hiệu — sửa positive trước |
+| Tham số | Anima-Base v1.0 (chuẩn) | Anima-Turbo v1.1 (iterate) |
+|---|---|---|
+| steps | 30–50 | 8–12 |
+| CFG | 4–5 | 1 |
+| sampler / scheduler | `er_sde` / `simple` (mặc định), hoặc `euler_a`, `dpmpp_2m_sde_gpu`, `euler` | `euler`, hoặc sampler đã test với Turbo |
+| resolution | 896×1152 portrait, 1024×1024 vuông; 1–1.5 MP; bội số 16 (dải chính thức 512–1536) | |
+| negative | `worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, chromatic aberration` | CFG 1 làm negative gần như vô hiệu — sửa positive trước |
 
-Với Aesthetic: `masterpiece, best quality` không bắt buộc và có thể làm phẳng style; `score_*` bị cấm cả positive lẫn negative. Muốn so sánh công bằng phải cố định seed, model, sampler, CFG, resolution, steps — đổi đúng một block mỗi lần.
+Base có style mặc định trung tính: thiếu artist/quality tag thì ảnh ra "plain". Vì vậy quality prefix + `anime coloring, cel shading, clean lineart` là bắt buộc trên thực tế, và character LoRA (nếu có) weight 0.7–0.9. Muốn so sánh công bằng phải cố định seed, model, sampler, CFG, resolution, steps — đổi đúng một block mỗi lần.
 
-Workflow API mẫu của dự án: `exports/cnc_bunny/workflow/anima_bunny_all.json` (9 node, không LoRA, không quality tag). Seed, checkpoint, sampler, negative, ảnh ra thuộc renderer — không thuộc DB.
+Workflow API mẫu của dự án: `pipeline/workflows/anima_base_v10.json` (9 node, không LoRA, không quality tag trong file — prompt đã mang quality prefix). Seed, checkpoint, sampler, negative, ảnh ra thuộc renderer — không thuộc DB.
 
 ## QA trước export
 

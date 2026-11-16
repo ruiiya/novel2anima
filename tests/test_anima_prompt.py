@@ -51,12 +51,14 @@ class AnimaPromptFileTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(out['status'], 'PASS')
 
-    def test_meta_and_era_tags_allowed(self):
-        # Official Aesthetic baseline is literally "safe, highres"; year tags are
-        # aesthetic controls, not quality labels.
+    def test_meta_era_and_quality_tags_allowed(self):
+        # Anima-Base v1.0 is the reference model: its own recommended prefix is
+        # "masterpiece, best quality, score_7, safe", and meta/era tags are meta data.
         code, out = run(GOOD.replace('nsfw, 1girl', 'nsfw, highres, absurdres, year 2025, 1girl'))
         self.assertEqual(code, 0, out)
-        code, out = run(GOOD.replace('nsfw, 1girl', 'nsfw, masterpiece, 1girl'))
+        code, out = run(GOOD.replace('nsfw, 1girl', 'nsfw, masterpiece, best quality, score_7, 1girl'))
+        self.assertEqual(code, 0, out)
+        code, out = run(GOOD.replace('nsfw, 1girl', 'nsfw, worst quality, 1girl'))
         self.assertIn('QUALITY_TAG_FORBIDDEN', out['issues'])
 
     def test_group_scene_allows_one_sentence_per_subject(self):
@@ -80,9 +82,9 @@ class AnimaPromptFileTests(unittest.TestCase):
             'nsfw, 1girl, solo, blue_hair, full body': 'TAG_UNDERSCORE',
             '1girl, solo, blue hair, full body': 'SAFETY_TAG_MISSING',
             'nsfw, 1girl, solo, blue hair, green room': 'FRAMING_TAG_MISSING',
-            'nsfw, 1girl, solo, blue hair, full body, masterpiece, best quality':
+            'nsfw, 1girl, solo, blue hair, full body, worst quality':
                 'QUALITY_TAG_FORBIDDEN',
-            'nsfw, 1girl, solo, blue hair, full body, score_7': 'SCORE_TAG_FORBIDDEN',
+            'nsfw, 1girl, solo, blue hair, full body, 8k': 'QUALITY_TAG_FORBIDDEN',
             'nsfw,1girl,solo,blue hair,full body': 'TAG_COMMA_SPACING',
             'nsfw, solo, blue hair, full body': 'SUBJECT_COUNT_MISSING',
         }

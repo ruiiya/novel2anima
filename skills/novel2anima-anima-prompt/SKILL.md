@@ -6,7 +6,7 @@ description: "Skill canonical: biên soạn positive prompt Anima (tag block + t
 
 > **Policy:** Luôn đọc `docs/novel2anima/CONTENT_POLICY.md`. Quy tắc nội dung do policy trung tâm quyết định; skill này chỉ điều phối tính chính xác và định dạng.
 >
-> **Hợp đồng định dạng:** `docs/novel2anima/ANIMA_TAG_PROMPT.md`. Model đích: `Anima-Aesthetic-v1.1` (Qwen-3 0.6B text encoder, Qwen-Image VAE).
+> **Hợp đồng định dạng:** `docs/novel2anima/ANIMA_TAG_PROMPT.md`. Model đích: `Anima-Base-v1.0` (Qwen-3 0.6B text encoder, Qwen-Image VAE).
 
 ## Khi sử dụng
 
@@ -24,7 +24,7 @@ Sau khi Story/ShotSpec và Continuity đã có phiên bản rõ ràng, trước 
 
 Dòng 1 — tag block, đúng thứ tự chính thức của Anima:
 
-1. **Safety:** `safe` / `sensitive` / `nsfw` / `explicit`. Album adult dùng `nsfw`/`explicit`; không bao giờ đưa tag này vào negative.
+1. **Quality + safety:** quality prefix `masterpiece, best quality, score_7` (Base không có aesthetic tuning nên cần), rồi đúng một `safe` / `sensitive` / `nsfw` / `explicit`. Album adult dùng `nsfw`/`explicit`; không bao giờ đưa safety tag vào negative.
 2. **Subject count:** `1girl`, `solo` (hoặc `2girls`, `multiple boys`…).
 3. **Character + series:** tag nhân vật kèm biến thể trang phục nếu có (`karin (bunny) (blue archive)`), rồi series. Không dựa vào mỗi tên.
 4. **Appearance anchors:** tóc (màu + kiểu + độ dài), mắt, dấu nhận diện (halo, mole, tai thú), tỷ lệ cơ thể. Chép từ profile/catalog, giữ **nguyên văn** qua mọi Shot.
@@ -41,7 +41,7 @@ Với cảnh ≥2 người, thứ tự bắt buộc trong câu: count → cảnh
 
 - Lowercase cho tag; **space không underscore** (`blue hair`, không `blue_hair`). Prompt đúng không có underscore nào.
 - Space sau dấu phẩy: `1girl, solo, dark skin`.
-- **Không quality tag, không `score_*`** (Aesthetic đã bỏ nhãn chất lượng khi train) — cả positive lẫn negative. Nhưng `highres`, `absurdres`, `anime screenshot`, `official art`, `year 2025`/`newest` là **meta/era tag hợp lệ**, không phải quality tag: baseline Aesthetic chính thức là `safe, highres`.
+- **Quality tag hợp lệ với Base:** `masterpiece, best quality, good quality, normal quality`, `score_9`…`score_1` — dùng hay không đều được; prefix khuyến nghị chính thức là `masterpiece, best quality, score_7, `. Cấm trong positive: `worst quality`, `low quality` (tự mâu thuẫn), `ultra detailed`, `8k`, `4k`. `highres`, `absurdres`, `anime screenshot`, `official art`, `year 2025`/`newest` là **meta/era tag hợp lệ**.
 - Không tag tự mâu thuẫn: hai framing, hai angle cùng trục, `short hair` + `very long hair`, `solo` + `2girls`.
 - Không tag mọi thứ nhìn thấy; ưu tiên đúng thứ tự trên, bỏ tag không chắc tác dụng.
 - Ngân sách: **≤ 280 từ** (~480 T5 token). Vượt ~512 token bắt đầu mất chi tiết vải/phụ kiện/cử động tay.
@@ -80,7 +80,7 @@ python database/src/n2m_db.py export-bundle --prompt-id PROMPT_ID --out-dir expo
 
 - Không convert prompt MOSS natural-language cũ thành tag block bằng máy rồi coi là source of truth — phải viết lại từ ShotSpec.
 - Không dùng JSON Layout/bbox (Anima không có layout conditioning).
-- Không stack style LoRA: `anima-aesthetic-v1.1` đã merge style LoRA; chỉ character LoRA khi có, weight 0.7–0.9.
+- Base không merge style LoRA: chỉ thêm style LoRA khi thật cần và ghi lại; character LoRA weight 0.7–0.9.
 - Không đưa render job/ảnh/model state vào Novel2Anima DB.
 
 **Đầu ra:** Một file `.txt` Anima prompt cho mỗi Shot; JSON manifest/QA là sidecar **không gửi cho model**.

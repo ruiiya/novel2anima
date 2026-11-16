@@ -18,10 +18,10 @@ SAFETY = ('safe', 'sensitive', 'nsfw', 'explicit')
 FRAMING = ('close-up', 'upper body', 'cowboy shot', 'full body', 'wide shot')
 ANGLE_HEIGHT = ('from above', 'from below')
 ANGLE_YAW = ('from side', 'three-quarter view', 'from behind')
-# Aesthetic v1.1 was trained with quality labels stripped; these tags only flatten style.
-# highres/absurdres are meta tags in the official vocabulary and stay allowed; the
-# official Aesthetic baseline is literally "safe, highres".
-QUALITY_TAGS = ('masterpiece', 'best quality', 'worst quality',
+# Anima-Base v1.0 is the reference model: quality tags (masterpiece/best quality/score_*)
+# are legal and useful because the base has no aesthetic tuning. Contradictions with the
+# content still hurt, so only the negative-side labels are blocked in the positive block.
+QUALITY_TAGS = ('worst quality', 'low quality',
                 'ultra detailed', 'ultra-detailed', '8k', '4k')
 SUBJECT_RE = re.compile(r'\b(\d+(?:girl|boy|other)s?|multiple (?:girls|boys))\b')
 SCORE_RE = re.compile(r'\bscore_\d+\b')
@@ -56,8 +56,6 @@ def validate(text: str) -> list[str]:
         errors.append('TAG_UNDERSCORE')
     if re.search(r',\S', tag_line) or re.search(r'\s,', tag_line):
         errors.append('TAG_COMMA_SPACING')
-    if SCORE_RE.search(text):
-        errors.append('SCORE_TAG_FORBIDDEN')
     low = tag_line.lower()
     if any(has_tag(low, q) for q in QUALITY_TAGS):
         errors.append('QUALITY_TAG_FORBIDDEN')

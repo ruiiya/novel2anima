@@ -1,6 +1,6 @@
 # Novel2Anima Skills V4 — Visual Storytelling · Natural Prompts · Database-First
 
-Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt Anima (tag block + tối đa 2 câu bổ trợ, UTF-8)** cho Anima-Aesthetic-v1.1. **Không dùng Layout JSON / bbox** trong luồng mới.
+Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt Anima (tag block + tối đa 2 câu bổ trợ, UTF-8)** cho Anima-Base-v1.0. **Không dùng Layout JSON / bbox** trong luồng mới.
 
 ```text
 Story → Act → Beat/Event → Visual Bible + Storyboard → ShotSpec → Continuity
