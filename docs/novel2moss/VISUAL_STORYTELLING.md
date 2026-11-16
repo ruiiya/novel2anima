@@ -1,12 +1,12 @@
 # Novel2Moss V4 — Visual Storytelling
 
-V4 bổ sung storyboard, Visual Bible, source coverage và sequence QA trước natural prompt export. Tất cả là văn bản/metadata phục vụ Story → Prompt; renderer hoàn toàn độc lập. Nội dung gốc và nhãn được bảo toàn; mọi quyết định nội dung theo `CONTENT_POLICY.md` hiện hành.
+V4 bổ sung storyboard, Visual Bible, source coverage và sequence QA trước khi export prompt Anima. Tất cả là văn bản/metadata phục vụ Story → Prompt; renderer hoàn toàn độc lập. Nội dung gốc và nhãn được bảo toàn; mọi quyết định nội dung theo `CONTENT_POLICY.md` hiện hành.
 
 ## Luồng
 
 Story nguồn → Story Brief đã chốt → materialize Act/Beat/Event → Blind role hoặc Non-Blind casting → Visual Bible + storyboard đã chốt → ShotSpec → Continuity → Natural Prompt → Fidelity/Sequence QA → seal → export.
 
-Hai cổng chốt Story và storyboard riêng biệt. Agent có thể trình một bảng Shot ngắn để người dùng xem. Không ép số Shot, không tự sáng tác Event mới. Mỗi Shot = một khung hình → một natural prompt UTF-8. Không dùng Layout JSON, bbox, tọa độ canvas, ghép panel, render job hoặc image QA.
+Hai cổng chốt Story và storyboard riêng biệt. Agent có thể trình một bảng Shot ngắn để người dùng xem. Không ép số Shot, không tự sáng tác Event mới. Mỗi Shot = một khung hình → một prompt Anima UTF-8. Không dùng Layout JSON, bbox, tọa độ canvas, ghép panel, render job hoặc image QA.
 
 ## Hợp đồng Visual Bible và storyboard
 
@@ -52,7 +52,7 @@ python database/src/n2m_db.py export-story-prompts --story-id STORY_ID --out-dir
 
 V3 Story chưa có storyboard vẫn dùng luồng export cũ, giữ tương thích. Không tự seal V3 vì không có đủ provenance/coverage. Chuyển sang V4 cần lập storyboard và QA thật.
 
-Kết quả: mọi dòng JSONL chứa prompt dạng string; với V4 thêm storyboard_id, shot_order, branch_key, purpose, qa_id, continuity_sha256. File bundle .txt vẫn nguyên định dạng MOSS. Các sidecar không gửi model. Nên dùng thư mục export riêng cho mỗi revision để tránh file cũ lẫn vào.
+Kết quả: mọi dòng JSONL chứa prompt dạng string; với V4 thêm storyboard_id, shot_order, branch_key, purpose, qa_id, continuity_sha256. File bundle .txt dùng định dạng Anima (tag block). Các sidecar không gửi model. Nên dùng thư mục export riêng cho mỗi revision để tránh file cũ lẫn vào.
 
 ## Sửa cục bộ / revision
 
@@ -71,4 +71,4 @@ Trả added/removed/changed, recheck_descendants, candidate_reuse và order_chan
 - [Agent Mangaka Forge](https://github.com/RemiPelloux/agent-mangaka-forge): character visual lock.
 - [Agent Comic Kit](https://github.com/Saeyeon-developer/agent-comic-kit): sửa cục bộ, khóa direction.
 - [Comic Studio](https://github.com/CallmeTruong/Comic_Studio): kiểm tra storyboard trước render.
-- [MOSS Prompt Enhancer](https://github.com/OpenMOSS/MOSS-Image/tree/main/skills/moss-image-prompt-enhancer): caption tự nhiên, mô tả những gì nhìn thấy. Novel2Moss không dùng phần layout.
+- [Anima prompting guidebook](https://civitai.com/articles/35368): thứ tự tag, camera/lighting/background block, ngân sách token. Hợp đồng dự án: `docs/novel2moss/ANIMA_TAG_PROMPT.md`.

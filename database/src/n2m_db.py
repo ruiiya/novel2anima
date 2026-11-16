@@ -509,17 +509,25 @@ def bind_role(con,story_id,role_key,character_id,outfit_id=None):
     return newrev
 
 
+ANIMA_SAFETY_TAGS = ('safe', 'sensitive', 'nsfw', 'explicit')
+
+
 def validate_natural_prompt(prompt: str, language: str = 'en') -> str:
-    """Validate plain prompt text without rewriting its meaning."""
+    """Validate the Anima prompt block; structural checks only.
+
+    Full grammar validation (framing/angle/camera conflicts, quality tags, token
+    budget) lives in tools/novel2moss/validate_anima_prompt.py, which the renderer
+    side runs; this keeps one source of truth for the byte-level export gate.
+    """
     if not isinstance(prompt, str):
-        raise ValueError('Natural prompt must be UTF-8 text')
+        raise ValueError('Anima prompt must be UTF-8 text')
     if language not in ('en', 'vi', 'zh'):
         raise ValueError('Unsupported prompt language (en/vi/zh)')
     text = prompt.replace('\r\n', '\n').replace('\r', '\n').strip()
     if not text:
-        raise ValueError('Natural prompt must not be empty')
+        raise ValueError('Anima prompt must not be empty')
     if text.startswith('```') or text.endswith('```'):
-        raise ValueError('Natural prompt must not be a fenced code block')
+        raise ValueError('Anima prompt must not be a fenced code block')
     if text.startswith('{'):
         try:
             payload = json.loads(text)
@@ -527,9 +535,15 @@ def validate_natural_prompt(prompt: str, language: str = 'en') -> str:
             pass
         else:
             if isinstance(payload, dict):
-                raise ValueError('Positive prompt must be plain prose, not a JSON object')
+                raise ValueError('Positive prompt must be a tag block, not a JSON object')
     if '\x00' in text:
-        raise ValueError('Natural prompt contains a NUL character')
+        raise ValueError('Anima prompt contains a NUL character')
+    tag_line = text.splitlines()[0]
+    if ',' not in tag_line:
+        raise ValueError('Anima prompt line 1 must be a comma-separated tag block')
+    if not any(t.strip() in ANIMA_SAFETY_TAGS for t in tag_line.lower().split(',')):
+        raise ValueError('Anima prompt tag block must start with a safety tag '
+                         '(safe/sensitive/nsfw/explicit)')
     return text
 
 
@@ -592,7 +606,7 @@ def export_bundle(con, prompt_id: str, out_dir: Path, qa_id=None):
     qa_path = out_dir / 'fidelity_report.json'
     text_path.write_text(prompt['prompt_text'], encoding='utf-8', newline='')
     manifest = {
-        'format': 'moss-natural-v1',
+        'format': 'anima-tag-v1',
         'prompt_id': prompt_id, 'story_id': prompt['story_id'],
         'shot_id': prompt['shot_id'], 'shot_key': prompt['shot_key'],
         'shot_revision': prompt['shot_revision'], 'prompt_revision': prompt['revision'],

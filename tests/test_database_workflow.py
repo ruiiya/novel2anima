@@ -14,11 +14,11 @@ from n2m_db import (connect, apply_migrations, seed, create_story, add_role, bin
 from n2m_workflow import (save_plan, add_act, add_beat, add_event,
                           save_shot, save_continuity, save_qa)
 
-TEXT = ('A detailed anime illustration of two adult friends in a bright reading room. '
-        'Aria stands on the left in a white blouse and navy skirt, passing a notebook '
-        'with her right hand to Noah. Noah sits on the right in a dark shirt and grey '
-        'trousers, accepting the notebook with a smile. A medium shot at eye level, '
-        'warm daylight through the window.')
+TEXT = ('sensitive, 1girl, solo, aria (original), silver hair, long hair, blue eyes, '
+        'white blouse, navy skirt, standing, from side, cowboy shot, reading room, '
+        'bookshelves, window, warm daylight\n'
+        'Aria stands on the left and passes a notebook with her right hand to Noah, '
+        'who sits on the right in a dark shirt and accepts it with a smile.')
 
 
 class NaturalWorkflowTests(unittest.TestCase):
@@ -75,9 +75,12 @@ class NaturalWorkflowTests(unittest.TestCase):
 
     def test_plain_natural_validation(self):
         self.assertEqual(validate_natural_prompt('  ' + TEXT + '  '), TEXT)
-        self.assertEqual(validate_natural_prompt('Hello\r\nWorld'), 'Hello\nWorld')
+        self.assertEqual(validate_natural_prompt('sensitive, 1girl, solo\r\nA girl reads.'),
+                         'sensitive, 1girl, solo\nA girl reads.')
         for prompt in ('', '  ', '```\nA cat\n```', '{"caption":"A cat"}',
-                       '{"summary":{},"items":[]}', '\x00'):
+                       '{"summary":{},"items":[]}', '\x00',
+                       'A cat sits on a mat.',              # prose without a tag block
+                       '1girl, solo, dark skin'):           # tag block without a safety tag
             with self.subTest(prompt=repr(prompt)), self.assertRaises(ValueError):
                 validate_natural_prompt(prompt)
         with self.assertRaises(ValueError):
@@ -105,7 +108,7 @@ class NaturalWorkflowTests(unittest.TestCase):
         manifest = json.loads((folder / 'prompt.manifest.json').read_text(encoding='utf-8'))
         self.assertEqual(manifest['story_id'], story)
         self.assertEqual(manifest['shot_id'], shot_id)
-        self.assertEqual(manifest['format'], 'moss-natural-v1')
+        self.assertEqual(manifest['format'], 'anima-tag-v1')
         self.assertEqual(manifest['prompt_sha256'], hashlib.sha256(TEXT.encode()).hexdigest())
         self.assertEqual(result['prompt_sha256'], manifest['prompt_sha256'])
         self.assertEqual(json.loads((folder / 'fidelity_report.json').read_text())['verdict'], 'PASS')

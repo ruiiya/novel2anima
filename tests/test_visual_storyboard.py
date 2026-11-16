@@ -95,7 +95,8 @@ class VisualStoryboardTests(unittest.TestCase):
                 snap.append({'role_key':r,'before':before,'after':after,
                              'delta':{'set':after,'remove':[]}})
             save_continuity(c,shot,{'snapshots':snap})
-            prompt,_ = save_natural_prompt(c,shot,'Anime illustration of two people in a reading room, '+s['visual_moment']+'.')
+            prompt,_ = save_natural_prompt(c,shot,'sensitive, 1girl, solo, reading room, upper body, eye level\n'
+                                                   'Anime illustration of two people in a reading room, '+s['visual_moment']+'.')
             if not no_qa:
                 save_qa(c,'PROMPT',prompt,'PASS',{'policy_decision':{'scope':'PROMPT_DERIVATION',
                     'decision':'PASS','shot_id':shot,'policy_version':'1.3.0','evidence':'fixture assessed'}},
@@ -111,7 +112,8 @@ class VisualStoryboardTests(unittest.TestCase):
         seal = seal_storyboard(self.con,bid,inputs)
         self.assertEqual(seal_storyboard(self.con,bid,inputs),seal)
         first = inputs['bindings']['S2']
-        save_natural_prompt(self.con,first['shot_id'],'A different unapproved prompt.')
+        save_natural_prompt(self.con,first['shot_id'],'sensitive, 1girl, solo, reading room, upper body\n'
+                                                     'A different unapproved prompt.')
         out = self.root/'out'
         export_story_prompts(self.con,story,out)
         rows=[json.loads(line) for line in (out/'prompts.all.jsonl').read_text().splitlines() if line]
@@ -314,7 +316,7 @@ class VisualStoryboardTests(unittest.TestCase):
         act=add_act(old,story,1)
         beat=add_beat(old,act,1)
         shot,_=save_shot(old,beat,'S1',{'participants':[{'role_key':'LEAD'}]})
-        pid,_=save_natural_prompt(old,shot,'A person reads a book.')
+        pid,_=save_natural_prompt(old,shot,'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
         apply_migrations(old)
         self.assertEqual(old.execute('SELECT prompt_text FROM shot_prompts WHERE id=?',(pid,)).fetchone()[0],
                          'A person reads a book.')

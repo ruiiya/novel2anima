@@ -26,7 +26,7 @@ Trong V4 đọc storyboard đã duyệt bằng get-storyboard; lấy đúng slot
 - Lấy định danh/outfit từ profile; ghi **màu chính xác của từng món đồ** hoặc báo chưa xác định. Việc thay đổi có chủ đích là state delta, không phải mâu thuẫn cần xóa.
 - Kế thừa trạng thái đã xác nhận từ trước, áp dụng delta tường minh rồi suy ra `after`; phân biệt cut với mutation. Trạng thái chưa rõ/suy luận phải có nhãn tương ứng.
 - Ghi cảnh nhìn thấy, background cụ thể (loại phòng, đồ vật, chất liệu, nguồn sáng), camera, ánh sáng, composition; không để góc quay lạ làm mất hành động quan trọng.
-- Camera ghi thành **bộ ba literal**: lens + góc + framing (`35mm`, `low angle`, `full body head to feet`). Không dùng cụm mờ như `dynamic angle`, `top-down view from above`; không ghép hai góc loại trừ nhau (`top-down` + `low angle`) và không đặt framing mâu thuẫn với pose (`face close-up` nhưng hành động nằm ở hông). Nếu góc cắt mất hành động chính, đổi framing và ghi rõ bộ phận đang bị crop.
+- Camera ghi thành **hai tag chuẩn Anima**: một framing (`close-up` / `upper body` / `cowboy shot` / `full body` / `wide shot`) + một angle (`from above` / `from below` / `eye level` / `from side` / `three-quarter view`); thêm lens feeling (`wide angle`, `telephoto`, `shallow depth of field`) chỉ khi cần. Không dùng số mm, không dùng cụm mờ kiểu `dynamic angle`, không ghép hai framing hoặc hai angle cùng trục, và không đặt framing mâu thuẫn với pose (`close-up` nhưng hành động nằm ở hông). Nếu góc cắt mất hành động chính, đổi framing và ghi rõ bộ phận đang bị crop. Danh sách đóng: `docs/novel2moss/ANIMA_TAG_PROMPT.md`.
 - Phân biệt vị trí world-space và screen-space: camera reverse có thể đổi trái/phải trên ảnh, nhưng không đổi tay trái/phải cơ thể, người thực hiện hoặc người nhận. Áp dụng các anchor cố định của Location/Prop/Style Bible; không copy nguyên cả Bible vào frame nếu chi tiết khuất.
 - Giữ `intent.raw_labels`, `intent.content_profile`, văn bản nguồn và các ràng buộc trong sidecar; không đổi phân loại nhạy cảm sang loại khác.
 - Nếu một khung hình không thể biểu diễn trung thực hành động, báo điểm chưa rõ hoặc đề xuất tách Shot, nhưng **không tự bịa thêm sự kiện truyện**.
@@ -39,12 +39,12 @@ Trong V4 đọc storyboard đã duyệt bằng get-storyboard; lấy đúng slot
 
 - Gộp nhiều hành động khác thời điểm thành một cử chỉ đồng thời gây nhầm chiều tương tác.
 - Bịa nhân vật thứ hai, đổi tay/đạo cụ đang hoạt động, thay outfit khác hoặc âm thầm xóa trạng thái cơ thể tích lũy.
-- Chép ID/nhãn phân loại nội bộ của ứng dụng trực tiếp vào MOSS positive natural prompt.
+- Chép ID/nhãn phân loại nội bộ của ứng dụng trực tiếp vào Anima positive prompt.
 - Coi nhãn NSFW chung chung là đủ chứng cứ về tuổi hoặc điều kiện nội dung.
 
 ## Bàn giao
 
-Trả `ShotSpec` kèm các phát hiện `UNRESOLVED` hoặc `CONFLICT` nếu có. Skill này không tự phân loại điều kiện render; việc đó thuộc scope `PROMPT_DERIVATION` của policy. Tiếp theo là Continuity Check và Natural Language Prompt.
+Trả `ShotSpec` kèm các phát hiện `UNRESOLVED` hoặc `CONFLICT` nếu có. Skill này không tự phân loại điều kiện render; việc đó thuộc scope `PROMPT_DERIVATION` của policy. Tiếp theo là Continuity Check và Anima Prompt.
 
 ## Shot persistence trong Database
 

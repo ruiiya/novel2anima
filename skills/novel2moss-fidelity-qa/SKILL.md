@@ -1,10 +1,10 @@
 ---
 name: novel2moss-fidelity-qa
-description: "QA bảo toàn Story/ShotSpec khi chuyển thành natural-language prompt MOSS-Image; kiểm tra actor/target, identity/outfit, continuity và chữ trong ảnh, không làm QA render trong DB."
+description: "QA bảo toàn Story/ShotSpec khi chuyển thành prompt Anima (tag block + câu bổ trợ); kiểm tra actor/target, identity/outfit, continuity, camera tag và chữ trong ảnh, không làm QA render trong DB."
 ---
-# Novel2Moss — Fidelity QA (Natural Prompt)
+# Novel2Moss — Fidelity QA (Anima Prompt)
 
-> Đọc `docs/novel2moss/CONTENT_POLICY.md` và `docs/novel2moss/CONTENT_FIDELITY.md`, `docs/novel2moss/MOSS_NATURAL_PROMPT.md`. Quy tắc phân loại thuộc duy nhất policy trung tâm.
+> Đọc `docs/novel2moss/CONTENT_POLICY.md` và `docs/novel2moss/CONTENT_FIDELITY.md`, `docs/novel2moss/ANIMA_TAG_PROMPT.md`. Quy tắc phân loại thuộc duy nhất policy trung tâm.
 
 ## Công việc
 
@@ -15,13 +15,14 @@ description: "QA bảo toàn Story/ShotSpec khi chuyển thành natural-language
 - Kiểm tra từ `story_sources` → Plan/Act/Beat/Event → `shots`/ShotSpec → `continuity_snapshots` → `shot_prompts` và bản `.txt` sắp export.
 - So sánh **số người**, tên/đặc điểm nhân vật, outfit và màu, tay/cử chỉ/đạo cụ, vai trò actor→target, biểu cảm/phản ứng, bối cảnh, vị trí tương đối, camera, ánh sáng, state before/delta/after, và chữ cần xuất hiện nguyên văn.
 - Cảnh phải **độc lập khi render**; báo lỗi khi prompt chỉ nói “as before”, “the same outfit” mà không có chi tiết cần thiết hoặc dùng tên không rõ danh tính.
-- Kiểm tra prompt là **văn xuôi tự nhiên** (không JSON/layout/bbox/code fence/metadata). Cấu trúc `PASS` không đủ để kết luận ngữ nghĩa `PASS`.
-- Kiểm tra camera: đúng **một** mệnh đề lens + góc + framing, khớp ShotSpec, không lặp và không trộn hai họ góc; lệch hoặc mâu thuẫn → `CAMERA_CONTRADICTION`, không `PASS`. Validator trả `CAMERA_CONFLICT`/`BBOX_IN_PROMPT` thì sửa prompt hoặc tạo revision.
+- Kiểm tra prompt đúng **hợp đồng Anima**: dòng 1 là tag block lowercase, space không underscore, cách nhau `, `; có **safety tag** và **subject count**; không quality/`score_*`; không JSON/layout/bbox/code fence/metadata. Thiếu identity anchor bắt buộc (tóc/mắt/dấu nhận diện khi nhân vật đã cast) → finding, không `PASS`. Cấu trúc `PASS` không đủ để kết luận ngữ nghĩa `PASS`.
+- Kiểm tra camera: đúng **một** framing tag + **một** angle tag trong danh sách đóng, khớp ShotSpec, không trộn hai trục góc; lệch hoặc mâu thuẫn → `CAMERA_CONTRADICTION`, không `PASS`. Validator trả `CAMERA_CONFLICT`/`FRAMING_TAG_MISSING`/`TAG_UPPERCASE`/`QUALITY_TAG_FORBIDDEN`/`TOKEN_BUDGET_EXCEEDED` thì sửa prompt hoặc tạo revision.
+- Kiểm tra ngân sách: prompt ≤ 280 từ; vượt ngưỡng thì tag chi tiết sẽ bị mất khi render → cắt tag ưu tiên thấp, không cắt identity anchor.
 - Kiểm tra quyết định `PROMPT_DERIVATION` và `policy_version` đã có; không tự kết luận từ nhãn NSFW, không đổi Story để tránh kết quả kiểm tra.
 
 ## Phát hiện
 
-Mỗi finding: `{shot_id, rule, status, source_pointer, target_pointer, evidence, suggestion, autofix:false}`. Các mã điển hình: `ACTOR_TARGET_MISMATCH`, `PARTICIPANT_LOSS`, `WARDROBE_COLOR_CHANGED`, `STATE_RESET_UNEXPLAINED`, `VISIBLE_TEXT_CHANGED`, `SCENE_MISMATCH`, `CAMERA_CONTRADICTION`, `PROMPT_NOT_NATURAL`, `PROVENANCE_MISSING`.
+Mỗi finding: `{shot_id, rule, status, source_pointer, target_pointer, evidence, suggestion, autofix:false}`. Các mã điển hình: `ACTOR_TARGET_MISMATCH`, `PARTICIPANT_LOSS`, `WARDROBE_COLOR_CHANGED`, `STATE_RESET_UNEXPLAINED`, `VISIBLE_TEXT_CHANGED`, `SCENE_MISMATCH`, `CAMERA_CONTRADICTION`, `FRAMING_TAG_MISSING`, `SAFETY_TAG_MISSING`, `TAG_GRAMMAR_INVALID`, `QUALITY_TAG_PRESENT`, `IDENTITY_ANCHOR_MISSING`, `PROMPT_OVER_BUDGET`, `PROVENANCE_MISSING`.
 
 - `PASS`: Đã kiểm tra và không phát hiện sai lệch theo phạm vi được nêu; không bảo đảm model vẽ đúng.
 - `WARN`: Cần người duyệt thêm chi tiết không chắc chắn.

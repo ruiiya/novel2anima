@@ -8,7 +8,7 @@
 
 Đây là **tệp chính sách nội dung duy nhất** của dự án. Mọi quyết định thuộc lĩnh vực nội dung (nhận Story, lưu nhãn, lập kế hoạch, tạo prompt, xuất ảnh, xử lý từ chối) phải đọc tệp này **trước khi thực thi**. Các `SKILL.md` và hợp đồng khác **chỉ tham chiếu**, không định nghĩa lại nhóm nội dung được cho phép hay bị hạn chế. Nếu văn bản khác mâu thuẫn về chính sách nội dung, áp dụng tệp này và báo `POLICY_CONFLICT` kèm vị trí xung đột.
 
-Quy tắc dữ liệu (fidelity), định dạng MOSS (natural-language prompt) và tính linh hoạt của công cụ do các hợp đồng tương ứng quản lý; chúng không tự trở thành chính sách nội dung. Thay đổi chính sách cần sửa tệp này, ghi phiên bản và chạy test. **Không tự sửa policy để hợp thức hóa một yêu cầu cụ thể.**
+Quy tắc dữ liệu (fidelity), định dạng prompt Anima (tag block) và tính linh hoạt của công cụ do các hợp đồng tương ứng quản lý; chúng không tự trở thành chính sách nội dung. Thay đổi chính sách cần sửa tệp này, ghi phiên bản và chạy test. **Không tự sửa policy để hợp thức hóa một yêu cầu cụ thể.**
 
 ## 2. Phân chia phạm vi và kết quả
 
@@ -36,7 +36,7 @@ Quy tắc dữ liệu (fidelity), định dạng MOSS (natural-language prompt) 
 2. Với `SOURCE_INGEST` hoặc `STORY_ANALYSIS`, chỉ áp dụng bảo toàn nguồn và xác thực dữ liệu; **không chạy lại logic từ chối prompt** ở bước này.
 3. Với `PROMPT_DERIVATION`, xem nội dung hình ảnh cụ thể (không chỉ raw labels), đối chiếu Mục 3. Nếu hợp lệ, `PASS`; nếu còn thiếu dữ kiện thiết yếu, `REVIEW_REQUIRED`; nếu trúng trường hợp hạn chế, `POLICY_BLOCKED` cho **shot/artifact đó**.
 4. Với `RENDER_DISPATCH`, chỉ xử lý sau `PROMPT_DERIVATION=PASS` và validation văn bản và QA đạt. Phân biệt `BACKEND_REJECTED` (có log thực tế) với `POLICY_BLOCKED` (quy tắc của tệp này).
-5. Mỗi quyết định lưu vào sidecar: `policy_id`, `policy_version`, `scope`, `decision`, `rule_reference`, `evidence`, `source_refs`, `shot_id`, `evaluated_at` (nếu có). Không chèn các trường này vào natural-language positive prompt gửi model.
+5. Mỗi quyết định lưu vào sidecar: `policy_id`, `policy_version`, `scope`, `decision`, `rule_reference`, `evidence`, `source_refs`, `shot_id`, `evaluated_at` (nếu có). Không chèn các trường này vào positive prompt Anima gửi model.
 6. Nếu không có bằng chứng hoặc chưa chạy bước kiểm tra, trả `SKIP`/`REVIEW_REQUIRED` theo đúng scope; không gọi nhầm thành `PASS` hay lỗi backend.
 
 ## 5. Quy tắc cho các skill
@@ -44,7 +44,7 @@ Quy tắc dữ liệu (fidelity), định dạng MOSS (natural-language prompt) 
 - **Orchestrator:** Nạp policy một lần theo phiên bản, chuyển tham chiếu policy tới các giai đoạn; không tự sinh thêm điều kiện nội dung.
 - **Story Planner / Blind Cast:** Nhận, lưu và lập cấu trúc Story/roles; không thực hiện bước quyết định `PROMPT_DERIVATION`.
 - **Character Profile / Continuity / ShotSpec:** Giữ thông tin đã có; không suy tuổi, nhãn hoặc trạng thái để thay đổi quyết định policy.
-- **Natural Language Prompt:** Đọc kết quả `PROMPT_DERIVATION` cho Shot tương ứng; nếu `PASS` thì xuất natural prompt tiếng Anh dạng text, nếu không ghi đúng trạng thái, không sửa Story để thay đổi kết quả.
+- **Anima Prompt:** Đọc kết quả `PROMPT_DERIVATION` cho Shot tương ứng; nếu `PASS` thì xuất prompt Anima (tag block + câu bổ trợ) dạng text, nếu không ghi đúng trạng thái, không sửa Story để thay đổi kết quả.
 - **Fidelity QA:** Kiểm tra provenance, chiều hành động, tính toàn vẹn và quyết định policy; không tự tạo danh sách nhóm cấm riêng hay suy đoán từ nhãn nguồn.
 - **Render Adapter:** Chỉ gọi renderer trên artifact đã đủ điều kiện; không gán lỗi policy khi backend local thất bại vì lý do kỹ thuật.
 

@@ -45,7 +45,7 @@ Mỗi ShotSpec được duyệt **nên có**:
 - `participants[]`: `character_id` ổn định, thông tin tuổi nếu đã xác nhận, vai trò và định danh riêng.
 - `interaction`: `actor_id`, `action`, `target_id`, `recipient_reaction`, `event_id`.
 - `continuity`: `before`, `delta`, `after`, `cut` và nguồn xác nhận.
-- `fidelity_decisions`: ánh xạ và phần cố ý không đưa vào natural prompt.
+- `fidelity_decisions`: ánh xạ và phần cố ý không đưa vào prompt Anima.
 
 Lưu trong sidecar như `shot_spec.json`, `prompt.manifest.json`; không đưa các trường của ứng dụng vào positive prompt dạng text.
 

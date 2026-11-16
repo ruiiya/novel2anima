@@ -2,7 +2,7 @@
 
 1. Story/ShotSpec giữ nguyên nguồn, nhãn và provenance. Chỉ policy trung tâm xử lý quyết định nội dung, không đổi nguồn để vượt kiểm tra.
 2. Blind Story/Shot có thể tồn tại trước casting; Non-Blind chọn identity/outfit trước. Cả hai cùng dùng `shot_prompts`.
-3. Mỗi Shot hiện hành có đúng một **natural prompt canonical** tại revision được chọn; văn bản mô tả hình ảnh hoàn chỉnh, không có Layout JSON, bbox hoặc code fences.
+3. Mỗi Shot hiện hành có đúng một **prompt Anima canonical** tại revision được chọn; dòng 1 là tag block lowercase + safety tag, dòng 2 tối đa 2 câu bổ trợ; không có Layout JSON, bbox hoặc code fences.
 4. Hai người: giữ actor, target, vị trí tương đối, ngoại hình, outfit/màu, pose, biểu cảm, camera và tương tác.
 5. Một người: không tự thêm nhân vật/đồ vật không có nguồn.
 6. Trạng thái continuity/đạo cụ/trang phục chỉ thay khi có `delta` hoặc cut rõ ràng.

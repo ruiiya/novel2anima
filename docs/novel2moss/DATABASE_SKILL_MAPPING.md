@@ -10,7 +10,7 @@
 | `storyboard-planner` | Story revision/Event/Role/Casting, Visual Bible | save-storyboard → storyboards/slots/locations/props/styles/coverage/dependencies |
 | `shot-spec` | Story/Event/roles/vocab | save-shot, shot_participants/interactions |
 | `continuity` | snapshots + shot_dependencies đúng nhánh | save-continuity |
-| **`natural-language-prompt`** | ShotSpec/roles/casting/continuity/catalog | **save-natural-prompt → `shot_prompts`** |
+| **`anima-prompt`** | ShotSpec/roles/casting/continuity/catalog | **save-natural-prompt → `shot_prompts`** |
 | `fidelity-qa` | source→ShotSpec→`shot_prompts`, event_shot_mappings, sequence | save-qa `PROMPT` (hoặc `STORY/SHOT`), sequence QA evidence |
 | `orchestrator` | toàn pipeline, storyboard_seals | seal-storyboard, export-bundle, export-story-prompts |
 | `render-adapter` | **không đọc DB** | chỉ đọc `natural.prompt.txt` hoặc `prompt` string trong JSONL |

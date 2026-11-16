@@ -36,7 +36,7 @@ python database/src/n2m_db.py stats --detailed
 | `novel2moss-character-profile` | Identity và Outfit có provenance |
 | `novel2moss-shot-spec` | Shot, actor→target, scene, camera |
 | `novel2moss-continuity` | Before/delta/after xuyên Shot |
-| **`novel2moss-natural-language-prompt`** | **Sinh positive prompt trực tiếp từ ShotSpec** |
+| **`novel2moss-anima-prompt`** | **Sinh positive prompt Anima (tag block) từ ShotSpec** |
 | `novel2moss-fidelity-qa` | Kiểm tra fidelity trước export |
 | `novel2moss-database` | Migration, revision, transaction, QA/export |
 | `novel2moss-catalog-ingest` | Import catalog có nguồn, chỉ khi skill sử dụng |
@@ -51,11 +51,11 @@ python database/src/n2m_workflow.py save-storyboard --story-id STORY_ID --file s
 python database/src/n2m_workflow.py get-storyboard --storyboard-id BOARD_ID
 ```
 
-Tạo ShotSpec/Continuity bằng các skill, soạn file `.txt` natural-language theo `docs/novel2moss/MOSS_NATURAL_PROMPT.md`, sau đó:
+Tạo ShotSpec/Continuity bằng các skill, soạn file `.txt` Anima (tag block + câu bổ trợ) theo `docs/novel2moss/ANIMA_TAG_PROMPT.md`, sau đó:
 
 ```powershell
 # Validate định dạng (không thay QA ngữ nghĩa)
-python tools/novel2moss/validate_natural_prompt.py drafts/S01.txt
+python tools/novel2moss/validate_anima_prompt.py drafts/S01.txt
 
 # Lưu natural prompt vào DB, nhận PROMPT_ID
 python database/src/n2m_workflow.py save-natural-prompt --shot-id SHOT_ID --file drafts/S01.txt

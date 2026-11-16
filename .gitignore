@@ -11,3 +11,7 @@ __pycache__/
 # Generated outputs and render artifacts are local only.
 exports/
 reports/
+
+# Local composition artifacts and scratch DB.
+books/
+data/

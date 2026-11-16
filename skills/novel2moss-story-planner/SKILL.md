@@ -8,7 +8,7 @@ description: "Lập Story, Act, Beat và diễn tiến sự kiện của Novel2M
 
 ## Vai trò
 
-Tạo và sửa **cấu trúc câu chuyện**, không tạo prompt MOSS cuối hoặc payload render. Đọc `docs/novel2moss/CONTENT_FIDELITY.md` trước tiên. Story người dùng cung cấp và các revision tường minh là nguồn có thẩm quyền.
+Tạo và sửa **cấu trúc câu chuyện**, không tạo prompt Anima cuối hoặc payload render. Đọc `docs/novel2moss/CONTENT_FIDELITY.md` trước tiên. Story người dùng cung cấp và các revision tường minh là nguồn có thẩm quyền.
 
 ## Khi kích hoạt
 

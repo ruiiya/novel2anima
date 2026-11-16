@@ -44,4 +44,4 @@ Migration 008 chỉ thêm bảng/storyboard snapshot append-only. Mỗi slot có
 - `seed` chỉ vocabulary và source registry, không tải dataset ngoài và không seed layout templates mới.
 - Không quản lý render_jobs/assets/QA RENDER, model settings, seed hoặc ảnh trong SQLite.
 
-Chi tiết lệnh: `docs/novel2moss/DATABASE_OPERATIONS.md`. Quy tắc văn phong: `docs/novel2moss/MOSS_NATURAL_PROMPT.md`.
+Chi tiết lệnh: `docs/novel2moss/DATABASE_OPERATIONS.md`. Quy tắc định dạng: `docs/novel2moss/ANIMA_TAG_PROMPT.md`.

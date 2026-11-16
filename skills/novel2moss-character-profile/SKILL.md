@@ -8,7 +8,7 @@ description: "Quản lý định danh và trang phục của nhân vật Novel2M
 
 ## Vai trò
 
-Quản lý profile nhân vật **độc lập với từng Story** và cung cấp điểm nhận diện trực quan ổn định cho ShotSpec và Natural Prompt. Đọc `docs/novel2moss/CONTENT_FIDELITY.md` và `docs/novel2moss/TOOL_FLEXIBILITY.md`.
+Quản lý profile nhân vật **độc lập với từng Story** và cung cấp **identity packet tag** ổn định cho ShotSpec và Anima Prompt. Đọc `docs/novel2moss/CONTENT_FIDELITY.md` và `docs/novel2moss/TOOL_FLEXIBILITY.md`.
 
 ## Truy xuất thông tin
 
@@ -30,7 +30,7 @@ Quản lý profile nhân vật **độc lập với từng Story** và cung cấ
 
 ## Visual Lock (V4)
 
-Chuyển identity anchors và trang phục đã duyệt thành visual_bible.characters theo role, gắn provenance, character_id/outfit_id hiện hành. Khóa khuôn mặt, màu/kiểu tóc, mắt, dấu hiệu nhận diện, tỷ lệ cơ thể đã biết; biến thể trang phục/biểu cảm/tư thế theo Shot. Nếu chưa rõ thuộc tính, ghi unknown, không tự gán tuổi hay chi tiết canon. Dùng lại mô tả ổn định trong mọi prompt nơi nhân vật nhìn thấy, không phụ thuộc reference image. Đọc `docs/novel2moss/VISUAL_STORYTELLING.md`.
+Chuyển identity anchors và trang phục đã duyệt thành `visual_bible.characters` theo role, gắn provenance, character_id/outfit_id hiện hành. Khóa khuôn mặt, màu/kiểu tóc, mắt, dấu hiệu nhận diện, tỷ lệ cơ thể đã biết; biến thể trang phục/biểu cảm/tư thế theo Shot. Nếu chưa rõ thuộc tính, ghi unknown, không tự gán tuổi hay chi tiết canon. Mỗi role giữ một **identity packet tag** (lowercase, space không underscore, đúng Danbooru/Anima) và dùng **nguyên văn** packet đó trong mọi prompt nơi nhân vật nhìn thấy; consistency đến từ character LoRA khi có, không đến từ việc lặp câu. Đọc `docs/novel2moss/VISUAL_STORYTELLING.md` và `docs/novel2moss/ANIMA_TAG_PROMPT.md`.
 
 ## Xử lý xung đột
 

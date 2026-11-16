@@ -25,9 +25,10 @@ class CliIntegrationTests(unittest.TestCase):
             shot_id,_=save_shot(con,beat,'S01',{'participants':[{'role_key':'LEAD'}],
                                               'interactions':[], 'camera':'medium'})
             con.close()
-            prompt = temp/'natural.txt'
-            prompt.write_text('Anime illustration of a woman with silver hair sitting in a green garden, '
-                              'wearing a white blouse, gentle daylight and an eye-level medium shot.',encoding='utf-8')
+            prompt = temp/'anima.txt'
+            prompt.write_text('sensitive, 1girl, solo, silver hair, white blouse, sitting, '
+                              'eye level, cowboy shot, garden, daylight\n'
+                              'A woman with silver hair sits in a green garden under gentle daylight.',encoding='utf-8')
             save = subprocess.run([sys.executable,str(ROOT/'database/src/n2m_workflow.py'),
                                     '--db',str(db),'save-natural-prompt','--shot-id',shot_id,
                                     '--file',str(prompt)],capture_output=True,text=True)
@@ -41,7 +42,7 @@ class CliIntegrationTests(unittest.TestCase):
             export=subprocess.run(cmd,capture_output=True,text=True)
             self.assertEqual(export.returncode,0,export.stderr)
             self.assertTrue((bundle/'natural.prompt.txt').is_file())
-            check=subprocess.run([sys.executable,str(ROOT/'tools/novel2moss/validate_natural_prompt.py'),
+            check=subprocess.run([sys.executable,str(ROOT/'tools/novel2moss/validate_anima_prompt.py'),
                                   str(bundle/'natural.prompt.txt'),'--manifest',str(bundle/'prompt.manifest.json')],
                                  capture_output=True,text=True)
             self.assertEqual(check.returncode,0,check.stderr)

@@ -7,7 +7,7 @@
 
 Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and codebase*), không phải fork, bản migration, plugin, adapter, lớp tương thích, tiện ích mở rộng hay biến thể triển khai của bất kỳ dự án chuyển truyện thành ảnh nào trước đây.
 
-**Đầu ra duy nhất gửi model ở V4 là MOSS-Image natural-language positive prompt dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/Storyboard/ShotSpec thuộc Novel2Moss và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
+**Đầu ra duy nhất gửi model ở V4 là Anima positive prompt (tag block + tối đa 2 câu bổ trợ) dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/Storyboard/ShotSpec thuộc Novel2Moss và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
 
 ## Các phụ thuộc bị cấm
 
@@ -19,7 +19,7 @@ Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and c
 ## Sở hữu toàn bộ hợp đồng
 
 - Hợp đồng truyện: nguồn, Story, Act, Beat, Event, ShotSpec, chuyển trạng thái, revision và provenance.
-- Hợp đồng prompt: ShotSpec → natural-language prompt, kiểm tra văn xuôi và semantic fidelity.
+- Hợp đồng prompt: ShotSpec → prompt Anima (tag block), kiểm tra cú pháp tag và semantic fidelity.
 - Hợp đồng QA: phát hiện sai lệch và điều kiện nội dung **trước export**; đối chiếu ảnh sinh ra (nếu có) là quy trình ngoài DB.
 - Hợp đồng runtime: export bundle (`natural.prompt.txt`, `prompt.manifest.json`, `fidelity_report.json`), renderer adapter/generation manifest ngoài DB.
 
@@ -28,11 +28,11 @@ Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and c
 ## Hướng dẫn triển khai
 
 1. Kiểm tra **repository Novel2Moss thật sự** trước khi sửa. Repository rỗng là hợp lệ.
-2. Xây dựng/chọn giải pháp theo yêu cầu Novel2Moss. Có thể dùng thư viện phổ biến và tài liệu MOSS công khai; không coi mã nguồn độc quyền của ứng dụng khác là phụ thuộc.
+2. Xây dựng/chọn giải pháp theo yêu cầu Novel2Moss. Có thể dùng thư viện phổ biến và tài liệu Anima công khai; không coi mã nguồn độc quyền của ứng dụng khác là phụ thuộc.
 3. Không tự đoán table hay API endpoint. Nếu chưa có tầng ứng dụng, trình bày phạm vi đề xuất và đánh dấu `NOT_IMPLEMENTED`.
 4. Duy trì fixture kiểm thử end-to-end không cần repository hay dịch vụ từ xa khác.
 5. Ghi rõ capability và renderer ngoài được sử dụng khi chạy. Nếu không có, trả `SKIP`/`BLOCKED` trung thực, không lấy dữ liệu ngầm nơi khác.
 
 ## Tiêu chí nghiệm thu tính độc lập
 
-Novel2Moss phải build/test được trên máy sạch chỉ với **repository của chính nó**, các phụ thuộc công khai đã khai báo và renderer tùy chọn. Khi ngắt mọi tích hợp tùy chọn, vẫn phải có thể lập kế hoạch truyện, xuất natural prompt UTF-8, kiểm tra QA cấu trúc và chạy test local (sau khi các chức năng ứng dụng tương ứng được triển khai).
+Novel2Moss phải build/test được trên máy sạch chỉ với **repository của chính nó**, các phụ thuộc công khai đã khai báo và renderer tùy chọn. Khi ngắt mọi tích hợp tùy chọn, vẫn phải có thể lập kế hoạch truyện, xuất prompt Anima UTF-8, kiểm tra QA cấu trúc và chạy test local (sau khi các chức năng ứng dụng tương ứng được triển khai).

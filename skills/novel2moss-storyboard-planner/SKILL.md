@@ -21,7 +21,7 @@ description: "Biến Story/Act/Beat/Event đã duyệt thành storyboard có nh�
 5. Đặt thứ tự số tăng dần, shot_key không phụ thuộc thứ tự. Dùng START cho Shot đầu, CONTINUOUS/CAMERA_CUT/TIME_CUT/LOCATION_CUT cho chuỗi; BRANCH khi tạo nhánh có predecessor tường minh. Không nối trạng thái từ Shot cuối của nhánh khác chỉ vì gần nhau trong danh sách.
 6. Đối chiếu từng Event với coverage VISUALIZED (một hoặc nhiều Shot), CONTEXT_ONLY (có lý do), UNRESOLVED hoặc UNSUPPORTED_CONTENT (chỉ khi có quyết định policy có căn cứ). Một Shot có thể ánh xạ nhiều Event cùng Beat nếu thật sự cùng khoảnh khắc. Mọi trạng thái đều có evidence, không bỏ nguồn.
 7. Trình storyboard ngắn dạng bảng số thứ tự, purpose, moment, role, góc máy, coverage và vấn đề chưa giải quyết. Chờ xác nhận rõ ràng trước khi lưu. Không tự coi Story approval là storyboard approval.
-8. Lưu storyboard bằng `save-storyboard`; đọc lại `get-storyboard` để lấy slot và context_sha256. Bàn giao cho ShotSpec/Continuity. JSON chỉ là dữ liệu kế hoạch nội bộ, tuyệt đối không phải MOSS layout prompt.
+8. Lưu storyboard bằng `save-storyboard`; đọc lại `get-storyboard` để lấy slot và context_sha256. Bàn giao cho ShotSpec/Continuity. JSON chỉ là dữ liệu kế hoạch nội bộ, tuyệt đối không phải prompt gửi model, và camera phải dùng tag chuẩn Anima (`docs/novel2moss/ANIMA_TAG_PROMPT.md`).
 9. Sau QA prompt và sequence, `seal-storyboard` ghim chính xác Shot ID, Prompt ID, QA ID, continuity hash. Nếu bất kỳ Event chưa giải quyết, không seal/xuất toàn bộ như đã hoàn thành. Các Shot hợp lệ có thể bàn giao riêng theo policy.
 
 ## Sửa cục bộ

@@ -39,13 +39,13 @@ python database/src/n2m_workflow.py save-shot --beat-id BEAT_ID --shot-key S01 -
 python database/src/n2m_workflow.py save-continuity --shot-id SHOT_ID --file continuity.json
 ```
 
-Blind có thể lưu Story/Shot trước casting. Non-Blind gán nhân vật trước Shot; cả hai đều dùng natural prompt.
+Blind có thể lưu Story/Shot trước casting. Non-Blind gán nhân vật trước Shot; cả hai đều dùng cùng định dạng prompt Anima.
 
 V4: sau materialize Event và trước ShotSpec, lưu/đọc storyboard đã chốt bằng save-storyboard/get-storyboard. Sau QA thực, seal-storyboard, rồi export. Các lệnh trong ví dụ V3 giữ tương thích, nhưng storyboard mới phải theo hợp đồng V4.
 
 ## 4. Natural Prompt (định dạng duy nhất gửi model)
 
-Soạn `drafts/S01.txt` theo `docs/novel2moss/MOSS_NATURAL_PROMPT.md`; mô tả bức ảnh hoàn chỉnh bằng tiếng Anh mặc định. Natural prompt được **soạn trực tiếp từ ShotSpec** bởi skill/LLM của dự án; các script SQLite không tự sinh nội dung.
+Soạn `drafts/S01.txt` theo `docs/novel2moss/ANIMA_TAG_PROMPT.md`; dòng 1 là tag block Anima, dòng 2 tối đa 2 câu bổ trợ bằng tiếng Anh mặc định. Natural prompt được **soạn trực tiếp từ ShotSpec** bởi skill/LLM của dự án; các script SQLite không tự sinh nội dung.
 
 ```powershell
 python tools/novel2moss/validate_natural_prompt.py drafts/S01.txt
