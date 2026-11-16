@@ -183,7 +183,7 @@ def main():
                  '- **Chưa import** portrait, e621, COCO, OpenPose, Grounded SAM hoặc skeleton.',
                  '- **Chưa có** structured outfit parts/palette đã curate; generic outfit chỉ là candidate text.',
                  '- **Chưa import** Danbooru API aliases/implications live; CSV aliases đã có, implications cần export thủ công.',
-                 '- **Chưa có** Wikidata linking; **chưa chạy** renderer/MOSS image QA.',
+                 '- **Chưa có** Wikidata linking; **chưa chạy** renderer/Anima image QA.',
                  '- Cần kiểm thử consumer thực tế: action/pose/tag phải tác động đến ShotSpec và natural prompt được tạo; test định dạng/CLI không thay thế kiểm tra ngữ nghĩa bằng LLM.',
                  '', '## 8. Lệnh tái lập', '',
                  '```powershell',

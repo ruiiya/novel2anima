@@ -1,10 +1,10 @@
 # Novel2Anima Skills V4 — Visual Storytelling · Natural Prompts · Database-First
 
-Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt ngôn ngữ tự nhiên (UTF-8, mặc định tiếng Anh)** cho MOSS-Image. **Không dùng Layout JSON / bbox** trong luồng mới.
+Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt Anima (tag block + tối đa 2 câu bổ trợ, UTF-8)** cho Anima-Aesthetic-v1.1. **Không dùng Layout JSON / bbox** trong luồng mới.
 
 ```text
 Story → Act → Beat/Event → Visual Bible + Storyboard → ShotSpec → Continuity
-      → Natural Prompt (mỗi Shot một .txt) → Fidelity/Sequence QA → Seal → Export
+      → Anima Prompt (mỗi Shot một .txt) → Fidelity/Sequence QA → Seal → Export
                                                                           │
                                                                           └── Renderer riêng, không kết nối DB
 ```
@@ -99,10 +99,10 @@ python -m unittest discover -s tests -v
 
 Migrations cũ 001–007 giữ nguyên. Không có chuyển đổi Layout→Natural hoặc V3→sealed storyboard tự động vì thiếu provenance. Các file Layout cũ trong DB vẫn có thể xem để kiểm tra lịch sử nhưng không được lấy làm đầu vào mặc định cho prompt mới.
 
-## Tài liệu MOSS-Image
+## Tài liệu Anima
 
-- https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md#prompt-guidelines
-- https://github.com/OpenMOSS/MOSS-Image/blob/main/skills/moss-image-prompt-enhancer/SKILL.md
-- https://github.com/Comfy-Org/docs/blob/main/tutorials/image/moss-image/moss-image.mdx
+- https://huggingface.co/circlestone-labs/Anima (thứ tự tag, safety vocabulary, cú pháp tag)
+- https://civitai.com/articles/35368 (prompting guidebook: camera/lighting/background, ngân sách token)
+- Hợp đồng dự án: `docs/novel2anima/ANIMA_TAG_PROMPT.md`
 
 *Chỉ phần tạo prompt/database được triển khai ở bundle; chưa tự gọi LLM hoặc render ảnh.*
