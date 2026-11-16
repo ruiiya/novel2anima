@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 from n2m_db import connect, apply_migrations, uid, js, DEFAULT_DB, save_natural_prompt
+from n2m_storyboard import save_storyboard, get_storyboard, seal_storyboard, compare_storyboards
 
 
 def load_json(path: Path):
@@ -192,10 +193,10 @@ def save_qa(con,kind,subject_id,verdict,report,policy_ref=None):
     required(con,f'SELECT id FROM {table} WHERE id=?',(subject_id,),kind)
     with con:
         body=js(report)
-        previous=con.execute('''SELECT id FROM qa_reports WHERE subject_kind=? AND subject_id=?
-                    AND verdict=? AND policy_ref IS ? AND report_json=? LIMIT 1''',
-                    (kind,subject_id,verdict,policy_ref,body)).fetchone()
-        if previous:
+        previous=con.execute('''SELECT id,verdict,policy_ref,report_json FROM qa_reports
+                    WHERE subject_kind=? AND subject_id=? ORDER BY rowid DESC LIMIT 1''',
+                    (kind,subject_id)).fetchone()
+        if previous and (previous['verdict'],previous['policy_ref'],previous['report_json']) == (verdict,policy_ref,body):
             return previous['id']
         id_=uid('qa')
         con.execute('''INSERT INTO qa_reports(id,subject_kind,subject_id,verdict,policy_ref,report_json)
@@ -208,6 +209,10 @@ def main():
     p.add_argument('--db',type=Path,default=DEFAULT_DB)
     sub=p.add_subparsers(dest='command',required=True)
     q=sub.add_parser('save-plan');q.add_argument('--story-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--expected-revision',type=int)
+    q=sub.add_parser('save-storyboard');q.add_argument('--story-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--expected-revision',type=int)
+    q=sub.add_parser('get-storyboard');q.add_argument('--storyboard-id',required=True)
+    q=sub.add_parser('compare-storyboards');q.add_argument('--old-id',required=True);q.add_argument('--new-id',required=True)
+    q=sub.add_parser('seal-storyboard');q.add_argument('--storyboard-id',required=True);q.add_argument('--file',type=Path,required=True)
     q=sub.add_parser('add-act');q.add_argument('--story-id',required=True);q.add_argument('--order',type=int,required=True);q.add_argument('--title');q.add_argument('--summary');q.add_argument('--spec-file',type=Path)
     q=sub.add_parser('add-beat');q.add_argument('--act-id',required=True);q.add_argument('--order',type=int,required=True);q.add_argument('--summary');q.add_argument('--spec-file',type=Path)
     q=sub.add_parser('add-event');q.add_argument('--beat-id',required=True);q.add_argument('--order',type=int,required=True);q.add_argument('--file',type=Path,required=True)
@@ -221,6 +226,10 @@ def main():
         apply_migrations(con)
         c=args.command
         if c=='save-plan':value=save_plan(con,args.story_id,load_json(args.file),args.expected_revision)
+        elif c=='save-storyboard':value=save_storyboard(con,args.story_id,load_json(args.file),args.expected_revision)
+        elif c=='get-storyboard':value=get_storyboard(con,args.storyboard_id)
+        elif c=='compare-storyboards':value=compare_storyboards(con,args.old_id,args.new_id)
+        elif c=='seal-storyboard':value=seal_storyboard(con,args.storyboard_id,load_json(args.file))
         elif c=='add-act':value=add_act(con,args.story_id,args.order,args.title,args.summary,load_json(args.spec_file) if args.spec_file else None)
         elif c=='add-beat':value=add_beat(con,args.act_id,args.order,args.summary,load_json(args.spec_file) if args.spec_file else None)
         elif c=='add-event':value=add_event(con,args.beat_id,args.order,load_json(args.file))

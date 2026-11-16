@@ -1,4 +1,4 @@
-# Novel2Moss — DB Operations V3 · Natural Prompts
+# Novel2Moss — DB Operations V4 · Visual Storytelling
 
 Dùng Python 3.10+, chạy từ project root. `--db PATH` luôn đứng **trước** subcommand.
 
@@ -12,6 +12,8 @@ python -m unittest discover -s tests -v
 ```
 
 Migration 007 bổ sung `shot_prompts` và QA `PROMPT`, giữ các bảng Layout lịch sử. `seed` chỉ vocabulary + source registry; không seed Layout mới, không download.
+
+Migration 008 thêm Visual Bible, storyboard, coverage, dependency, seal. Đọc `VISUAL_STORYTELLING.md` để dùng schema V4.
 
 ## 2. Import metadata (không thay đổi)
 
@@ -39,6 +41,8 @@ python database/src/n2m_workflow.py save-continuity --shot-id SHOT_ID --file con
 
 Blind có thể lưu Story/Shot trước casting. Non-Blind gán nhân vật trước Shot; cả hai đều dùng natural prompt.
 
+V4: sau materialize Event và trước ShotSpec, lưu/đọc storyboard đã chốt bằng save-storyboard/get-storyboard. Sau QA thực, seal-storyboard, rồi export. Các lệnh trong ví dụ V3 giữ tương thích, nhưng storyboard mới phải theo hợp đồng V4.
+
 ## 4. Natural Prompt (định dạng duy nhất gửi model)
 
 Soạn `drafts/S01.txt` theo `docs/novel2moss/MOSS_NATURAL_PROMPT.md`; mô tả bức ảnh hoàn chỉnh bằng tiếng Anh mặc định. Natural prompt được **soạn trực tiếp từ ShotSpec** bởi skill/LLM của dự án; các script SQLite không tự sinh nội dung.
@@ -51,7 +55,7 @@ python database/src/n2m_db.py export-bundle --prompt-id PROMPT_ID --out-dir expo
 python tools/novel2moss/validate_natural_prompt.py exports/STORY_ID/S01/1/natural.prompt.txt --manifest exports/STORY_ID/S01/1/prompt.manifest.json
 ```
 
-`PASS` trong lệnh QA chỉ được ghi khi đã đối chiếu ý nghĩa. Nếu chưa làm QA, export ghi `SKIP`, không giả báo PASS.
+`PASS` trong lệnh QA chỉ được ghi khi đã đối chiếu ý nghĩa. V4 từ chối export prompt chưa PASS đúng policy; V3 legacy nếu chưa làm QA thì sidecar ghi SKIP, không giả báo PASS.
 
 ## 5. Export toàn Story
 
@@ -73,6 +77,8 @@ exports/STORY_ID/
 ```
 
 Mỗi record JSONL chứa `shot_key`, `page`, `act`, `beat`, `camera`, `focus`, `bundle_dir`, `prompt_sha256`, **`prompt` (text string)**. Record nằm trên một dòng, cách nhau **một dòng trống**. Không có JSON Layout trong giá trị `prompt`. Khi thiếu prompt của Shot mới nhất hoặc QA `BLOCKED`, xuất cả Story thất bại thay vì âm thầm bỏ Shot.
+
+V4 thêm storyboard_id/shot_order/branch_key/purpose/qa_id/continuity_sha256, lựa chọn revision theo seal, không chọn theo shot_key. Dùng thư mục riêng cho từng lần export để không trộn file lịch sử.
 
 ## 6. Ranh giới
 

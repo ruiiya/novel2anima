@@ -2,6 +2,7 @@
   "schema_version": "n2m.story.v1",
   "story_id": "STORY-DEMO",
   "revision": 1,
+  "approval": {"status": "PENDING", "evidence": "Replace with actual user approval."},
   "source_refs": [{"type": "user_story", "id": "original-001", "status": "confirmed"}],
   "intent": {"content_profile": "adult", "raw_labels": ["mature", "nsfw"], "constraints": ["The woman initiates the head pat; do not reverse the action."]},
   "characters": [

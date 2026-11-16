@@ -16,6 +16,8 @@ Theo nhân vật: định danh, tóc, các phần trang phục và màu sắc, p
 
 ## Thuật toán
 
+V4: Đọc storyboard slot/predecessor/transition và Visual Bible. Dùng snapshot scene role NULL và mỗi role hiện diện; delta dạng set/remove theo `docs/novel2moss/VISUAL_STORYTELLING.md`. Kế thừa cả state của role tạm ngoài khung qua ancestry; dừng khi before lệch after của tổ tiên gần nhất. Không trộn world-space với left/right của camera. Thay location/prop owner/time/light bằng delta có evidence, không reset khi cut.
+
 1. Đọc `after` **đã xác nhận** ở Shot trước, sự kiện hiện tại và `delta` tường minh của Shot hiện tại (bao gồm cả các mục bị loại bỏ).
 2. Đề xuất `before = previous after` cho cùng chuỗi cảnh liên tục và tôn trọng ranh giới nhánh. Không lấy trạng thái từ Story khác chỉ vì trùng `character_id`.
 3. Chỉ áp dụng delta được ghi rõ; không tự suy diễn việc cởi/mặc lại đồ, dọn sạch, dấu vết biến mất, chuyển quyền giữ đạo cụ hoặc đổi kiểu tóc chỉ để thuận tiện tạo hình.
@@ -41,4 +43,5 @@ Trả báo cáo chuyển trạng thái `PASS`, `WARN` hoặc `BLOCKED`, các pat
 - Đọc `shots` đúng revision, `story_roles`, `continuity_snapshots` của Shot trước **trên đúng nhánh**; nếu thiếu ancestry/branch metadata, không tự nối state khác Story hoặc chọn shot theo thời gian tạo.
 - Với `before/delta/after` có cấu trúc, gọi `n2m_workflow.py save-continuity` để lưu theo khóa `(shot_id,story_role_id)`, hoặc role NULL cho trạng thái cảnh; không gộp nhiều role vào một row.
 - Ghi lại cùng nội dung phải idempotent. Nếu snapshot cũ khác, trả `CONFLICT` và tạo Shot revision mới trước khi lưu lại; không UPDATE/DELETE lịch sử.
+- Nếu chỉ thay continuity, cập nhật continuity_revision_note với lý do/evidence trong ShotSpec để save-shot tạo revision mới; không tự ghi đè snapshot.
 - `shots.shot_spec_json` không được tự sửa khi làm QA, và `story_castings` thay đổi không tự reset continuity.

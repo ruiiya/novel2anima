@@ -20,6 +20,8 @@ Qua mọi phép chuyển `Story → Act → Beat → ShotSpec → Natural Prompt
 - Ý định cốt truyện, thể loại, sắc thái, cường độ và mọi nhãn nguồn (bao gồm NSFW) đúng như được cung cấp.
 - Ràng buộc phải có/không được có, chữ được trích hoặc cần xuất hiện trong ảnh, và các thông tin cố ý để chưa xác định.
 
+V4 bổ sung storyboard làm bước giữa Beat và ShotSpec, source coverage cho toàn bộ Event và sequence QA. Mọi cut, nhánh và slot đều truy vết về nguồn; Visual Bible và seal không được thay thế Story gốc. Xem `VISUAL_STORYTELLING.md`.
+
 **Cấm** tự làm nhẹ, tăng nặng, đảo chiều, gộp, bỏ, bịa hoặc đổi chủ thể các yếu tố trên chỉ để hình đẹp hơn. Caption có thể diễn đạt **phần nhìn thấy** bằng ngôn ngữ tự nhiên; thông tin phân loại không trực quan vẫn phải ở sidecar và không được mất khỏi metadata chuẩn. Positive prompt gửi renderer chỉ là một phép chiếu phần trực quan, không phải toàn bộ cốt truyện.
 
 ## Thứ tự ưu tiên khi có mâu thuẫn

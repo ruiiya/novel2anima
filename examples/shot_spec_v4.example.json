@@ -1,0 +1,20 @@
+{
+  "schema_version": "n2m.shot.v4",
+  "visual_context_sha256": "COPY_CONTEXT_SHA256_FROM_GET_STORYBOARD",
+  "camera": "eye-level medium two-shot",
+  "focus": "the notebook handover",
+  "location_key": "reading-room",
+  "style_key": "anime",
+  "purpose": "ACTION",
+  "prop_keys": ["notebook"],
+  "source_refs": [{"type": "story_event", "id": "EVENT_HANDOVER"}],
+  "participants": [
+    {"role_key": "LEAD", "spec": {"appearance":"Short black hair, navy shirt", "world_position":"standing by the oak table", "screen_position":"left", "pose":"reaching toward the woman", "expression":"gentle smile"}},
+    {"role_key": "PARTNER_A", "spec": {"appearance":"Brown hair, ivory blouse", "world_position":"seated beside the oak table", "screen_position":"right", "pose":"receiving the notebook", "expression":"warm smile"}}
+  ],
+  "interactions": [
+    {"event_id":"EVENT_HANDOVER","actor_role_key":"LEAD","target_role_key":"PARTNER_A","action_text":"hands the blue notebook to","reaction_text":"accepts the notebook","constraints":["preserve the actor and target"]}
+  ],
+  "intent": {"raw_labels":[],"constraints":[]},
+  "continuity_revision_note": "Initial approved state"
+}

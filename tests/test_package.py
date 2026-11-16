@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 class PackageTests(unittest.TestCase):
     def test_all_skill_metadata(self):
         skills=list((ROOT/'skills').glob('*/SKILL.md'))
-        self.assertEqual(len(skills),11)
+        self.assertEqual(len(skills),12)
         for file in skills:
             with self.subTest(file=file):
                 text=file.read_text(encoding='utf-8')
@@ -38,6 +38,11 @@ class PackageTests(unittest.TestCase):
             result=subprocess.run([sys.executable,str(ROOT/'install.py'),'--target',tmp,'--mode','claude'],capture_output=True,text=True)
             self.assertEqual(result.returncode,0,result.stderr)
             self.assertTrue((Path(tmp)/'.claude/skills/novel2moss-natural-language-prompt/SKILL.md').exists())
+            self.assertTrue((Path(tmp)/'.claude/skills/novel2moss-storyboard-planner/SKILL.md').exists())
+            self.assertTrue((Path(tmp)/'database/migrations/008_visual_storytelling.sql').exists())
+            self.assertTrue((Path(tmp)/'database/src/n2m_storyboard.py').exists())
+            self.assertTrue((Path(tmp)/'docs/novel2moss/VISUAL_STORYTELLING.md').exists())
+            self.assertTrue((Path(tmp)/'examples/novel2moss/storyboard.example.json').exists())
             self.assertTrue((Path(tmp)/'docs/novel2moss/CONTENT_FIDELITY.md').exists())
             self.assertTrue((Path(tmp)/'docs/novel2moss/PROJECT_BOUNDARIES.md').exists())
             self.assertTrue((Path(tmp)/'docs/novel2moss/CONTENT_POLICY.md').exists())
@@ -68,6 +73,17 @@ class PackageTests(unittest.TestCase):
             backups = list((target/'.novel2moss-installer-backup').rglob('compile_layout.py'))
             self.assertEqual(len(backups), 1)
             self.assertEqual(backups[0].read_text(), 'old layout tool')
+
+    def test_upgrade_preserves_custom_policy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target=Path(tmp)
+            policy=target/'docs/novel2moss/CONTENT_POLICY.md'
+            policy.parent.mkdir(parents=True)
+            policy.write_bytes(b'Existing customized policy')
+            result=subprocess.run([sys.executable,str(ROOT/'install.py'),'--target',tmp,'--mode','claude','--upgrade'],
+                                  capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(policy.read_bytes(),b'Existing customized policy')
 
 
 if __name__ == '__main__':

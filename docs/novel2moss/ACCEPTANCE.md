@@ -1,4 +1,4 @@
-# Novel2Moss — Acceptance V3 Natural Prompt
+# Novel2Moss — Acceptance V4 Visual Storytelling
 
 1. Story/ShotSpec giữ nguyên nguồn, nhãn và provenance. Chỉ policy trung tâm xử lý quyết định nội dung, không đổi nguồn để vượt kiểm tra.
 2. Blind Story/Shot có thể tồn tại trước casting; Non-Blind chọn identity/outfit trước. Cả hai cùng dùng `shot_prompts`.
@@ -11,7 +11,12 @@
 9. Dữ liệu Layout V2 vẫn còn sau migration 007; không phát sinh bản Layout mới từ các lệnh V3.
 10. `save-natural-prompt` idempotent, khác text tăng revision; prompt và QA lịch sử không được sửa/xóa.
 11. `export-bundle` tạo `natural.prompt.txt`, `prompt.manifest.json`, `fidelity_report.json`, hash khớp byte của `.txt`.
-12. `export-story-prompts` chỉ dùng current Shot revision, trả lỗi nếu thiếu prompt; file `prompts.all.jsonl`/per-Act có `prompt` string và một dòng trống giữa record.
+12. `export-story-prompts` V4 dùng exact sealed Shot/Prompt/QA revision; legacy chưa có storyboard dùng current Shot. File JSONL có prompt string và một dòng trống giữa record.
 13. Không có `render_jobs`/`render_assets`/`qa_reports` chủ đề `RENDER`; có thể render bằng file khi SQLite đóng.
 14. Kiểm tra standalone trên project trống và nâng cấp V2 bằng migration mới, không mượn code/DB dự án khác.
 15. Kiểm tra cấu trúc prompt **không đồng nghĩa** kiểm tra fidelity hoặc chất lượng ảnh. Báo rõ những phần chưa chạy/ngoài phạm vi.
+16. Mọi materialized Event có coverage/tình trạng/evidence, không được mất Event.
+17. Thứ tự Shot dạng số, predecessor đúng nhánh; camera cut không làm đổi world state. Role ngoài frame giữ state.
+18. Context hash phản ánh source, visual direction, casting và Bible. Thay casting hoặc sửa slot không được reuse artifact stale.
+19. Seal từ chối thiếu QA, coverage chưa giải quyết, sai actor/target, delta hoặc continuity break. Không export storyboard chưa seal.
+20. Migration 008 giữ dữ liệu V3; repair chỉ tạo revision mới, có báo cáo impacted descendants; không thay seal trước.

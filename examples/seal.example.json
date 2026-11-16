@@ -1,0 +1,10 @@
+{
+  "bindings": {
+    "S02": {"shot_id": "SHOT_ID_1", "prompt_id": "PROMPT_ID_1"},
+    "S10": {"shot_id": "SHOT_ID_2", "prompt_id": "PROMPT_ID_2"}
+  },
+  "sequence_qa": {
+    "verdict": "SKIP",
+    "evidence": "Replace only after actual source coverage, continuity and fidelity review."
+  }
+}

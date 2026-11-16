@@ -1,0 +1,21 @@
+{
+  "story_revision": 1,
+  "approval": {"status": "PENDING", "evidence": "Thay bằng xác nhận thật của người dùng"},
+  "visual_bible": {
+    "characters": {
+      "LEAD": {"description": "Adult man with short black hair, navy shirt", "provenance": "user story", "character_id": null, "outfit_id": null},
+      "PARTNER_A": {"description": "Adult woman with brown hair, ivory blouse", "provenance": "user story", "character_id": null, "outfit_id": null}
+    },
+    "locations": {"reading-room": {"description": "Oak table beside a tall window, bookshelves behind it", "provenance": "user approved setting"}},
+    "props": {"notebook": {"description": "Blue hardcover notebook", "provenance": "user story"}},
+    "styles": {"anime": {"description": "Clean anime linework, muted warm palette", "tone": "warm", "provenance": "user approved style"}}
+  },
+  "shots": [
+    {"shot_key":"S02","shot_order":1,"beat_id":"BEAT_ID","branch_key":"main","previous_shot_key":null,"transition":"START","purpose":"ACTION","camera":"eye-level medium two-shot","focus":"the notebook handover","visual_moment":"The man hands the blue notebook to the woman.","role_keys":["LEAD","PARTNER_A"],"location_key":"reading-room","prop_keys":["notebook"],"style_key":"anime"},
+    {"shot_key":"S10","shot_order":2,"beat_id":"BEAT_ID","branch_key":"main","previous_shot_key":"S02","transition":"CAMERA_CUT","purpose":"REACTION","camera":"close-up","focus":"the woman's smile","visual_moment":"The woman smiles while holding the notebook.","role_keys":["PARTNER_A"],"location_key":"reading-room","prop_keys":["notebook"],"style_key":"anime"}
+  ],
+  "coverage": [
+    {"event_id":"EVENT_HANDOVER","status":"VISUALIZED","shot_key":"S02","evidence":"The handover is visible."},
+    {"event_id":"EVENT_SMILE","status":"VISUALIZED","shot_key":"S10","evidence":"The reaction is visible."}
+  ]
+}

@@ -12,6 +12,8 @@ description: "Lập kế hoạch Novel2Moss với vai trò tạm thời khi chư
 
 ## Quy trình
 
+V4: Khi lập storyboard, Visual Bible characters dùng role_key ổn định, description có provenance, character_id/outfit_id null nếu chưa cast. Gán casting về sau làm thay story_revision và context hash của slot liên quan; kiểm tra lại các Shot đó, không thay Event hoặc nhãn nguồn. Đọc `docs/novel2moss/VISUAL_STORYTELLING.md`.
+
 1. Cấp ID vai trò ổn định (`LEAD`, `PARTNER_A`, `OTHER_1`) và duy nhất trong Story. **Không** bịa tên nhân vật canon, thương hiệu/tác phẩm, tuổi hoặc người thật.
 2. Lưu nguyên truyện ở cấp vai trò cùng nhãn phân loại nguồn. Chưa biết danh tính **không đồng nghĩa** được quyền tự gán tuổi trưởng thành hoặc mặc định yêu cầu render đủ điều kiện.
 3. Nếu cần hình dung để lập bố cục, dùng **visual placeholder chung** và đánh dấu rõ là tạm thời; chỉ thêm các đặc điểm ngoại hình đã được xác nhận. Không nhận đó là nhân vật canon.

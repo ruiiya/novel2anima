@@ -24,6 +24,7 @@ Khi tạo Story mới, viết tiếp truyện, thiết kế Act, tạo nhánh, c
 6. Trạng thái Beat sau phải nối hợp lý với Beat trước. Ghi rõ camera cut/time cut nếu không cần thể hiện quá trình đổi tư thế/đạo cụ liên tục; cut không cho phép tự xóa trạng thái thể chất.
 7. Phân biệt ngữ cảnh truyện với những gì nhìn thấy trong Shot hiện tại. Xuất kế hoạch Act/Beat đủ rõ để ShotSpec chuyển thành mô tả một khung hình.
 8. Khi chỉnh sửa, giữ snapshot cũ, tăng revision và xuất semantic delta trước/sau. Không âm thầm sinh lại nội dung đã duyệt.
+9. Ghi source_fragment cho Event và các turning point, visual opportunity, reaction, hệ quả quan trọng. Phân biệt sự kiện gốc với gợi ý hình ảnh; bàn giao tất cả Event (kể cả ngữ cảnh) cho storyboard-planner để lập coverage. Không coi phân tích cao trào là lý do cắt nguồn.
 
 ## Cổng chốt Story (bắt buộc)
 

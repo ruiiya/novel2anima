@@ -1,0 +1,7 @@
+{
+  "snapshots": [
+    {"role_key":null,"before":{"location_key":"reading-room","time":"afternoon"},"delta":{"set":{},"remove":[]},"after":{"location_key":"reading-room","time":"afternoon"}},
+    {"role_key":"LEAD","before":{"outfit":"navy shirt","holding":"notebook"},"delta":{"set":{"holding":null},"remove":[]},"after":{"outfit":"navy shirt","holding":null}},
+    {"role_key":"PARTNER_A","before":{"outfit":"ivory blouse","holding":null},"delta":{"set":{"holding":"notebook"},"remove":[]},"after":{"outfit":"ivory blouse","holding":"notebook"}}
+  ]
+}

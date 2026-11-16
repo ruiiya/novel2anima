@@ -59,7 +59,7 @@ class NaturalWorkflowTests(unittest.TestCase):
         versions = [x[0] for x in self.con.execute('SELECT version FROM schema_migrations ORDER BY version')]
         self.assertEqual(versions, ['001_init', '002_integrity', '003_history_guards',
                                     '004_catalog_enrichment', '005_db_boundary',
-                                    '006_qa_history_guards', '007_natural_prompts'])
+                                    '006_qa_history_guards', '007_natural_prompts', '008_visual_storytelling'])
         self.assertEqual(self.con.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(list(self.con.execute('PRAGMA foreign_key_check')), [])
         self.assertEqual(self.con.execute('SELECT count(*) FROM shot_prompts').fetchone()[0], 0)
@@ -242,7 +242,6 @@ class NaturalWorkflowTests(unittest.TestCase):
             old.execute("INSERT INTO beats(id,act_id,beat_order) VALUES('old-beat','old-act',1)")
             old.execute("INSERT INTO shots(id,beat_id,shot_key,shot_spec_json) VALUES('old-shot','old-beat','S1','{}')")
             old.execute("INSERT INTO shot_layouts(id,shot_id,width,height,summary_caption) VALUES('old-layout','old-shot',1024,1024,'Old caption')")
-        old.close()
         check = connect(legacy)
         apply_migrations(check)
         self.assertEqual(check.execute("SELECT count(*) FROM shot_layouts WHERE id='old-layout'").fetchone()[0], 1)

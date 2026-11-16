@@ -7,7 +7,7 @@
 
 Novel2Moss là **sản phẩm và mã nguồn độc lập** (*own product and codebase*), không phải fork, bản migration, plugin, adapter, lớp tương thích, tiện ích mở rộng hay biến thể triển khai của bất kỳ dự án chuyển truyện thành ảnh nào trước đây.
 
-**Đầu ra duy nhất gửi model ở V3 là MOSS-Image natural-language positive prompt dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/ShotSpec thuộc Novel2Moss và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
+**Đầu ra duy nhất gửi model ở V4 là MOSS-Image natural-language positive prompt dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/Storyboard/ShotSpec thuộc Novel2Moss và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
 
 ## Các phụ thuộc bị cấm
 

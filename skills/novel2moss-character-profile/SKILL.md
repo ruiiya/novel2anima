@@ -26,7 +26,11 @@ Quản lý profile nhân vật **độc lập với từng Story** và cung cấ
 - Nếu là biến thể trong cùng tác phẩm, ghi cả biến thể: `Asuna (bunny) (Blue Archive)`, `Asuna (school uniform) (Blue Archive)`; trang phục của Story vẫn mô tả riêng, không thay bằng tên biến thể.
 - Chỉ nhân vật **original/không thuộc tác phẩm nào** mới được bỏ phần ngoặc; khi đó dùng mô tả nhận diện đầy đủ và `character_id` curated làm bằng chứng.
 - Dạng chuẩn lấy từ `characters.display_name` (đã có hậu tố tác phẩm) hoặc `universes.slug`; không tự bịa tên tác phẩm, không dịch tên tác phẩm.
-- Kiểm QA: mọi `character` item và `summary.caption` phải chứa định danh đầy đủ; thiếu thì `NEEDS_REVIEW` với issue `IDENTITY_NOT_DISAMBIGUATED`.
+- Kiểm QA: mỗi nhân vật có nguồn tác phẩm trong natural prompt phải chứa định danh đầy đủ; thiếu thì `NEEDS_REVIEW` với issue `IDENTITY_NOT_DISAMBIGUATED`.
+
+## Visual Lock (V4)
+
+Chuyển identity anchors và trang phục đã duyệt thành visual_bible.characters theo role, gắn provenance, character_id/outfit_id hiện hành. Khóa khuôn mặt, màu/kiểu tóc, mắt, dấu hiệu nhận diện, tỷ lệ cơ thể đã biết; biến thể trang phục/biểu cảm/tư thế theo Shot. Nếu chưa rõ thuộc tính, ghi unknown, không tự gán tuổi hay chi tiết canon. Dùng lại mô tả ổn định trong mọi prompt nơi nhân vật nhìn thấy, không phụ thuộc reference image. Đọc `docs/novel2moss/VISUAL_STORYTELLING.md`.
 
 ## Xử lý xung đột
 

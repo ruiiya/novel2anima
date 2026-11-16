@@ -568,15 +568,23 @@ def _prompt_bundle_data(con, prompt_id: str):
         raise ValueError('Natural prompt checksum mismatch')
     qa = con.execute('''SELECT verdict,policy_ref,report_json,created_at FROM qa_reports
                         WHERE subject_kind='PROMPT' AND subject_id=?
-                        ORDER BY created_at DESC,id DESC LIMIT 1''', (prompt_id,)).fetchone()
+                        ORDER BY rowid DESC LIMIT 1''', (prompt_id,)).fetchone()
     return prompt, qa
 
 
-def export_bundle(con, prompt_id: str, out_dir: Path):
+def export_bundle(con, prompt_id: str, out_dir: Path, qa_id=None):
     """Export natural text and traceability sidecars, no renderer dependency."""
     prompt, qa = _prompt_bundle_data(con, prompt_id)
     if qa and qa['verdict'] == 'BLOCKED':
         raise ValueError('Blocked QA for natural prompt; export refused')
+    if json.loads(prompt['shot_spec_json']).get('visual_context_sha256'):
+        from n2m_storyboard import latest_qa, require_prompt_qa
+        require_prompt_qa(latest_qa(con,prompt_id),prompt['shot_id'])
+    if qa_id:
+        qa = con.execute('''SELECT * FROM qa_reports WHERE id=? AND subject_kind='PROMPT'
+                            AND subject_id=? AND verdict='PASS' ''',(qa_id,prompt_id)).fetchone()
+        if qa is None:
+            raise ValueError('Pinned prompt QA not found')
     out_dir = out_dir.expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     text_path = out_dir / 'natural.prompt.txt'
@@ -598,6 +606,8 @@ def export_bundle(con, prompt_id: str, out_dir: Path):
         fidelity = {'subject_kind': 'PROMPT', 'subject_id': prompt_id,
                     'verdict': qa['verdict'], 'policy_ref': qa['policy_ref'],
                     'report': json.loads(qa['report_json']), 'created_at': qa['created_at']}
+        if qa_id:
+            fidelity['qa_id'] = qa_id
     else:
         fidelity = {'subject_kind': 'PROMPT', 'subject_id': prompt_id,
                     'verdict': 'SKIP', 'reason': 'No pre-export natural prompt QA recorded'}
@@ -606,14 +616,23 @@ def export_bundle(con, prompt_id: str, out_dir: Path):
             'fidelity_report': str(qa_path), 'prompt_sha256': prompt['prompt_sha256']}
 
 
-def export_story_prompts(con, story_id: str, out_dir: Path):
+def export_story_prompts(con, story_id: str, out_dir: Path, storyboard_id=None):
     """Export latest Shot revisions, one natural prompt per Shot, grouped by Act.
 
     All prompts must exist before writing: no silently truncated Story export.
     """
     if not con.execute('SELECT 1 FROM stories WHERE id=?', (story_id,)).fetchone():
         raise ValueError(f'Story not found: {story_id}')
-    shots = con.execute('''SELECT s.*,a.id AS act_id,a.act_order,b.beat_order
+    from n2m_storyboard import sealed_selection
+    selection = sealed_selection(con,story_id,storyboard_id)
+    if selection:
+        storyboard_id, bindings = selection
+        shots = [con.execute('''SELECT s.*,a.id AS act_id,a.act_order,b.beat_order
+            FROM shots s JOIN beats b ON b.id=s.beat_id JOIN acts a ON a.id=b.act_id
+            WHERE s.id=? AND a.story_id=?''',(b['shot_id'],story_id)).fetchone() for b in bindings]
+    else:
+        bindings = None
+        shots = con.execute('''SELECT s.*,a.id AS act_id,a.act_order,b.beat_order
         FROM shots s JOIN beats b ON b.id=s.beat_id JOIN acts a ON a.id=b.act_id
         WHERE a.story_id=? AND s.revision=(SELECT max(x.revision) FROM shots x
                  WHERE x.beat_id=s.beat_id AND x.shot_key=s.shot_key)
@@ -621,9 +640,10 @@ def export_story_prompts(con, story_id: str, out_dir: Path):
     if not shots:
         raise ValueError('Story has no Shots to export')
     planned = []
-    for shot in shots:
-        p = con.execute('SELECT id FROM shot_prompts WHERE shot_id=? ORDER BY revision DESC LIMIT 1',
-                        (shot['id'],)).fetchone()
+    for index,shot in enumerate(shots):
+        p = ({'id':bindings[index]['prompt_id']} if bindings else
+             con.execute('SELECT id FROM shot_prompts WHERE shot_id=? ORDER BY revision DESC LIMIT 1',
+                         (shot['id'],)).fetchone())
         if not p:
             raise ValueError(f'Missing natural prompt for current Shot {shot["shot_key"]} ({shot["id"]})')
         prompt, qa = _prompt_bundle_data(con, p['id'])
@@ -633,16 +653,19 @@ def export_story_prompts(con, story_id: str, out_dir: Path):
     out_dir = out_dir.expanduser().resolve()
     acts = {}
     all_lines = []
-    for shot, prompt in planned:
+    for index,(shot, prompt) in enumerate(planned):
         act_key = f'A{shot["act_order"]:02d}'
         shot_dir = out_dir / 'bundles' / act_key / f'B{shot["beat_order"]:02d}' / shot['id'] / str(prompt['revision'])
-        export_bundle(con, prompt['id'], shot_dir)
+        export_bundle(con, prompt['id'], shot_dir, bindings[index]['qa_id'] if bindings else None)
         shot_spec = json.loads(shot['shot_spec_json'])
         row = {'shot_key': shot['shot_key'], 'page': shot_spec.get('page'),
                'act': act_key, 'beat': shot['beat_order'],
                'camera': shot_spec.get('camera'), 'focus': shot_spec.get('focus'),
                'bundle_dir': str(shot_dir.relative_to(out_dir)).replace('\\','/'),
                'prompt_sha256': prompt['prompt_sha256'], 'prompt': prompt['prompt_text']}
+        if bindings:
+            row.update({k: bindings[index][k] for k in ('shot_order','branch_key','purpose','qa_id','continuity_sha256')})
+            row['storyboard_id'] = storyboard_id
         line = json.dumps(row, ensure_ascii=False, separators=(',', ':'))
         all_lines.append(line)
         acts.setdefault(act_key, []).append(line)
@@ -652,7 +675,7 @@ def export_story_prompts(con, story_id: str, out_dir: Path):
     write_lines(out_dir / 'prompts.all.jsonl', all_lines)
     for name, lines in acts.items():
         write_lines(out_dir / 'prompts' / f'{name}.jsonl', lines)
-    return {'story_id': story_id, 'shots': len(planned), 'acts': len(acts),
+    return {'story_id': story_id, 'storyboard_id': storyboard_id, 'shots': len(planned), 'acts': len(acts),
             'output': str(out_dir / 'prompts.all.jsonl')}
 
 
@@ -662,7 +685,9 @@ def stats(con):
            'catalog_assets','catalog_tag_relations','catalog_tag_taxonomy','catalog_entity_links',
            'catalog_captions','pose_references','pose_reference_views','layout_templates',
            'stories','story_roles','story_castings','acts','beats','story_events','shots',
-           'shot_layouts','layout_exports','shot_prompts','qa_reports']
+           'shot_layouts','layout_exports','shot_prompts','qa_reports',
+           'storyboards','storyboard_shots','story_locations','story_props','visual_style_profiles',
+           'event_shot_mappings','shot_dependencies','storyboard_seals']
     return {name:con.execute(f'SELECT count(*) FROM {name}').fetchone()[0] for name in names}
 
 
@@ -763,7 +788,7 @@ def main():
     a=sub.add_parser('add-role');a.add_argument('--story-id',required=True);a.add_argument('--key',required=True);a.add_argument('--description',default='')
     a=sub.add_parser('bind-role');a.add_argument('--story-id',required=True);a.add_argument('--key',required=True);a.add_argument('--character-id',required=True);a.add_argument('--outfit-id')
     a=sub.add_parser('export-bundle');a.add_argument('--prompt-id',required=True);a.add_argument('--out-dir',type=Path,required=True)
-    a=sub.add_parser('export-story-prompts');a.add_argument('--story-id',required=True);a.add_argument('--out-dir',type=Path,required=True)
+    a=sub.add_parser('export-story-prompts');a.add_argument('--story-id',required=True);a.add_argument('--out-dir',type=Path,required=True);a.add_argument('--storyboard-id')
     a=sub.add_parser('search-characters');a.add_argument('query');a.add_argument('--limit',type=int,default=10)
     a=sub.add_parser('search-catalog');a.add_argument('kind',choices=('tag','character','universe','pose','outfit','action'));a.add_argument('query');a.add_argument('--namespace',choices=('danbooru','e621'));a.add_argument('--limit',type=int,default=20)
     args=p.parse_args()
@@ -811,7 +836,7 @@ def main():
             print(json.dumps(export_bundle(con,args.prompt_id,args.out_dir),
                              indent=2,ensure_ascii=False))
         elif args.action=='export-story-prompts':
-            print(json.dumps(export_story_prompts(con,args.story_id,args.out_dir),
+            print(json.dumps(export_story_prompts(con,args.story_id,args.out_dir,args.storyboard_id),
                              indent=2,ensure_ascii=False))
         elif args.action=='search-characters':
             for row in con.execute('''SELECT c.id,c.display_name,c.slug,u.display_name AS universe
