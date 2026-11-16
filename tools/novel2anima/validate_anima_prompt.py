@@ -19,7 +19,9 @@ FRAMING = ('close-up', 'upper body', 'cowboy shot', 'full body', 'wide shot')
 ANGLE_HEIGHT = ('from above', 'from below')
 ANGLE_YAW = ('from side', 'three-quarter view', 'from behind')
 # Aesthetic v1.1 was trained with quality labels stripped; these tags only flatten style.
-QUALITY_TAGS = ('masterpiece', 'best quality', 'worst quality', 'highres', 'absurdres',
+# highres/absurdres are meta tags in the official vocabulary and stay allowed; the
+# official Aesthetic baseline is literally "safe, highres".
+QUALITY_TAGS = ('masterpiece', 'best quality', 'worst quality',
                 'ultra detailed', 'ultra-detailed', '8k', '4k')
 SUBJECT_RE = re.compile(r'\b(\d+(?:girl|boy|other)s?|multiple (?:girls|boys))\b')
 SCORE_RE = re.compile(r'\bscore_\d+\b')
@@ -85,7 +87,11 @@ def validate(text: str) -> list[str]:
                 errors.append('JSON_OBJECT_NOT_PROMPT')
     if len(text.split()) > MAX_WORDS:
         errors.append('TOKEN_BUDGET_EXCEEDED')
-    if len([s for s in re.split(r'[.!?]+', prose) if s.strip()]) > 2:
+    # One prose sentence per positioned subject is the only reliable multi-character
+    # technique, so a group scene gets a larger sentence allowance.
+    subjects = SUBJECT_RE.search(low)
+    max_sentences = 4 if subjects and not subjects.group(1).startswith('1') else 2
+    if len([s for s in re.split(r'[.!?]+', prose) if s.strip()]) > max_sentences:
         errors.append('PROSE_TOO_LONG')
     return errors
 

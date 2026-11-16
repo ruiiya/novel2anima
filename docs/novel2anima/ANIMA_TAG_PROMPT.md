@@ -55,10 +55,15 @@ Thứ tự trên là thứ tự chính thức của model card. Tag bắt buộc
 | Nhóm | Giá trị hợp lệ |
 |---|---|
 | safety | `safe`, `sensitive`, `nsfw`, `explicit` |
+| meta (tuỳ chọn) | `highres`, `absurdres`, `anime screenshot`, `official art` |
+| era (tuỳ chọn) | `year 2025`, `newest`, `recent`, `mid`, `early`, `old` |
 | framing | `close-up`, `upper body`, `cowboy shot`, `full body`, `wide shot` |
 | angle | `from above`, `from below`, `eye level`, `from side`, `three-quarter view` |
 | lens/composition (tuỳ chọn) | `wide angle`, `telephoto`, `shallow depth of field`, `centered composition`, `asymmetrical composition`, `dynamic composition` |
+| style (tuỳ chọn) | `anime coloring`, `clean lineart`, `flat colors`, `soft cel shading`, `official art` |
 | negative (renderer, không nằm trong file prompt) | `worst quality, low quality, artist name, blurry, jpeg artifacts, chromatic aberration` |
+
+`highres`/`absurdres` là **meta tag**, không phải quality tag — baseline Aesthetic chính thức là `safe, highres`. Cấm trong positive chỉ gồm `masterpiece`, `best quality`, `worst quality`, `ultra detailed`, `8k`, `4k` và mọi `score_*`. `year 2025`/`newest`… là aesthetic control, đổi riêng khỏi artist/medium tag.
 
 Chỉ một framing và một angle trong một prompt. `close-up` loại trừ `full body`; `from above` loại trừ `from below`.
 
@@ -73,7 +78,7 @@ sensitive, 1girl, solo, karin (blue archive), dark skin, black hair, very long h
 Karin stands sideways in the left third of the frame with her arms folded under her chest. The empty green room recedes behind her, and flat daylight from the ceiling keeps every surface evenly lit.
 ```
 
-- Dòng 1 là tag block; dòng 2 tối đa 2 câu, chỉ chứa thông tin tag không diễn đạt được (vị trí trong khung, quan hệ, độ sâu).
+- Dòng 1 là tag block; dòng 2 tối đa **2 câu** (nhóm cảnh 2 người trở lên: tối đa **4 câu**, mỗi chủ thể một câu có vị trí), chỉ chứa thông tin tag không diễn đạt được (vị trí trong khung, quan hệ, độ sâu). Prompt thuần natural language (không dùng ở đây) cần **tối thiểu 2 câu** theo model card; câu quá ngắn dễ sinh nội dung ngoài ý.
 - Câu natural language **không** được thêm/bớt người, đổi trang phục, đổi actor→target hay đổi mức nội dung.
 
 ## Lưu trữ và xuất file
@@ -87,13 +92,15 @@ Karin stands sideways in the left third of the frame with her arms folded under 
 
 ## Renderer (ngoài DB)
 
-| Tham số | Giá trị khởi đầu |
-|---|---|
-| steps | 30 (Aesthetic chín hơn base; base cần 50) |
-| CFG | 3.5–4.5 (Aesthetic), 4.5–5 (base) |
-| sampler / scheduler | `er_sde` / `simple` (`euler` nếu cần so sánh) |
-| resolution | 896×1152 portrait, 1024×1024 vuông; 1–1.5 MP; bội số 16 |
-| negative | baseline rút gọn ở bảng trên |
+| Tham số | Anima-Aesthetic v1.1 | Anima-Base v1.0 | Anima-Turbo v1.1 |
+|---|---|---|---|
+| steps | 30–40 | 35–50 | 8–12 |
+| CFG | 3.5–4.5 | 4.5–5 | 1 |
+| sampler / scheduler | `er_sde` / `simple` | `er_sde` / `simple` | `euler`, hoặc sampler đã test với Turbo |
+| resolution | 896×1152 portrait, 1024×1024 vuông; 1–1.5 MP; bội số 16 (dải chính thức 512–1536) | | |
+| negative | `worst quality, low quality, artist name, blurry, jpeg artifacts, chromatic aberration` | thêm `score_1, score_2, score_3` | CFG 1 làm negative gần như vô hiệu — sửa positive trước |
+
+Với Aesthetic: `masterpiece, best quality` không bắt buộc và có thể làm phẳng style; `score_*` bị cấm cả positive lẫn negative. Muốn so sánh công bằng phải cố định seed, model, sampler, CFG, resolution, steps — đổi đúng một block mỗi lần.
 
 Workflow API mẫu của dự án: `exports/cnc_bunny/workflow/anima_bunny_all.json` (9 node, không LoRA, không quality tag). Seed, checkpoint, sampler, negative, ảnh ra thuộc renderer — không thuộc DB.
 

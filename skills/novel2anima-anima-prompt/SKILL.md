@@ -33,13 +33,15 @@ Dòng 1 — tag block, đúng thứ tự chính thức của Anima:
 7. **Camera:** một framing + một angle từ danh sách đóng — `close-up` / `upper body` / `cowboy shot` / `full body` / `wide shot`, × `from above` / `from below` / `eye level` / `from side` / `three-quarter view`.
 8. **Environment + lighting:** địa điểm, 1–2 vật thể nhận diện, thời điểm; 1–3 tag ánh sáng vật lý tương thích.
 
-Dòng 2 (tuỳ chọn, **tối đa 2 câu**) — chỉ chứa thứ tag không nói được: chủ thể nằm ở đâu trong khung, quan hệ actor→target, độ sâu, hướng sáng. Không kể chuyện, không lời thoại, không lệnh “create/generate”.
+Dòng 2 (tuỳ chọn, **tối đa 2 câu**; cảnh ≥2 người: tối đa 4 câu) — chỉ chứa thứ tag không nói được: chủ thể nằm ở đâu trong khung, quan hệ actor→target, độ sâu, hướng sáng. Không kể chuyện, không lời thoại, không lệnh “create/generate”.
+
+Với cảnh ≥2 người, thứ tự bắt buộc trong câu: count → cảnh chung → vị trí (left/right, foreground/background) → chủ thể A + ngoại hình A → chủ thể B + ngoại hình B → tương tác. Không liệt kê tên trần, không mô tả hai bộ trang phục trước khi gán vị trí, không dùng cùng một màu cho mọi người.
 
 ## Quy tắc bắt buộc
 
 - Lowercase cho tag; **space không underscore** (`blue hair`, không `blue_hair`). Prompt đúng không có underscore nào.
 - Space sau dấu phẩy: `1girl, solo, dark skin`.
-- **Không quality tag, không `score_*`** (Aesthetic đã bỏ nhãn chất lượng khi train) — cả positive lẫn negative.
+- **Không quality tag, không `score_*`** (Aesthetic đã bỏ nhãn chất lượng khi train) — cả positive lẫn negative. Nhưng `highres`, `absurdres`, `anime screenshot`, `official art`, `year 2025`/`newest` là **meta/era tag hợp lệ**, không phải quality tag: baseline Aesthetic chính thức là `safe, highres`.
 - Không tag tự mâu thuẫn: hai framing, hai angle cùng trục, `short hair` + `very long hair`, `solo` + `2girls`.
 - Không tag mọi thứ nhìn thấy; ưu tiên đúng thứ tự trên, bỏ tag không chắc tác dụng.
 - Ngân sách: **≤ 280 từ** (~480 T5 token). Vượt ~512 token bắt đầu mất chi tiết vải/phụ kiện/cử động tay.

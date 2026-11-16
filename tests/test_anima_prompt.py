@@ -51,6 +51,24 @@ class AnimaPromptFileTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(out['status'], 'PASS')
 
+    def test_meta_and_era_tags_allowed(self):
+        # Official Aesthetic baseline is literally "safe, highres"; year tags are
+        # aesthetic controls, not quality labels.
+        code, out = run(GOOD.replace('nsfw, 1girl', 'nsfw, highres, absurdres, year 2025, 1girl'))
+        self.assertEqual(code, 0, out)
+        code, out = run(GOOD.replace('nsfw, 1girl', 'nsfw, masterpiece, 1girl'))
+        self.assertIn('QUALITY_TAG_FORBIDDEN', out['issues'])
+
+    def test_group_scene_allows_one_sentence_per_subject(self):
+        group = ('nsfw, 2girls, full body, from side, green room\n'
+                 'Two women stand on the walkway. The woman on the left has black hair. '
+                 'The woman on the right has blonde hair. They hold the same map.')
+        code, out = run(group)
+        self.assertNotIn('PROSE_TOO_LONG', out['issues'])
+        solo = 'nsfw, 1girl, solo, full body, from side, green room\n' + 'One. Two. Three. Four.'
+        code, out = run(solo)
+        self.assertIn('PROSE_TOO_LONG', out['issues'])
+
     def test_reject_json_layout_as_positive_prompt(self):
         code, out = run('{"summary":{},"items":[],"bbox_format":"yxyx"}')
         self.assertEqual(code, 1)
