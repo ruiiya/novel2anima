@@ -26,6 +26,7 @@ CHAR_TAG = 'iori (swimsuit) (blue archive)'
 SERIES = 'blue archive'
 IDENTITY = ['dark skin', 'grey hair', 'very long hair', 'twintails', 'red eyes',
             'pointy ears', 'halo', 'demon tail', 'hair over one eye', 'black ribbon']
+QUALITY = ['masterpiece', 'best quality', 'score_7']
 STYLE = ['anime coloring', 'cel shading', 'clean lineart']
 LIGHT = ['bright daylight', 'sunlight', 'clear sky']
 
@@ -223,7 +224,7 @@ def validate(text):
 def prompt_for(act, stage, pose, expr, framing, angle, sentence):
     # Prose must not restate a camera the tag block already fixes, or the two fight.
     sentence = re.sub(r'^Seen from above, (.)', lambda m: m.group(1).upper(), sentence)
-    tags = ([act['safety'], 'highres', '1girl', 'solo', CHAR_TAG, SERIES]
+    tags = (QUALITY + [act['safety'], 'highres', '1girl', 'solo', CHAR_TAG, SERIES]
             + IDENTITY + stage[1] + pose.split(', ') + expr.split(', ')
             + [framing, angle] + act['env'] + LIGHT + STYLE)
     return ', '.join(dict.fromkeys(tags)) + '\n' + sentence
