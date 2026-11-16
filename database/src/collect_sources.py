@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Metadata-only source collector for Novel2Moss.
+"""Metadata-only source collector for Novel2Anima.
 
 Fetches files declared in database/collect/source_manifest.json into
 database/imports, with SHA256 metadata, idempotent skips, history snapshots on
@@ -21,7 +21,7 @@ from pathlib import Path, PurePosixPath
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = PROJECT_ROOT / 'database' / 'collect' / 'source_manifest.json'
 IMPORTS_DIR = Path('database') / 'imports'
-USER_AGENT = 'novel2moss-collector/1.0 (+local metadata collector)'
+USER_AGENT = 'novel2anima-collector/1.0 (+local metadata collector)'
 IMAGE_SUFFIXES = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tif', '.tiff', '.avif'}
 
 
@@ -298,7 +298,7 @@ def command_verify(manifest, root: Path, source_filter=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Novel2Moss metadata-only source collector')
+    parser = argparse.ArgumentParser(description='Novel2Anima metadata-only source collector')
     parser.add_argument('--root', type=Path, default=PROJECT_ROOT,
                         help='project root; downloads go under <root>/database/imports')
     parser.add_argument('--manifest', type=Path, default=DEFAULT_MANIFEST)

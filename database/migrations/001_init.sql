@@ -1,4 +1,4 @@
--- Novel2Moss: SQLite local-first schema v1. Không có phụ thuộc Novel2Anima.
+-- Novel2Anima: SQLite local-first schema v1. Không có phụ thuộc Novel2Anima.
 PRAGMA foreign_keys = ON;
 BEGIN TRANSACTION;
 
@@ -175,7 +175,7 @@ CREATE TABLE stories (
   cast_mode TEXT NOT NULL CHECK(cast_mode IN ('BLIND','NON_BLIND')),
   status TEXT NOT NULL DEFAULT 'DRAFT' CHECK(status IN ('DRAFT','PLANNED','READY','ARCHIVED')),
   current_revision INTEGER NOT NULL DEFAULT 1 CHECK(current_revision >= 1),
-  content_policy_path TEXT NOT NULL DEFAULT 'docs/novel2moss/CONTENT_POLICY.md',
+  content_policy_path TEXT NOT NULL DEFAULT 'docs/novel2anima/CONTENT_POLICY.md',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

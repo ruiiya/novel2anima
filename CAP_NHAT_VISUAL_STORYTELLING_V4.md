@@ -1,4 +1,4 @@
-# Novel2Moss V4 — Visual Storytelling
+# Novel2Anima V4 — Visual Storytelling
 
 ## Nâng cấp từ V3
 
@@ -14,13 +14,13 @@
 ## Cài
 
 ```powershell
-python install.py --target D:\NGV\novel2moss --mode claude --upgrade
-cd D:\NGV\novel2moss
+python install.py --target D:\NGV\novel2anima --mode claude --upgrade
+cd D:\NGV\novel2anima
 python database/src/n2m_db.py init
 python database/src/n2m_db.py stats --detailed
 ```
 
-Khởi động bằng novel2moss-orchestrator. Xem docs/novel2moss/VISUAL_STORYTELLING.md, JSON mẫu storyboard/ShotSpec/continuity/seal và README.
+Khởi động bằng novel2anima-orchestrator. Xem docs/novel2anima/VISUAL_STORYTELLING.md, JSON mẫu storyboard/ShotSpec/continuity/seal và README.
 
 ## Kiểm thử
 

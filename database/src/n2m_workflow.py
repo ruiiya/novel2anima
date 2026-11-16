@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Giao diện ghi dữ liệu Story/Shot/Natural Prompt/QA cho Novel2Moss, SQLite chuẩn thư viện.
+"""Giao diện ghi dữ liệu Story/Shot/Natural Prompt/QA cho Novel2Anima, SQLite chuẩn thư viện.
 
 Không chạy LLM / network / renderer. Không tự tạo nội dung truyện; chỉ xác thực và lưu artifact.
 Dùng cùng SQLite schema với n2m_db.py. Ghi thay đổi trong transaction, append-only với revision.

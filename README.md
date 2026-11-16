@@ -1,6 +1,6 @@
-# Novel2Moss Skills V4 — Visual Storytelling · Natural Prompts · Database-First
+# Novel2Anima Skills V4 — Visual Storytelling · Natural Prompts · Database-First
 
-Novel2Moss là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt ngôn ngữ tự nhiên (UTF-8, mặc định tiếng Anh)** cho MOSS-Image. **Không dùng Layout JSON / bbox** trong luồng mới.
+Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt ngôn ngữ tự nhiên (UTF-8, mặc định tiếng Anh)** cho MOSS-Image. **Không dùng Layout JSON / bbox** trong luồng mới.
 
 ```text
 Story → Act → Beat/Event → Visual Bible + Storyboard → ShotSpec → Continuity
@@ -14,8 +14,8 @@ Story → Act → Beat/Event → Visual Bible + Storyboard → ShotSpec → Cont
 Python 3.10+; SQLite trong Python stdlib. Giải nén bundle này, sau đó:
 
 ```powershell
-python install.py --target D:\NGV\novel2moss --mode claude --upgrade
-cd D:\NGV\novel2moss
+python install.py --target D:\NGV\novel2anima --mode claude --upgrade
+cd D:\NGV\novel2anima
 python database/src/n2m_db.py init
 python database/src/n2m_db.py seed
 python database/src/n2m_db.py stats --detailed
@@ -29,33 +29,33 @@ python database/src/n2m_db.py stats --detailed
 
 | Skill | Vai trò |
 |---|---|
-| `novel2moss-orchestrator` | Điều phối hai mode, dừng chờ duyệt Story trước khi commit |
-| `novel2moss-story-planner` | Story/Act/Beat/Event |
-| **`novel2moss-storyboard-planner`** | **Nhịp kể, Shot purpose/order/branch, Visual Bible, source coverage, seal** |
-| `novel2moss-blind-cast` | Role tạm và casting về sau |
-| `novel2moss-character-profile` | Identity và Outfit có provenance |
-| `novel2moss-shot-spec` | Shot, actor→target, scene, camera |
-| `novel2moss-continuity` | Before/delta/after xuyên Shot |
-| **`novel2moss-anima-prompt`** | **Sinh positive prompt Anima (tag block) từ ShotSpec** |
-| `novel2moss-fidelity-qa` | Kiểm tra fidelity trước export |
-| `novel2moss-database` | Migration, revision, transaction, QA/export |
-| `novel2moss-catalog-ingest` | Import catalog có nguồn, chỉ khi skill sử dụng |
-| `novel2moss-render-adapter` | File-only downstream, độc lập DB |
+| `novel2anima-orchestrator` | Điều phối hai mode, dừng chờ duyệt Story trước khi commit |
+| `novel2anima-story-planner` | Story/Act/Beat/Event |
+| **`novel2anima-storyboard-planner`** | **Nhịp kể, Shot purpose/order/branch, Visual Bible, source coverage, seal** |
+| `novel2anima-blind-cast` | Role tạm và casting về sau |
+| `novel2anima-character-profile` | Identity và Outfit có provenance |
+| `novel2anima-shot-spec` | Shot, actor→target, scene, camera |
+| `novel2anima-continuity` | Before/delta/after xuyên Shot |
+| **`novel2anima-anima-prompt`** | **Sinh positive prompt Anima (tag block) từ ShotSpec** |
+| `novel2anima-fidelity-qa` | Kiểm tra fidelity trước export |
+| `novel2anima-database` | Migration, revision, transaction, QA/export |
+| `novel2anima-catalog-ingest` | Import catalog có nguồn, chỉ khi skill sử dụng |
+| `novel2anima-render-adapter` | File-only downstream, độc lập DB |
 
 ## Sử dụng prompt theo Shot
 
-Khởi đầu bằng orchestrator. Chốt Story Brief, sau đó chốt storyboard; mỗi prop/location/style/role có description và provenance. Blind giữ role tạm; Non-Blind dùng casting đã xác nhận. Đọc [hợp đồng V4](docs/novel2moss/VISUAL_STORYTELLING.md) và các JSON mẫu.
+Khởi đầu bằng orchestrator. Chốt Story Brief, sau đó chốt storyboard; mỗi prop/location/style/role có description và provenance. Blind giữ role tạm; Non-Blind dùng casting đã xác nhận. Đọc [hợp đồng V4](docs/novel2anima/VISUAL_STORYTELLING.md) và các JSON mẫu.
 
 ```powershell
 python database/src/n2m_workflow.py save-storyboard --story-id STORY_ID --file storyboard.json --expected-revision 0
 python database/src/n2m_workflow.py get-storyboard --storyboard-id BOARD_ID
 ```
 
-Tạo ShotSpec/Continuity bằng các skill, soạn file `.txt` Anima (tag block + câu bổ trợ) theo `docs/novel2moss/ANIMA_TAG_PROMPT.md`, sau đó:
+Tạo ShotSpec/Continuity bằng các skill, soạn file `.txt` Anima (tag block + câu bổ trợ) theo `docs/novel2anima/ANIMA_TAG_PROMPT.md`, sau đó:
 
 ```powershell
 # Validate định dạng (không thay QA ngữ nghĩa)
-python tools/novel2moss/validate_anima_prompt.py drafts/S01.txt
+python tools/novel2anima/validate_anima_prompt.py drafts/S01.txt
 
 # Lưu natural prompt vào DB, nhận PROMPT_ID
 python database/src/n2m_workflow.py save-natural-prompt --shot-id SHOT_ID --file drafts/S01.txt
@@ -82,11 +82,11 @@ V4 ghi thêm storyboard_id, shot_order, branch_key, purpose và QA/continuity th
 ## Catalog
 
 - `seed` chỉ thêm **47 vocabulary** do dự án xác định và đăng ký nguồn. Không tải dataset/ảnh, không seed layout templates mới.
-- `collect_sources.py`, `catalog_imports.py` hỗ trợ metadata DeepGHS, Danbooru, outfit generic... chỉ được import khi đã có skill tiêu thụ. `docs/novel2moss/DATABASE_SOURCES.md` nêu phạm vi.
+- `collect_sources.py`, `catalog_imports.py` hỗ trợ metadata DeepGHS, Danbooru, outfit generic... chỉ được import khi đã có skill tiêu thụ. `docs/novel2anima/DATABASE_SOURCES.md` nêu phạm vi.
 
 ## Các ranh giới cố định
 
-- Nội dung nguồn/nhãn và quyết định policy riêng tại `docs/novel2moss/CONTENT_POLICY.md`. Không tự suy diễn nhãn NSFW là lỗi format.
+- Nội dung nguồn/nhãn và quyết định policy riêng tại `docs/novel2anima/CONTENT_POLICY.md`. Không tự suy diễn nhãn NSFW là lỗi format.
 - DB chỉ phục vụ tạo Story → Prompt; **không chứa render job, image, GPU, checkpoint, seed hoặc image QA**.
 - Renderer local/remote tùy chọn, chỉ nhận giá trị positive text từ `.txt`; không bắt buộc ComfyUI.
 - Natural prompt phải nêu đủ người, hành động, trang phục, vị trí, camera, ánh sáng và chi tiết trực quan mà Shot yêu cầu. Tránh chuỗi tag và chi tiết tưởng tượng không có căn cứ.

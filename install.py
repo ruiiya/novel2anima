@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cài Novel2Moss skills và SQLite starter vào project độc lập.
+"""Cài Novel2Anima skills và SQLite starter vào project độc lập.
 
 Mặc định không ghi đè. --upgrade backup từng file sẽ thay thế; CONTENT_POLICY.md
 đang tồn tại luôn được bảo toàn để người quản lý tự quyết định merge.
@@ -33,15 +33,15 @@ def main():
         for skill in sorted((ROOT/'skills').iterdir()):
             if skill.is_dir():pairs.append((skill,dest/skill.name))
     pairs.extend([
-        (ROOT/'docs'/'novel2moss',target/'docs'/'novel2moss'),
-        (ROOT/'tools'/'novel2moss',target/'tools'/'novel2moss'),
-        (ROOT/'examples',target/'examples'/'novel2moss'),
+        (ROOT/'docs'/'novel2anima',target/'docs'/'novel2anima'),
+        (ROOT/'tools'/'novel2anima',target/'tools'/'novel2anima'),
+        (ROOT/'examples',target/'examples'/'novel2anima'),
         (ROOT/'database',target/'database'),
     ])
     conflicts=[str(dst) for src,dst in pairs if dst.exists()]
     if conflicts and not args.upgrade:
         raise SystemExit('BLOCKED: destination exists, use --upgrade to backup/reconcile or install in clean project:\n'+'\n'.join(conflicts))
-    backup_root=target/'.novel2moss-installer-backup'/datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')
+    backup_root=target/'.novel2anima-installer-backup'/datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')
     copied=skipped=backed_up=0
     for src,dst in pairs:
         for file in sorted(src.rglob('*')):
@@ -52,7 +52,7 @@ def main():
             if src.name=='database' and rel.parts and rel.parts[0] in ('imports','data'):
                 if file.name!='.gitkeep':continue
             dest=dst/rel
-            if dest.exists() and file.name=='CONTENT_POLICY.md' and dest.parent.name=='novel2moss':
+            if dest.exists() and file.name=='CONTENT_POLICY.md' and dest.parent.name=='novel2anima':
                 print(f'PRESERVE (manual merge): {dest}')
                 skipped+=1
                 continue
@@ -74,17 +74,17 @@ def main():
     # Retire only known V2 files. Always back them up before removal.
     if args.upgrade:
         obsolete = [
-            Path('docs/novel2moss/MOSS_LAYOUT.md'),
-            Path('tools/novel2moss/compile_layout.py'),
-            Path('tools/novel2moss/flatten_layout.py'),
-            Path('examples/novel2moss/layout_draft.example.json'),
-            Path('examples/novel2moss/layout_prompt.example.json'),
-            Path('examples/novel2moss/layout_manifest.example.json'),
+            Path('docs/novel2anima/MOSS_LAYOUT.md'),
+            Path('tools/novel2anima/compile_layout.py'),
+            Path('tools/novel2anima/flatten_layout.py'),
+            Path('examples/novel2anima/layout_draft.example.json'),
+            Path('examples/novel2anima/layout_prompt.example.json'),
+            Path('examples/novel2anima/layout_manifest.example.json'),
         ]
         if args.mode in ('claude','both'):
-            obsolete.append(Path('.claude/skills/novel2moss-layout-planner/SKILL.md'))
+            obsolete.append(Path('.claude/skills/novel2anima-layout-planner/SKILL.md'))
         if args.mode in ('portable','both'):
-            obsolete.append(Path('skills/novel2moss-layout-planner/SKILL.md'))
+            obsolete.append(Path('skills/novel2anima-layout-planner/SKILL.md'))
         for rel in obsolete:
             old = target / rel
             if not old.is_file():
@@ -95,7 +95,7 @@ def main():
                 backup.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(old, backup)
                 old.unlink()
-                if old.parent.name == 'novel2moss-layout-planner' and not any(old.parent.iterdir()):
+                if old.parent.name == 'novel2anima-layout-planner' and not any(old.parent.iterdir()):
                     old.parent.rmdir()
             backed_up += 1
     print(f'{"DRY-RUN" if args.dry_run else "PASS"}: copied={copied}, backup={backed_up}, skipped={skipped}')

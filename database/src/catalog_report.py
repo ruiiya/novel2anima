@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a V2 catalog report from the Novel2Moss SQLite database.
+"""Generate a V2 catalog report from the Novel2Anima SQLite database.
 
 Read-only. The report intentionally emphasizes scope decisions and consumer
 value, not raw dataset size. It never downloads data or runs a renderer.
@@ -15,7 +15,7 @@ from pathlib import Path
 from n2m_db import connect, stats
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DB = ROOT / 'database' / 'data' / 'novel2moss.db'
+DEFAULT_DB = ROOT / 'database' / 'data' / 'novel2anima.db'
 DEFAULT_OUT = ROOT / 'reports' / 'catalog_pilot_v2.md'
 
 
@@ -67,7 +67,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--db', type=Path, default=DEFAULT_DB)
     parser.add_argument('--out', type=Path, default=DEFAULT_OUT)
-    parser.add_argument('--title', default='Novel2Moss — Catalog Pilot V2')
+    parser.add_argument('--title', default='Novel2Anima — Catalog Pilot V2')
     args = parser.parse_args()
     if not args.db.exists():
         raise SystemExit(f'DB not found: {args.db}')
@@ -116,7 +116,7 @@ def main():
                  '', '## 1. Phạm vi V2', '',
                  'Database chỉ có hai vai trò: **catalog** và **Story workspace**. '
                  'Prompt export là điểm kết thúc; renderer là downstream độc lập, không kết nối SQLite. '
-                 'DB V1 cũ được lưu tại `database/data/backups/novel2moss-v1-pilot.db`; DB runtime hiện tại đã được thay bằng dữ liệu V2.',
+                 'DB V1 cũ được lưu tại `database/data/backups/novel2anima-v1-pilot.db`; DB runtime hiện tại đã được thay bằng dữ liệu V2.',
                  '',
                  table(['Quyết định', 'Nguồn / dữ liệu', 'Lý do'], [
                      ('Giữ', 'DeepGHS Blue Archive', 'Casting/identity candidates cho Non-Blind'),

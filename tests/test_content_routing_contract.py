@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-POLICY = ROOT / 'docs/novel2moss/CONTENT_POLICY.md'
+POLICY = ROOT / 'docs/novel2anima/CONTENT_POLICY.md'
 
 class RoutingContractTests(unittest.TestCase):
     def test_policy_exists_and_scopes(self):
@@ -14,10 +14,10 @@ class RoutingContractTests(unittest.TestCase):
     def test_all_skills_reference_policy(self):
         for file in (ROOT/'skills').glob('*/SKILL.md'):
             with self.subTest(file=file):
-                self.assertIn('docs/novel2moss/CONTENT_POLICY.md', file.read_text(encoding='utf-8'))
+                self.assertIn('docs/novel2anima/CONTENT_POLICY.md', file.read_text(encoding='utf-8'))
 
     def test_blind_mode_separate_from_generation(self):
-        text=(ROOT/'skills/novel2moss-blind-cast/SKILL.md').read_text(encoding='utf-8')
+        text=(ROOT/'skills/novel2anima-blind-cast/SKILL.md').read_text(encoding='utf-8')
         self.assertIn('Blind Mode chấp nhận mọi story', text)
         self.assertIn('PROMPT_DERIVATION', text)
 
@@ -26,7 +26,7 @@ class RoutingContractTests(unittest.TestCase):
         self.assertIn('không tự nó là lý do chặn', text)
 
     def test_local_backend_is_technical(self):
-        text=(ROOT/'skills/novel2moss-render-adapter/SKILL.md').read_text(encoding='utf-8')
+        text=(ROOT/'skills/novel2anima-render-adapter/SKILL.md').read_text(encoding='utf-8')
         self.assertIn('backend_type: local', text)
         self.assertIn('BACKEND_REJECTED', text)
 

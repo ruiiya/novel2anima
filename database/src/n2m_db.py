@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Novel2Moss DB: stdlib-only SQLite, catalog imports and natural prompt export.
+"""Novel2Anima DB: stdlib-only SQLite, catalog imports and natural prompt export.
 
 No network requests are made. Fetch external data explicitly after checking source terms.
 """
@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DB = ROOT / 'data' / 'novel2moss.db'
+DEFAULT_DB = ROOT / 'data' / 'novel2anima.db'
 
 
 def js(value):
@@ -56,7 +56,7 @@ def _backup_render_state(con):
     if not jobs and not assets and not qa:
         return None
     db_row = con.execute('PRAGMA database_list').fetchone()
-    db_path = Path(db_row[2]) if db_row and db_row[2] else (ROOT / 'data' / 'novel2moss.db')
+    db_path = Path(db_row[2]) if db_row and db_row[2] else (ROOT / 'data' / 'novel2anima.db')
     backup_dir = db_path.parent / 'backups'
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
@@ -101,7 +101,7 @@ def register_source(con, source_id, name, kind, homepage, license_label, license
 
 
 SOURCES = [
-    ('curated', 'Novel2Moss original curated examples', 'local', 'local://novel2moss', 'Original project data', '', 'Only self-authored sample metadata.'),
+    ('curated', 'Novel2Anima original curated examples', 'local', 'local://novel2anima', 'Original project data', '', 'Only self-authored sample metadata.'),
     ('deepghs', 'DeepGHS anime character index', 'dataset', 'https://huggingface.co/datasets/deepghs/character_index', 'MIT (dataset listing); character IP separately', 'https://huggingface.co/datasets/deepghs/character_index', 'Import names/core tags only; these are candidates, NOT verified original outfits. Check dataset and third-party rights.'),
     ('danbooru', 'Danbooru tag taxonomy API', 'api', 'https://danbooru.donmai.us/wiki_pages/api:tags', 'Check current site terms and individual content rights', 'https://danbooru.donmai.us/wiki_pages/help:api', 'Import tag metadata only; not images; rate-limit and use proper User-Agent for collecting.'),
     ('wikidata', 'Wikidata structured entities', 'api', 'https://www.wikidata.org/wiki/Wikidata:Data_access', 'CC0 for structured data', 'https://www.wikidata.org/wiki/Wikidata:Licensing', 'Prefer targeted SPARQL export, not bulk fuzzy search; verify identifiers.'),
@@ -516,7 +516,7 @@ def validate_natural_prompt(prompt: str, language: str = 'en') -> str:
     """Validate the Anima prompt block; structural checks only.
 
     Full grammar validation (framing/angle/camera conflicts, quality tags, token
-    budget) lives in tools/novel2moss/validate_anima_prompt.py, which the renderer
+    budget) lives in tools/novel2anima/validate_anima_prompt.py, which the renderer
     side runs; this keeps one source of truth for the byte-level export gate.
     """
     if not isinstance(prompt, str):
@@ -784,8 +784,8 @@ def search_catalog(con, kind, query, limit=20, namespace=None):
 
 
 def main():
-    p=argparse.ArgumentParser(description='Novel2Moss DB - local-only, standard library SQLite starter')
-    p.add_argument('--db',type=Path,default=DEFAULT_DB,help='SQLite path (default: data/novel2moss.db)')
+    p=argparse.ArgumentParser(description='Novel2Anima DB - local-only, standard library SQLite starter')
+    p.add_argument('--db',type=Path,default=DEFAULT_DB,help='SQLite path (default: data/novel2anima.db)')
     sub=p.add_subparsers(dest='action',required=True)
     for action in ('init','seed'):
         sub.add_parser(action)

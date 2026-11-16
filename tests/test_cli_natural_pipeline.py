@@ -42,7 +42,7 @@ class CliIntegrationTests(unittest.TestCase):
             export=subprocess.run(cmd,capture_output=True,text=True)
             self.assertEqual(export.returncode,0,export.stderr)
             self.assertTrue((bundle/'natural.prompt.txt').is_file())
-            check=subprocess.run([sys.executable,str(ROOT/'tools/novel2moss/validate_anima_prompt.py'),
+            check=subprocess.run([sys.executable,str(ROOT/'tools/novel2anima/validate_anima_prompt.py'),
                                   str(bundle/'natural.prompt.txt'),'--manifest',str(bundle/'prompt.manifest.json')],
                                  capture_output=True,text=True)
             self.assertEqual(check.returncode,0,check.stderr)

@@ -1,4 +1,4 @@
-# Novel2Moss V3 — Chuyển sang Natural Prompt
+# Novel2Anima V3 — Chuyển sang Natural Prompt
 
 ## Mục tiêu
 
@@ -6,8 +6,8 @@
 
 ## Thay đổi chính
 
-- Thay `novel2moss-layout-planner` bằng `novel2moss-natural-language-prompt` với quy trình đọc ShotSpec, nhân vật, outfit và continuity rồi viết trực tiếp đoạn mô tả hoàn chỉnh.
-- Chuyển `novel2moss-orchestrator` và `novel2moss-fidelity-qa` sang pipeline **ShotSpec → Natural Prompt → QA → Export**; áp dụng cho cả Blind và Non-Blind.
+- Thay `novel2anima-layout-planner` bằng `novel2anima-natural-language-prompt` với quy trình đọc ShotSpec, nhân vật, outfit và continuity rồi viết trực tiếp đoạn mô tả hoàn chỉnh.
+- Chuyển `novel2anima-orchestrator` và `novel2anima-fidelity-qa` sang pipeline **ShotSpec → Natural Prompt → QA → Export**; áp dụng cho cả Blind và Non-Blind.
 - Bổ sung `007_natural_prompts.sql`: bảng `shot_prompts` có revision/hash bất biến; QA mới hỗ trợ loại `PROMPT`.
 - Bổ sung `save-natural-prompt`, `export-bundle --prompt-id`, `export-story-prompts --story-id`.
 - Mỗi Shot export `natural.prompt.txt` (chỉ text), `prompt.manifest.json` và `fidelity_report.json`. File tổng hợp `prompts.all.jsonl` và theo Act chứa trường `prompt` là chuỗi text, không phải JSON prompt MOSS.
@@ -17,8 +17,8 @@
 ## Nâng cấp từ bản Layout
 
 ```powershell
-python install.py --target D:\NGV\novel2moss --mode claude --upgrade
-cd D:\NGV\novel2moss
+python install.py --target D:\NGV\novel2anima --mode claude --upgrade
+cd D:\NGV\novel2anima
 python database/src/n2m_db.py init
 python database/src/n2m_db.py seed
 python -m unittest discover -s tests -v
@@ -29,9 +29,9 @@ Installer sao lưu tệp cũ trước khi thay thế và chỉ loại khỏi th�
 ## Tài liệu kỹ thuật
 
 - `README.md`
-- `docs/novel2moss/MOSS_NATURAL_PROMPT.md`
-- `docs/novel2moss/DATABASE_OPERATIONS.md`
-- `docs/novel2moss/DATABASE_CONTRACT.md`
+- `docs/novel2anima/MOSS_NATURAL_PROMPT.md`
+- `docs/novel2anima/DATABASE_OPERATIONS.md`
+- `docs/novel2anima/DATABASE_CONTRACT.md`
 
 ## Nguồn tham khảo
 

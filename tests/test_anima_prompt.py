@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = ROOT / 'tools/novel2moss/validate_anima_prompt.py'
+VALIDATOR = ROOT / 'tools/novel2anima/validate_anima_prompt.py'
 GOOD = ('nsfw, 1girl, solo, karin (blue archive), black hair, yellow eyes, halo, '
         'bunny suit, standing, from side, full body, green room, bright lighting\n'
         'Karin stands in the left third of the frame. Flat daylight keeps the room even.')

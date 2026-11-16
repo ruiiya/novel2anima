@@ -31,7 +31,7 @@ class CollectSourcesTests(unittest.TestCase):
             'sources': [
                 {'id': 'local', 'enabled': True, 'kind': 'metadata',
                  'download_images': False,
-                 'consumer_skill': 'novel2moss-test',
+                 'consumer_skill': 'novel2anima-test',
                  'target_fields': 'test_fixture',
                  'used_in_step': 'unit test',
                  'files': {'sample': {'url': url or self.source.as_uri(),

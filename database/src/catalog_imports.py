@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Metadata-only catalog importers for Novel2Moss V1.4+.
+"""Metadata-only catalog importers for Novel2Anima V1.4+.
 
 The importers never download images. They preserve raw source metadata in
 source_records, keep namespace boundaries, and mark unverified/derived data

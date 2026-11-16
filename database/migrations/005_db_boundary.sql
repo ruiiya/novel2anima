@@ -1,4 +1,4 @@
--- V2 database boundary: renderer state and post-render QA are outside Novel2Moss.
+-- V2 database boundary: renderer state and post-render QA are outside Novel2Anima.
 -- Render rows must be backed up by the Python preflight before this migration runs.
 PRAGMA foreign_keys = ON;
 BEGIN TRANSACTION;

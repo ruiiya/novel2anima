@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("auditor", ROOT / "tools/novel2moss/audit_shot.py")
+spec = importlib.util.spec_from_file_location("auditor", ROOT / "tools/novel2anima/audit_shot.py")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
