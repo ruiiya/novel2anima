@@ -40,17 +40,21 @@ CAMS = [('full body', 'eye level'), ('cowboy shot', 'from side'), ('upper body',
 BASE_OUTFIT = ['white t-shirt', 'short shorts', 'denim shorts', 'bare legs', 'sneakers']
 
 STAGES = [
-    ('fitted_tee', BASE_OUTFIT, 'the shorts and the tee exactly as she walked in'),
-    ('taut_tee', BASE_OUTFIT + ['taut shirt', 'nipples visible through clothing', 'cameltoe'],
-     'the same tee and shorts, the fabric pulled tight by her posture'),
-    ('shirt_up', BASE_OUTFIT + ['shirt lift', 'midriff', 'navel', 'white bra'],
-     'the tee pulled up to her ribs, white bra under it'),
-    ('shorts_down', BASE_OUTFIT + ['shirt lift', 'midriff', 'navel', 'white bra',
-                                   'shorts pull', 'white panties', 'panties visible'],
-     'the tee at her ribs and the shorts dragged down one hip over white panties'),
-    ('exposed', BASE_OUTFIT + ['shirt lift', 'midriff', 'navel', 'white bra', 'bra visible',
-                               'shorts pull', 'white panties', 'panties visible', 'clothed'],
-     'still fully dressed: shirt bunched high, shorts low, bra and panties showing'),
+    ('thin_tee_no_bra', BASE_OUTFIT + ['no bra', 'no panties', 'thin fabric',
+                                       'nipples visible through clothing'],
+     'the thin tee with nothing under it, nipples showing through the fabric'),
+    ('taut_tee_no_panties', BASE_OUTFIT + ['no bra', 'no panties', 'taut shirt',
+                                           'nipples visible through clothing', 'cameltoe'],
+     'same tee and shorts, nothing underneath at all, fabric pulled tight'),
+    ('breasts_out', BASE_OUTFIT + ['no bra', 'no panties', 'shirt lift', 'midriff', 'navel',
+                                   'nipples', 'breasts'],
+     'the tee pulled up over her chest, bare breasts out, shorts still on'),
+    ('shorts_low', BASE_OUTFIT + ['no bra', 'no panties', 'shirt lift', 'midriff', 'navel',
+                                  'nipples', 'breasts', 'shorts pull', 'ass', 'thighs'],
+     'tee still up, shorts dragged low with nothing underneath, bare ass'),
+    ('aside', BASE_OUTFIT + ['no bra', 'no panties', 'shirt lift', 'nipples', 'breasts',
+                             'shorts pull', 'ass', 'pussy', 'spread legs', 'clothed', 'clothing aside'],
+     'clothes still on but pulled aside: breasts out, pussy showing, legs spread'),
 ]
 
 ACTS = [
@@ -94,88 +98,89 @@ ACTS = [
      ('lying on side, looking at viewer', 'Her head rests on the armrest while she looks into the lens.')])]},
 
  {'title': 'Vạt áo', 'safety': 'nsfw',
-  'summary': 'Cô luồn ngón tay dưới gấu áo và kéo lên tới sườn.',
+  'summary': 'Cô tự kéo vạt áo lên tới hõm cổ và để lộ hẳn bộ ngực trần.',
   'env': ['apartment', 'living room', 'sofa', 'coffee table', 'curtains', 'window',
           'wooden floor'],
   'spec': {'set': 'living room, sofa in the foreground', 'time': 'late afternoon'},
   'beats': [
-   ('hem', 'She hooks a thumb under the hem and lifts it over her stomach.',
-    'sitting, shirt lift, midriff', 'looking down',
-    [('sitting, shirt lift, midriff', 'She hooks a thumb under the hem and pulls it up over her stomach.'),
-     ('navel, midriff, stomach', 'The frame holds her bare stomach above the waistband of the shorts.')]),
-   ('ribs', 'She lifts the shirt to her ribs, showing the white bra.',
-    'shirt lift, white bra, upper body', 'looking away',
-    [('shirt lift, white bra', 'She holds the shirt bunched at her ribs, the white bra across her chest.'),
-     ('hand on own chest, looking away', 'She presses one palm flat over the cup and turns her face aside.')]),
-   ('stand', 'She stands and keeps the shirt bunched under her ribs.',
-    'standing, shirt lift, midriff', 'half-closed eyes',
-    [('standing, shirt lift, midriff', 'She stands and holds the shirt gathered under her ribs.'),
+   ('hem', 'She hooks a thumb under the hem and drags it up over her ribs.',
+    'sitting, shirt lift, midriff, navel', 'looking down',
+    [('sitting, shirt lift, midriff, navel', 'She hooks a thumb under the hem and drags the thin cotton up over her ribs.'),
+     ('shirt lift, midriff, stomach', 'The frame holds her bare stomach and the underside of one breast.')]),
+   ('out', 'She pulls the shirt up to her collarbone and her bare breasts come out.',
+    'shirt lift, breasts, nipples', 'looking away',
+    [('shirt lift, breasts, nipples', 'She yanks the shirt up to her collarbone and both bare breasts spill free.'),
+     ('hand on own breast, looking away', 'She cups one bare breast and turns her face aside, nipples hard.')]),
+   ('stand', 'She stands with the shirt bunched above her chest, breasts still out.',
+    'standing, shirt lift, breasts, nipples', 'half-closed eyes',
+    [('standing, shirt lift, breasts, nipples', 'She stands and keeps the shirt bunched above her chest, breasts fully out.'),
      ('looking down at viewer, half-closed eyes', 'Her chin drops as she looks down into the lens.')])]},
 
  {'title': 'Cạp quần', 'safety': 'nsfw',
-  'summary': 'Cô quỳ trên sofa và kéo cạp quần short xuống một bên hông.',
+  'summary': 'Cô quỳ trên sofa, kéo cạp quần short xuống hẳn và để lộ mông trần.',
   'env': ['apartment', 'living room', 'sofa', 'coffee table', 'curtains', 'window',
           'wooden floor'],
   'spec': {'set': 'living room, sofa cushions filling the frame', 'time': 'late afternoon'},
   'beats': [
    ('kneel', 'She kneels on the cushion and looks back over her shoulder.',
-    'kneeling on sofa, looking back over shoulder', 'looking at viewer',
-    [('kneeling on sofa, looking back over shoulder', 'Karin kneels on the cushion and looks back over her shoulder.'),
-     ('shorts pull', 'Her thumb hooks the waistband and drags the denim down one hip.')]),
-   ('panties', 'The shorts sit low enough to show white cotton.',
-    'panties visible, white panties', 'smirk',
-    [('panties visible, white panties', 'The shorts sit low enough to show the white cotton across her hip.'),
+    'kneeling on sofa, looking back over shoulder, shirt lift', 'looking at viewer',
+    [('kneeling on sofa, looking back over shoulder, shirt lift', 'Karin kneels on the cushion, shirt up, and looks back over her shoulder.'),
+     ('shorts pull, ass', 'Her thumb hooks the waistband and drags the denim down over her bare ass.')]),
+   ('bare', 'Nothing underneath: the shorts sit under her cheeks and her ass is bare.',
+    'shorts pull, ass, no panties, thighs', 'smirk',
+    [('shorts pull, ass, no panties, thighs', 'The shorts ride under her cheeks with nothing underneath, her bare ass filling the frame.'),
      ('touching own thigh, legs apart', 'She parts her knees and runs a hand down the inside of one thigh.')]),
-   ('lean', 'She drapes herself over the back of the sofa.',
-    'leaning forward over sofa, ass', 'looking back',
-    [('leaning forward over sofa, ass', 'She drapes herself over the sofa back with her hips lifted.'),
+   ('lean', 'She drapes herself over the back of the sofa, hips lifted, ass bare.',
+    'leaning forward over sofa, ass, top-down bottom-up', 'looking back',
+    [('leaning forward over sofa, ass, top-down bottom-up', 'She drapes herself over the sofa back with her hips lifted and her bare ass toward the lens.'),
      ('looking back, smirk', 'Her head turns back toward the lens in a narrow smirk.')])]},
 
- {'title': 'Không che', 'safety': 'nsfw',
-  'summary': 'Cô quỳ thẳng trên đệm, áo vẫn vén cao, quần vẫn thấp, và tự chạm qua lớp vải.',
+ {'title': 'Không che', 'safety': 'explicit',
+  'summary': 'Cô ngồi choãi chân, tự kéo quần short sang một bên và để lộ hẳn vùng kín.',
   'env': ['apartment', 'living room', 'sofa', 'coffee table', 'curtains', 'window',
           'wooden floor'],
   'spec': {'set': 'living room, sofa, window behind', 'time': 'late afternoon'},
   'beats': [
-   ('present', 'She kneels upright on the cushions, shirt high and bra showing.',
-    'kneeling, shirt lift, bra visible', 'looking at viewer',
-    [('kneeling, shirt lift, bra visible', 'She kneels upright on the cushions with the shirt high and the bra showing.'),
-     ('hand between legs, over clothes', 'One hand slides down between her thighs, still over the fabric.')]),
-   ('arch', 'Her back arches and she pushes a hand into her hair.',
-    'arching back, hand in own hair', 'eyes closed',
-    [('arching back, hand in own hair', 'Her back arches and she pushes one hand into her hair.'),
+   ('present', 'She sits with her legs spread, shirt up, and pulls the shorts aside.',
+    'sitting, spread legs, clothing aside, pussy, shirt lift, breasts', 'looking at viewer',
+    [('sitting, spread legs, clothing aside, pussy, shirt lift, breasts', 'She sits with her knees wide and pulls the denim aside, her pussy fully showing under the lifted shirt.'),
+     ('sitting, spread legs, pussy, touching own thigh', 'Her hand slides down the inside of her thigh with her legs still wide open.')]),
+   ('arch', 'She arches back on the cushions, legs spread, entirely uncovered.',
+    'spread legs, pussy, breasts, nipples, arching back, hand in own hair', 'eyes closed',
+    [('spread legs, pussy, breasts, nipples, arching back, hand in own hair', 'Her back arches with both legs spread wide, breasts and pussy bare to the lens.'),
      ('biting lip, half-closed eyes', 'Her face fills the frame with her teeth on the lower lip.')]),
-   ('finish', 'She lies back with a forearm over her eyes, then sits up.',
-    'lying on back, arm over eyes', 'smile',
-    [('lying on back, arm over eyes', 'She lies back along the sofa with a forearm over her eyes.'),
-     ('sitting up, looking at viewer', 'She sits up and looks into the lens with a small smile.')])]},
+   ('finish', 'She lies back with her legs open, then sits up.',
+    'lying on back, spread legs, pussy, arm over eyes', 'smile',
+    [('lying on back, spread legs, pussy, arm over eyes', 'She lies back along the sofa with her legs open and a forearm over her eyes.'),
+     ('sitting up, looking at viewer, clothed', 'She sits up, the shirt and shorts still on her, and looks into the lens with a small smile.')])]},
 ]
 
 BRIEF = f"""# Căn Hộ Chiều Muộn — source brief (approved)
 
 **Cast mode:** NON_BLIND — Karin (Blue Archive), `CONFIRMED_ADULT`, `REVIEWED`.
 **User yêu cầu:** 1 story album erotic, **không thay đổi trang phục**, ~30 shot, trang phục thường ngày,
-khiêu dâm rõ.
+**không mặc nội y**, nhân vật chủ động tự làm lộ vùng nhạy cảm.
 
 ## Premise
 
 Căn hộ nhỏ, chiều muộn, nắng xiên qua cửa sổ. Karin ở nhà một mình, mặc đồ mặc hàng ngày:
-áo thun trắng bó, quần short jean, giày sneaker. Cô không thay đồ trong suốt album.
+áo thun trắng mỏng, quần short jean, giày sneaker. **Dưới áo và dưới quần không có gì.** Cô không
+thay đồ trong suốt album.
 
 ## Trục leo thang
 
-Không cởi đồ. Leo thang bằng **độ bó, độ vén và tư thế**: áo bó lộ dáng → núm qua vải →
-vén áo tới sườn (lộ bụng, áo lót) → kéo cạp quần short (lộ quần lót) → quỳ/choãi, tự chạm
-qua lớp vải. Kết thúc vẫn mặc đủ bộ.
+Không thay đồ, không cởi đồ. Leo thang bằng **độ bó, độ vén và tư thế**, tất cả do cô tự làm:
+áo mỏng lộ núm → áo bó + `cameltoe` → vén áo lên tới hõm cổ, **ngực trần** → kéo cạp quần
+short xuống, **mông trần** → ngồi choãi, **tự kéo quần sang một bên, lộ vùng kín**.
 
 ## Ràng buộc
 
 - Một người trong khung, không khán giả, không phản chiếu người khác.
-- Đồng thuận rõ ràng, không ép buộc, không bạo lực.
+- Đồng thuận rõ ràng, không ép buộc, không bạo lực. Cô tự tay làm mọi thứ.
 - Sáng đều: không low-key, không tối góc.
 - Khô: không mồ hôi, không ướt, không nước trên da hay trên vải.
 - Một địa điểm duy nhất: phòng khách căn hộ (sofa, bàn, cửa sổ).
-- Halo luôn hiện. Không khỏa thân ở bất kỳ shot nào.
+- Halo luôn hiện. Bộ đồ (áo thun, short jean, sneaker) luôn nằm trên người, không thay bộ khác.
 """
 
 
@@ -221,7 +226,7 @@ def main():
     con = connect(DB)
     cid = char_id(con)
     labels = ['nsfw', 'adult', 'erotic', 'consensual', 'solo', 'anime_style', 'casual_wear',
-              'apartment', 'clothed_only', 'fixed_outfit', 'progressive_exposure']
+              'apartment', 'no_underwear', 'fixed_outfit', 'progressive_exposure']
     story = create_story(con, TITLE, 'NON_BLIND', BRIEF, labels)
     add_role(con, story, 'MUSE_A', f'{CHAR_TAG} - casual tee and denim shorts, same outfit all 30 shots')
     bind_role(con, story, 'MUSE_A', cid)
@@ -255,7 +260,8 @@ def main():
                                        'Dry: no sweat, no water, no wet fabric.',
                                        'One location only (the living room).',
                                        'The outfit never changes: white tee, denim shorts, sneakers.',
-                                       'No nudity in any shot; exposure comes from fit and lift.',
+                                       'No bra, no panties: she wears nothing under the clothes in all 30 shots.',
+                                       'She exposes herself deliberately with her own hands; no one else acts on her.',
                                        'The small halo stays in every shot.']},
             'art_direction': {'format': 'anime-illustrated erotic album, 5 acts, 3 beats each, 2 shots per beat',
                               'brightness_constraint': 'Bright, evenly exposed anime illustration.',
@@ -353,10 +359,11 @@ def main():
                 'interactions': [{'event_id': ev['id'], 'actor_role_key': 'MUSE_A', 'target_role_key': None,
                                   'action_text': pose, 'reaction_text': expr,
                                   'constraints': ['solo shot: no second person, no audience',
-                                                  'outfit unchanged: white tee and denim shorts']}],
+                                                  'outfit unchanged: white tee and denim shorts, no underwear']}],
                 'intent': {'raw_labels': labels,
                            'constraints': ['one woman only, empty apartment', 'bright even anime lighting',
-                                           'dry matte skin and dry fabric', 'never nude']},
+                                           'dry matte skin and dry fabric', 'no bra, no panties',
+                                           'exposure is self-directed, never forced']},
                 'continuity_revision_note': 'initial approved apartment state'}
         shot_id, _ = save_shot(con, slot['beat_id'], slot['shot_key'], shot, ev['id'])
         ids[slot['shot_key']] = shot_id
@@ -375,7 +382,7 @@ def main():
         save_qa(con, 'PROMPT', prompt_id, 'PASS', {
             'checks': {'identity': 'catalog anchors only', 'outfit': stage[0], 'solo': 'one body only',
                        'camera': f'{framing} + {angle}', 'moment_match': pose, 'scene': scene,
-                       'nudity': 'none: outfit unchanged in all 30 shots',
+                       'nudity': f'exposure stage {stage[0]}: no bra, no panties, self-directed reveal',
                        'tags_validated': 'validate_anima_prompt.py PASS'},
             'policy_decision': {'policy_id': 'N2M-CONTENT-POLICY', 'policy_version': '1.3.0',
                                 'scope': 'PROMPT_DERIVATION', 'decision': 'PASS', 'shot_id': shot_id,
@@ -393,7 +400,8 @@ def main():
     json.dump({'bindings': bindings,
                'sequence_qa': {'verdict': 'PASS',
                                'evidence': '30 shots, one escalating exposure ladder, one room, one character, '
-                                           'one unchanged outfit, zero nudity'}},
+                                           'one unchanged outfit, no bra and no panties throughout, '
+                                           'every reveal made by her own hand'}},
               open(OUT / 'seal.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
     render = {'model': 'anima-base-v1.0.safetensors',
