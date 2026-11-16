@@ -7,8 +7,19 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
+
+# One camera angle only. These families are mutually exclusive when rendered,
+# so a prompt mixing two of them gets an averaged, wrong angle.
+ANGLE_FAMILIES = {
+    'overhead': re.compile(r"(?i)\b(top[- ]down|overhead|bird'?s[- ]eye)\b"),
+    'low': re.compile(r"(?i)\b(low[- ]angle|worm'?s[- ]eye)\b"),
+    'high': re.compile(r"(?i)\bhigh[- ]angle\b"),
+    'eye_level': re.compile(r"(?i)\beye[- ]level\b"),
+}
+BBOX_RE = re.compile(r"\[\s*-?\d+\s*,\s*-?\d+\s*,")
 
 
 def validate(text: str) -> list[str]:
@@ -19,6 +30,10 @@ def validate(text: str) -> list[str]:
         errors.append('CODE_FENCE')
     if '\x00' in text:
         errors.append('NUL_CHARACTER')
+    if len([name for name, rx in ANGLE_FAMILIES.items() if rx.search(text)]) > 1:
+        errors.append('CAMERA_CONFLICT')
+    if BBOX_RE.search(text):
+        errors.append('BBOX_IN_PROMPT')
     if text.lstrip().startswith('{'):
         try:
             data = json.loads(text)

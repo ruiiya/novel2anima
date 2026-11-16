@@ -16,6 +16,8 @@ Chỉnh sửa người dùng > ghi đè Shot đã duyệt > Beat đã duyệt > 
 
 ## Với mỗi Shot
 
+Trong V4 đọc storyboard đã duyệt bằng get-storyboard; lấy đúng slot, `visual_context_sha256` từ context_sha256, camera, focus, location_key, purpose, role_keys, style và props. Interaction phải có event_id trong coverage của slot và actor/target chính xác. Không tự tạo shot_key khác. Đọc `docs/novel2moss/VISUAL_STORYTELLING.md`. Mẫu mới `examples/shot_spec_v4.example.json` tương thích CLI; mẫu V1 chỉ minh họa semantic fields.
+
 - Gắn `shot_id`, `story_id`, `act_id`, `beat_id`, `event_id`, `source_refs`.
 - Liệt kê từng người bằng **character ID ổn định**, kèm điểm nhận diện và vai trò. Không suy tuổi trưởng thành, tên, franchise hay danh tính từ tag ảnh bất kỳ.
 - Xác định `interaction.actor_id → primary_action → interaction.target_id`, người giữ đạo cụ (nếu có) và biểu cảm/phản ứng của người nhận. Dùng `target_id: null` khi thực sự không có đối tượng nhận; không đảo chiều.
@@ -24,6 +26,8 @@ Chỉnh sửa người dùng > ghi đè Shot đã duyệt > Beat đã duyệt > 
 - Lấy định danh/outfit từ profile; ghi **màu chính xác của từng món đồ** hoặc báo chưa xác định. Việc thay đổi có chủ đích là state delta, không phải mâu thuẫn cần xóa.
 - Kế thừa trạng thái đã xác nhận từ trước, áp dụng delta tường minh rồi suy ra `after`; phân biệt cut với mutation. Trạng thái chưa rõ/suy luận phải có nhãn tương ứng.
 - Ghi cảnh nhìn thấy, background cụ thể (loại phòng, đồ vật, chất liệu, nguồn sáng), camera, ánh sáng, composition; không để góc quay lạ làm mất hành động quan trọng.
+- Camera ghi thành **bộ ba literal**: lens + góc + framing (`35mm`, `low angle`, `full body head to feet`). Không dùng cụm mờ như `dynamic angle`, `top-down view from above`; không ghép hai góc loại trừ nhau (`top-down` + `low angle`) và không đặt framing mâu thuẫn với pose (`face close-up` nhưng hành động nằm ở hông). Nếu góc cắt mất hành động chính, đổi framing và ghi rõ bộ phận đang bị crop.
+- Phân biệt vị trí world-space và screen-space: camera reverse có thể đổi trái/phải trên ảnh, nhưng không đổi tay trái/phải cơ thể, người thực hiện hoặc người nhận. Áp dụng các anchor cố định của Location/Prop/Style Bible; không copy nguyên cả Bible vào frame nếu chi tiết khuất.
 - Giữ `intent.raw_labels`, `intent.content_profile`, văn bản nguồn và các ràng buộc trong sidecar; không đổi phân loại nhạy cảm sang loại khác.
 - Nếu một khung hình không thể biểu diễn trung thực hành động, báo điểm chưa rõ hoặc đề xuất tách Shot, nhưng **không tự bịa thêm sự kiện truyện**.
 

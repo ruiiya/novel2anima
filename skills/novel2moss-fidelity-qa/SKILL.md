@@ -8,10 +8,15 @@ description: "QA bảo toàn Story/ShotSpec khi chuyển thành natural-language
 
 ## Công việc
 
+- V4: đọc `docs/novel2moss/VISUAL_STORYTELLING.md`; đối chiếu mọi Event nguồn với coverage, mọi slot với ShotSpec, purpose/moment/camera, Visual Bible, thứ tự và predecessor đúng nhánh. Kiểm tra action/reaction không bị mất hoặc gộp sai thời điểm, location/prop không tự đổi; reverse shot không đảo actor/target.
+- Mã lỗi bổ sung: SOURCE_COVERAGE_MISSING, STALE_VISUAL_CONTEXT, BRANCH_PREDECESSOR_MISMATCH, CONTINUITY_BREAK, SHOT_DIRECTION_MISMATCH. Không biến trạng thái unresolved/unsupported thành context-only để seal.
+- QA prompt V4 phải có report.policy_decision xác định đúng shot_id, scope PROMPT_DERIVATION, decision, policy_version, evidence, policy_ref. Sequence QA PASS chỉ sau đối chiếu xuyên Shot; ghi evidence cụ thể trong seal.json. Chỉ kiểm tra cấu trúc không đủ chứng minh fidelity.
+
 - Kiểm tra từ `story_sources` → Plan/Act/Beat/Event → `shots`/ShotSpec → `continuity_snapshots` → `shot_prompts` và bản `.txt` sắp export.
 - So sánh **số người**, tên/đặc điểm nhân vật, outfit và màu, tay/cử chỉ/đạo cụ, vai trò actor→target, biểu cảm/phản ứng, bối cảnh, vị trí tương đối, camera, ánh sáng, state before/delta/after, và chữ cần xuất hiện nguyên văn.
 - Cảnh phải **độc lập khi render**; báo lỗi khi prompt chỉ nói “as before”, “the same outfit” mà không có chi tiết cần thiết hoặc dùng tên không rõ danh tính.
 - Kiểm tra prompt là **văn xuôi tự nhiên** (không JSON/layout/bbox/code fence/metadata). Cấu trúc `PASS` không đủ để kết luận ngữ nghĩa `PASS`.
+- Kiểm tra camera: đúng **một** mệnh đề lens + góc + framing, khớp ShotSpec, không lặp và không trộn hai họ góc; lệch hoặc mâu thuẫn → `CAMERA_CONTRADICTION`, không `PASS`. Validator trả `CAMERA_CONFLICT`/`BBOX_IN_PROMPT` thì sửa prompt hoặc tạo revision.
 - Kiểm tra quyết định `PROMPT_DERIVATION` và `policy_version` đã có; không tự kết luận từ nhãn NSFW, không đổi Story để tránh kết quả kiểm tra.
 
 ## Phát hiện

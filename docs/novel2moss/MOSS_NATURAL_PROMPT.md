@@ -18,11 +18,12 @@ MOSS-Image-Base hỗ trợ **natural language**, chuỗi tags và Layout JSON. O
 2. **Nhân vật nhận diện được:** Từng người có tên + tác phẩm khi đã xác nhận, đặc điểm bền vững, trang phục/màu chính xác, tư thế và biểu cảm. Với Blind chưa casting, dùng mô tả role trung tính từ ShotSpec; không bịa tên tác phẩm hoặc ngoại hình canon.
 3. **Hành động và quan hệ:** Viết câu chủ động với **actor / action / target** rõ ràng, bao gồm tay/bộ phận thực hiện và điểm tiếp xúc khi nhìn thấy; mô tả phản ứng của target. Không đảo vai trò hoặc làm mất cử chỉ chính.
 4. **Bố cục qua ngôn ngữ:** Dùng *on the left/right, foreground/background, closer to the camera, facing, behind, slightly overlapping*, không dùng tọa độ hoặc pixel. Đảm bảo tương thích với camera/framing của ShotSpec.
-5. **Bối cảnh, camera, ánh sáng:** Chỉ thêm chi tiết thực sự có trong Story/ShotSpec hoặc khoảng trống sáng tạo được phép. Không tự đổi phong cách; không nhét nhiều kiểu camera trái nhau.
+5. **Bối cảnh, camera, ánh sáng:** Chỉ thêm chi tiết thực sự có trong Story/ShotSpec hoặc khoảng trống sáng tạo được phép. Không tự đổi phong cách; không nhét nhiều kiểu camera trái nhau. **Camera viết đúng một mệnh đề**, đủ ba phần — lens, góc, framing — và đặt ngay sau câu bố cục, trước/cạnh câu nhân vật: `shot at 35mm from a low angle, full body head to feet`. Dùng từ literal thay vì ẩn dụ: `directly overhead, looking straight down` thay cho `top-down view from above`; `low angle, looking up` thay cho `low-angle view from below`. Không lặp camera ở câu khác, không mô tả hai góc cùng lúc, và framing phải khớp phần cơ thể thực sự nhìn thấy (không `face close-up` mà còn hông/đùi trong khung).
 6. **Chữ cần xuất hiện:** Đặt đúng chuỗi trong dấu ngoặc kép, giữ nguyên chính tả, chữ hoa, tiếng gốc và xuống dòng nếu thực sự muốn in lên ảnh. Không nhầm hội thoại của Story thành chữ nhìn thấy trên hình.
 7. **Không biến thành chuỗi tag:** Tránh dồn quality score, danh sách tính từ trùng lặp, “masterpiece, highres…” máy móc, giải thích kỹ thuật, field name hoặc “Prompt:” đầu dòng. Danbooru chỉ là nguồn hiểu đặc điểm, không bắt buộc hiện nguyên tag ở output.
 8. **Mỗi Shot tự đủ ngữ cảnh:** Không dựa vào “same woman as previous image”, “wearing the same clothes” hay “continue the last scene” nếu thông tin cần thiết chưa có trong chính prompt. Tra profile và continuity để diễn tả lại các đặc điểm cần giữ.
 9. **Giữ ý nghĩa và giới hạn:** Không tự thêm/giảm số người, đổi trang phục, đổi action/target, bỏ đồ vật cần nhìn thấy, thay mức độ/nhãn của nguồn. Dữ liệu không trực quan giữ ở ShotSpec/sidecar; quyết định theo policy trung tâm.
+10. **Visual storytelling V4:** Dựa vào slot visual moment, purpose và camera để chọn chi tiết cần vẽ; sử dụng Visual Bible đã chốt, world/screen state và prop owner. Giữ tự đủ ngữ cảnh, không nhồi toàn bộ Bible, không viết nhiều panel trong một prompt. Đọc `VISUAL_STORYTELLING.md`.
 
 ## Một Shot → một file .txt
 
@@ -40,6 +41,7 @@ Ví dụ positive prompt hợp lệ:
 - QA: `n2m_workflow.py save-qa --kind PROMPT --subject-id PROMPT_ID`.
 - Export: `n2m_db.py export-bundle --prompt-id ... --out-dir ...` tạo `natural.prompt.txt`, `prompt.manifest.json`, `fidelity_report.json`.
 - Xuất cả Story: `n2m_db.py export-story-prompts --story-id ... --out-dir ...` tạo các bundle, `prompts.all.jsonl` và `prompts/A01.jsonl`... Mỗi record JSONL chứa **`prompt` là string natural language**, không phải JSON Layout. Mỗi record nằm trên một dòng JSON, cách record bằng một dòng trống như giao kèo dự án.
+- V4 chọn exact bindings theo storyboard seal và thứ tự số; từ chối seal nếu coverage/continuity/QA chưa đạt. Metadata storyboard không gửi MOSS.
 - Sau export, renderer local/remote chỉ đọc file; không truy cập Novel2Moss SQLite. Seed, checkpoint, sampler, negative prompt, output ảnh là cấu hình của renderer.
 
 ## QA trước export

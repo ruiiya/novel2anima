@@ -39,6 +39,23 @@ class NaturalPromptFileTests(unittest.TestCase):
             self.assertEqual(run.returncode, 1)
             self.assertIn('JSON_OBJECT_NOT_NATURAL_PROMPT', run.stdout)
 
+    def test_reject_conflicting_camera_angles_and_bbox(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'prompt.txt'
+            path.write_text('A sunlit deck. Shot at 35mm directly overhead looking straight '
+                            'down at her, then a low angle looking up. bbox [-480,-420,480,420].')
+            run = subprocess.run([sys.executable, str(VALIDATOR), str(path)],
+                                  capture_output=True, text=True)
+            self.assertEqual(run.returncode, 1)
+            issues = json.loads(run.stdout)['issues']
+            self.assertIn('CAMERA_CONFLICT', issues)
+            self.assertIn('BBOX_IN_PROMPT', issues)
+            path.write_text('A sunlit deck. Shot at 35mm from a low angle, full body head to feet.')
+            run = subprocess.run([sys.executable, str(VALIDATOR), str(path)],
+                                  capture_output=True, text=True)
+            self.assertEqual(run.returncode, 0, run.stdout)
+            self.assertEqual(json.loads(run.stdout)['status'], 'PASS')
+
 
 if __name__ == '__main__':
     unittest.main()
