@@ -31,44 +31,40 @@ CAMS = [('full body', 'eye level'), ('cowboy shot', 'from side'), ('upper body',
         ('cowboy shot', 'from below'), ('upper body', 'from above'), ('close-up', 'from above'),
         ('wide shot', 'eye level')]
 
-# Official swimsuits (user-supplied design sheet, Blue Archive canon).
+# Official swimsuits (user-supplied tag block per character, Blue Archive canon).
 CHARACTERS = [
     {'dir': '01_mika', 'name': 'Mika', 'slug': 'mika_swimsuit_blue_archive',
-     'tag': 'misono mika (swimsuit) (blue archive)',
-     'identity': ['pink hair', 'long hair', 'half updo', 'side ponytail', 'yellow eyes', 'halo',
-                  'angel wings', 'white wings', 'star hair ornament', 'hair flower', 'white flower'],
-     'outfit': ['white swimsuit', 'swimdress', 'one-piece swimsuit', 'frilled swimsuit',
-                'layered frills', 'pink ribbon', 'chest bow', 'halterneck', 'detached sleeves',
-                'sheer sleeves', 'white sleeves', 'bare shoulders', 'midriff', 'stomach cutout',
-                'anklet', 'white sandals'],
-     'lift': 'clothing lift', 'bottom': 'clothing pull',
-     'prose': 'long pink hair in a half updo with a side ponytail, yellow eyes, a halo, white '
-              'angel wings and a white frilled one-piece swimsuit with pink ribbon at the chest',
-     'accessory': 'white frilled swimdress'},
+     'tag': 'misono mika (swimsuit) (blue archive), misono mika',
+     'identity': ['halo', 'angel wings', 'white wings', 'pink hair', 'very long hair',
+                  'purple eyes', 'official alternate costume'],
+     'outfit': ['white bikini', 'frilled bikini', 'spaghetti straps', 'white ribbon',
+                'neck ribbon', 'white sandals', 'ankle ribbon'],
+     'lift': 'bikini top lift', 'bottom': 'bikini bottom pull',
+     'prose': 'very long pink hair, purple eyes, a halo, white angel wings and a white frilled '
+              'bikini with spaghetti straps and a neck ribbon',
+     'accessory': 'white ribbon neck tie'},
     {'dir': '02_nagisa', 'name': 'Nagisa', 'slug': 'nagisa_swimsuit_blue_archive',
-     'tag': 'kirifuji nagisa (swimsuit) (blue archive)',
-     'identity': ['blonde hair', 'long hair', 'side braid', 'brown eyes', 'halo', 'angel wings',
-                  'white wings', 'hair ornament'],
-     'outfit': ['white bikini', 'two-piece swimsuit', 'frilled bikini', 'halterneck',
-                'high-waist bikini', 'see-through shirt', 'white shirt', 'open shirt', 'long sleeves',
-                'sheer fabric', 'straw hat', 'sun hat', 'white ribbon', 'hat ribbon',
-                'gold bracelet', 'flip-flops'],
-     'lift': 'bikini top lift', 'bottom': 'bikini bottom pull',
-     'prose': 'long blonde hair in a side braid, brown eyes, a halo, white angel wings, a white '
-              'frilled bikini under an open sheer white shirt and a wide straw hat',
-     'accessory': 'wide straw hat'},
+     'tag': 'kirifuji nagisa (swimsuit) (blue archive), kirifuji nagisa',
+     'identity': ['halo', 'angel wings', 'white wings', 'blonde hair', 'high ponytail',
+                  'brown eyes', 'sunglasses', 'tinted eyewear', 'official alternate costume'],
+     'outfit': ['black swimsuit', 'one-piece swimsuit', 'halterneck', 'cleavage cutout',
+                'white lace shirt', 'open shirt', 'gold bracelet', 'white sandals'],
+     'lift': 'clothing lift', 'bottom': 'clothing pull',
+     'prose': 'a high blonde ponytail, brown eyes, a halo, white angel wings, tinted sunglasses '
+              'and a black one-piece swimsuit under an open white lace shirt',
+     'accessory': 'black halter one-piece'},
     {'dir': '03_seia', 'name': 'Seia', 'slug': 'seia_swimsuit_blue_archive',
-     'tag': 'yurizono seia (swimsuit) (blue archive)',
-     'identity': ['blonde hair', 'long hair', 'wavy hair', 'yellow eyes', 'fox ears', 'animal ears',
-                  'fox tail', 'halo', 'small breasts', 'petite'],
-     'outfit': ['white bikini', 'frilled bikini', 'skirted bikini', 'frilled skirt', 'mini skirt',
-                'lace trim', 'gold trim', 'yellow ribbon', 'white choker', 'detached sleeves',
-                'sheer sleeves', 'arm warmers', 'bare shoulders', 'hair flower', 'white flower',
-                'yellow flower', 'barefoot'],
-     'lift': 'bikini top lift', 'bottom': 'bikini bottom pull',
-     'prose': 'long wavy blonde hair, yellow eyes, fox ears and a fox tail, a halo, and a white '
-              'frilled skirted bikini with gold lace trim and a white choker',
-     'accessory': 'white frilled skirted bikini'},
+     'tag': 'yurizono seia (swimsuit) (blue archive), yurizono seia',
+     'identity': ['halo', 'fox ears', 'fox tail', 'blonde hair', 'side ponytail', 'yellow eyes',
+                  'flat chest', 'sun visor', 'sunglasses', 'tinted eyewear', 'red choker',
+                  'official alternate costume'],
+     'outfit': ['white swimsuit', 'one-piece swimsuit', 'chest cutout', 'yellow jacket',
+                'off-shoulder jacket', 'yellow sandals'],
+     'lift': 'clothing lift', 'bottom': 'clothing pull',
+     'prose': 'a blonde side ponytail, yellow eyes, fox ears and a fox tail, a halo, a sun visor, '
+              'a red choker and a white one-piece swimsuit with a chest cutout under a yellow '
+              'off-shoulder jacket',
+     'accessory': 'white chest-cutout one-piece'},
 ]
 
 ACTS = [
@@ -230,8 +226,8 @@ của nhân vật, **không thay đồ**, nhân vật chủ động tự làm l�
 ## Premise
 
 Hồ bơi riêng trong vườn Trinity, đầu giờ chiều, nắng đều trên mặt nước. {name} xuống sân hồ
-một mình trong bộ swimsuit chính thức: bikini trắng, phụ kiện {cfg['accessory']}. **Không có gì
-bên trong bộ bikini.** Cô không thay đồ và không cởi bộ bikini trong suốt album.
+một mình trong bộ swimsuit chính thức: {cfg['accessory']}. **Không có gì bên trong bộ swimsuit.**
+Cô không thay đồ và không cởi bộ swimsuit trong suốt album.
 
 ## Trục leo thang
 
@@ -246,7 +242,7 @@ bikini buộc đủ → vén áo lộ `underboob` → kéo áo lên hõm cổ, *
 - Sáng đều: không low-key, không tối góc.
 - Khô: không mồ hôi, không nước trên da.
 - Một địa điểm duy nhất: hồ bơi riêng vườn Trinity (sân đá, dù, hàng rào cây).
-- Halo luôn hiện. Bộ bikini luôn nằm trên người, không thay bộ khác.
+- Halo luôn hiện. Bộ swimsuit luôn nằm trên người, không thay bộ khác.
 """
     out = ROOT / cfg['dir']
     out.mkdir(parents=True, exist_ok=True)

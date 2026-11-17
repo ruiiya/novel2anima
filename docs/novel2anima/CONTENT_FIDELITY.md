@@ -6,9 +6,8 @@
 
 1. Văn bản truyện ban đầu, ghi chú, tên riêng và các chỉnh sửa tường minh của người dùng là nguồn gốc. Lưu bản nguồn bất biến kèm xuất xứ và revision (hoặc content hash bất biến nếu nguồn nằm bên ngoài).
 2. Story/Act/Beat/ShotSpec đã xác nhận là dữ liệu chuẩn trong phạm vi tương ứng. Prompt, ảnh, nhận định suy luận và metadata renderer là kết quả phía sau, **không** được thay thế nguồn chuẩn.
-3. Giữ **nguyên văn** các nhãn phân loại và ý định của nguồn, gồm nhãn người lớn/NSFW, mức độ, thể loại, quan hệ, bối cảnh đồng thuận, mức độ thô bạo, khỏa thân và metadata nhạy cảm khác. Không tự đổi `nsfw` thành `sfw`, `explicit` thành `romance` hoặc sửa thang phân loại. Nhập, tra cứu, lưu và xuất dữ liệu khác với việc nội dung có đủ điều kiện render hay không.
+3. Giữ **nguyên văn** các nhãn phân loại và ý định của nguồn, gồm nhãn người lớn/NSFW, mức độ, thể loại, quan hệ, mức độ thô bạo, khỏa thân và metadata nhạy cảm khác. Không tự đổi `nsfw` thành `sfw`, `explicit` thành `romance` hoặc sửa thang phân loại. Nhập, tra cứu, lưu và xuất dữ liệu khác với việc nội dung có đủ điều kiện render hay không.
 4. Blind Mode, Story Planner và các bước dẫn xuất tuân theo scope được quy định trong `docs/novel2anima/CONTENT_POLICY.md`; hợp đồng fidelity không tự đặt điều kiện nội dung.
-5. Không tự tạo tuổi, danh tính, tình trạng đồng thuận hay thông tin chưa được xác nhận. Lưu `unknown` nếu chưa có chứng cứ.
 
 ## Những yếu tố ngữ nghĩa không được tự ý thay đổi
 
