@@ -9,12 +9,20 @@ class RoutingContractTests(unittest.TestCase):
         text=POLICY.read_text(encoding='utf-8')
         for scope in ['SOURCE_INGEST', 'STORY_ANALYSIS', 'PROMPT_DERIVATION', 'RENDER_DISPATCH', 'QA']:
             with self.subTest(scope=scope): self.assertIn(scope, text)
-        self.assertIn('1.3.0', text)
+        self.assertIn('1.4.0', text)
 
     def test_all_skills_reference_policy(self):
         for file in (ROOT/'skills').glob('*/SKILL.md'):
             with self.subTest(file=file):
                 self.assertIn('docs/novel2anima/CONTENT_POLICY.md', file.read_text(encoding='utf-8'))
+
+    def test_all_plots_accepted(self):
+        text=POLICY.read_text(encoding='utf-8')
+        self.assertIn('Mọi cốt chuyện đều được chấp nhận', text)
+        self.assertIn('Không có danh sách cốt chuyện, thể loại, motif hay diễn tiến bị từ chối', text)
+        # hạn chế chỉ áp cho Shot/artifact, không lan sang Story
+        self.assertIn('không áp dụng cho cốt chuyện', text)
+        self.assertIn('Mặc định là `PASS`', text)
 
     def test_blind_mode_separate_from_generation(self):
         text=(ROOT/'skills/novel2anima-blind-cast/SKILL.md').read_text(encoding='utf-8')
