@@ -26,13 +26,11 @@ def snapshot(role,before,at,after):
 class NarrativeContinuityTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
         self.con=connect(self.root/'db.sqlite')
+        self.addCleanup(self.con.close)
         apply_migrations(self.con)
-
-    def tearDown(self):
-        self.con.close()
-        self.temp.cleanup()
 
     def fixture(self, mode='BLIND'):
         story,board=legacy.VisualStoryboardTests.fixture(self,mode)
@@ -113,7 +111,7 @@ class NarrativeContinuityTests(unittest.TestCase):
                 save_natural_prompt(self.con,seal['bindings']['S10']['shot_id'],second.replace('blue jacket','red jacket'))
             seal_storyboard(self.con,bid,seal)
             export_story_prompts(self.con,story,self.root/mode)
-            rows=[json.loads(l) for l in (self.root/mode/'prompts.all.jsonl').read_text().splitlines() if l]
+            rows=[json.loads(l) for l in (self.root/mode/'prompts.all.jsonl').read_text(encoding='utf-8').splitlines() if l]
             self.assertEqual([r['transition'] for r in rows],['START','CAMERA_CUT'])
 
     def test_independent_allows_new_pose_state(self):
@@ -165,7 +163,7 @@ class NarrativeContinuityTests(unittest.TestCase):
         old=connect(self.root/'upgrade.sqlite')
         try:
             for migration in sorted((legacy.ROOT/'database/migrations').glob('00[1-8]*.sql')):
-                old.executescript(migration.read_text())
+                old.executescript(migration.read_text(encoding='utf-8'))
             self.con=old
             story,board=legacy.VisualStoryboardTests.fixture(self)
             bid,_=save_storyboard(old,story,board)

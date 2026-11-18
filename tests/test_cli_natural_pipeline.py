@@ -3,6 +3,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,15 +17,14 @@ class CliIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             temp = Path(temp)
             db = temp/'sample.db'
-            con = connect(db)
-            apply_migrations(con)
-            story = create_story(con, 'Illustration', 'BLIND', 'Aria sits in a garden.', [])
-            add_role(con,story,'LEAD')
-            act = add_act(con,story,1,'Garden')
-            beat = add_beat(con,act,1,'Quiet scene')
-            shot_id,_=save_shot(con,beat,'S01',{'participants':[{'role_key':'LEAD'}],
-                                              'interactions':[], 'camera':'medium'})
-            con.close()
+            with closing(connect(db)) as con:
+                apply_migrations(con)
+                story = create_story(con, 'Illustration', 'BLIND', 'Aria sits in a garden.', [])
+                add_role(con,story,'LEAD')
+                act = add_act(con,story,1,'Garden')
+                beat = add_beat(con,act,1,'Quiet scene')
+                shot_id,_=save_shot(con,beat,'S01',{'participants':[{'role_key':'LEAD'}],
+                                                  'interactions':[], 'camera':'medium'})
             prompt = temp/'anima.txt'
             prompt.write_text('sensitive, 1girl, solo, silver hair, white blouse, sitting, '
                               'eye level, cowboy shot, garden, daylight\n'
@@ -51,7 +51,7 @@ class CliIntegrationTests(unittest.TestCase):
                                  'export-story-prompts','--story-id',story,'--out-dir',str(output)],
                                 capture_output=True,text=True)
             self.assertEqual(full.returncode,0,full.stderr)
-            lines=[line for line in (output/'prompts.all.jsonl').read_text().splitlines() if line]
+            lines=[line for line in (output/'prompts.all.jsonl').read_text(encoding='utf-8').splitlines() if line]
             self.assertEqual(len(lines),1)
             self.assertIsInstance(json.loads(lines[0])['prompt'],str)
             self.assertEqual(json.loads(lines[0])['prompt'],prompt.read_text(encoding='utf-8'))

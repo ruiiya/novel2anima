@@ -4,6 +4,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,13 +25,11 @@ TEXT = ('sensitive, 1girl, solo, aria (original), silver hair, long hair, blue e
 class NaturalWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
         self.db = Path(self.tmp.name) / 'novel.db'
         self.con = connect(self.db)
+        self.addCleanup(self.con.close)
         apply_migrations(self.con)
-
-    def tearDown(self):
-        self.con.close()
-        self.tmp.cleanup()
 
     def story(self, mode='BLIND'):
         story = create_story(self.con, 'Example', mode,
@@ -112,7 +111,7 @@ class NaturalWorkflowTests(unittest.TestCase):
         self.assertEqual(manifest['format'], 'anima-tag-v1')
         self.assertEqual(manifest['prompt_sha256'], hashlib.sha256(TEXT.encode()).hexdigest())
         self.assertEqual(result['prompt_sha256'], manifest['prompt_sha256'])
-        self.assertEqual(json.loads((folder / 'fidelity_report.json').read_text())['verdict'], 'PASS')
+        self.assertEqual(json.loads((folder / 'fidelity_report.json').read_text(encoding='utf-8'))['verdict'], 'PASS')
         self.con.execute("INSERT INTO characters(id,slug,display_name) VALUES('char:demo','demo','Demo')")
         self.con.commit()
         bind_role(self.con, story, 'LEAD', 'char:demo')
@@ -147,7 +146,7 @@ class NaturalWorkflowTests(unittest.TestCase):
         prompt, _ = save_natural_prompt(self.con, shot_id, TEXT)
         folder = Path(self.tmp.name) / 'unreviewed'
         export_bundle(self.con, prompt, folder)
-        fidelity = json.loads((folder / 'fidelity_report.json').read_text())
+        fidelity = json.loads((folder / 'fidelity_report.json').read_text(encoding='utf-8'))
         self.assertEqual(fidelity['verdict'], 'SKIP')
 
     def test_story_and_act_aggregate_string_prompts(self):
@@ -170,8 +169,8 @@ class NaturalWorkflowTests(unittest.TestCase):
         self.assertEqual([r['act'] for r in records], ['A01', 'A01', 'A02'])
         self.assertTrue(all(isinstance(r['prompt'], str) for r in records))
         self.assertTrue(all('bbox' not in r['prompt'] for r in records))
-        self.assertEqual(len([x for x in (out / 'prompts/A01.jsonl').read_text().splitlines() if x.strip()]), 2)
-        self.assertEqual(len([x for x in (out / 'prompts/A02.jsonl').read_text().splitlines() if x.strip()]), 1)
+        self.assertEqual(len([x for x in (out / 'prompts/A01.jsonl').read_text(encoding='utf-8').splitlines() if x.strip()]), 2)
+        self.assertEqual(len([x for x in (out / 'prompts/A02.jsonl').read_text(encoding='utf-8').splitlines() if x.strip()]), 1)
         self.assertEqual(len(list((out / 'bundles').rglob('natural.prompt.txt'))), 3)
 
     def test_export_story_refuses_missing_current_prompt(self):
@@ -237,7 +236,8 @@ class NaturalWorkflowTests(unittest.TestCase):
 
     def test_old_layout_qa_and_data_preserved_after_upgrade(self):
         legacy = Path(self.tmp.name) / 'old.db'
-        with connect(legacy) as old:
+        # SQLite's transaction context manager commits/rolls back but does not close.
+        with closing(connect(legacy)) as old, old:
             for f in sorted((ROOT / 'database/migrations').glob('00[1-6]_*.sql')):
                 old.executescript(f.read_text(encoding='utf-8'))
             old.execute("INSERT INTO qa_reports(id,subject_kind,subject_id,verdict,report_json) VALUES('historical','LAYOUT','legacy-layout','WARN','{}')")
@@ -246,13 +246,16 @@ class NaturalWorkflowTests(unittest.TestCase):
             old.execute("INSERT INTO beats(id,act_id,beat_order) VALUES('old-beat','old-act',1)")
             old.execute("INSERT INTO shots(id,beat_id,shot_key,shot_spec_json) VALUES('old-shot','old-beat','S1','{}')")
             old.execute("INSERT INTO shot_layouts(id,shot_id,width,height,summary_caption) VALUES('old-layout','old-shot',1024,1024,'Old caption')")
-        check = connect(legacy)
-        apply_migrations(check)
-        self.assertEqual(check.execute("SELECT count(*) FROM shot_layouts WHERE id='old-layout'").fetchone()[0], 1)
-        self.assertEqual(check.execute("SELECT count(*) FROM qa_reports WHERE id='historical'").fetchone()[0], 1)
-        self.assertEqual(check.execute('SELECT count(*) FROM shot_prompts').fetchone()[0], 0)
-        self.assertEqual(check.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
-        check.close()
+        with self.assertRaises(sqlite3.ProgrammingError):
+            old.execute('SELECT 1')
+        with closing(connect(legacy)) as check:
+            apply_migrations(check)
+            self.assertEqual(check.execute("SELECT count(*) FROM shot_layouts WHERE id='old-layout'").fetchone()[0], 1)
+            self.assertEqual(check.execute("SELECT count(*) FROM qa_reports WHERE id='historical'").fetchone()[0], 1)
+            self.assertEqual(check.execute('SELECT count(*) FROM shot_prompts').fetchone()[0], 0)
+            self.assertEqual(check.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
+        with self.assertRaises(sqlite3.ProgrammingError):
+            check.execute('SELECT 1')
 
     def test_catalog_import_idempotency(self):
         seed(self.con)

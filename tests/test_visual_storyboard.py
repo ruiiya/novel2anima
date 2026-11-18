@@ -4,6 +4,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,13 +18,11 @@ from n2m_storyboard import save_storyboard,get_storyboard,seal_storyboard,apply_
 class VisualStoryboardTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.con = connect(self.root/'db.sqlite')
+        self.addCleanup(self.con.close)
         apply_migrations(self.con)
-
-    def tearDown(self):
-        self.con.close()
-        self.temp.cleanup()
 
     def fixture(self, mode='BLIND'):
         c = self.con
@@ -116,7 +115,7 @@ class VisualStoryboardTests(unittest.TestCase):
                                                      'A different unapproved prompt.')
         out = self.root/'out'
         export_story_prompts(self.con,story,out)
-        rows=[json.loads(line) for line in (out/'prompts.all.jsonl').read_text().splitlines() if line]
+        rows=[json.loads(line) for line in (out/'prompts.all.jsonl').read_text(encoding='utf-8').splitlines() if line]
         self.assertEqual([r['shot_key'] for r in rows],['S2','S10'])
         self.assertEqual([r['shot_order'] for r in rows],[1,2])
         self.assertNotEqual(rows[0]['prompt'],'A different unapproved prompt.')
@@ -307,21 +306,22 @@ class VisualStoryboardTests(unittest.TestCase):
         self.assertIsNotNone(json.loads(result.stdout)['result']['seal'])
 
     def test_migration_from_v3_preserves_prompt(self):
-        # Construct actual schema 007, insert real V3 data, then apply migration 008.
-        old=connect(self.root/'old.sqlite')
-        for migration in sorted((ROOT/'database/migrations').glob('00[1-7]*.sql')):
-            old.executescript(migration.read_text())
-        story=create_story(old,'Legacy','BLIND','One person reads.',[])
-        add_role(old,story,'LEAD')
-        act=add_act(old,story,1)
-        beat=add_beat(old,act,1)
-        shot,_=save_shot(old,beat,'S1',{'participants':[{'role_key':'LEAD'}]})
-        pid,_=save_natural_prompt(old,shot,'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
-        apply_migrations(old)
-        self.assertEqual(old.execute('SELECT prompt_text FROM shot_prompts WHERE id=?',(pid,)).fetchone()[0],
-                         'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
-        export_story_prompts(old,story,self.root/'legacy')
-        old.close()
+        # Construct actual schema 007, insert real V3 data, then apply later migrations.
+        with closing(connect(self.root/'old.sqlite')) as old:
+            for migration in sorted((ROOT/'database/migrations').glob('00[1-7]*.sql')):
+                old.executescript(migration.read_text(encoding='utf-8'))
+            story=create_story(old,'Legacy','BLIND','One person reads.',[])
+            add_role(old,story,'LEAD')
+            act=add_act(old,story,1)
+            beat=add_beat(old,act,1)
+            shot,_=save_shot(old,beat,'S1',{'participants':[{'role_key':'LEAD'}]})
+            pid,_=save_natural_prompt(old,shot,'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
+            apply_migrations(old)
+            self.assertEqual(old.execute('SELECT prompt_text FROM shot_prompts WHERE id=?',(pid,)).fetchone()[0],
+                             'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
+            export_story_prompts(old,story,self.root/'legacy')
+        with self.assertRaises(sqlite3.ProgrammingError):
+            old.execute('SELECT 1')
 
 
 if __name__=='__main__':
