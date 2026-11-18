@@ -1,0 +1,7 @@
+{
+  "snapshots":[
+    {"role_key":null,"before":{"location_key":"reading-room","time_key":"afternoon"},"delta":{"set":{},"remove":[]},"after":{"location_key":"reading-room","time_key":"afternoon"},"moment":{"at_shot":{"location_key":"reading-room","time_key":"afternoon"},"at_delta":{"set":{},"remove":[]},"after_delta":{"set":{},"remove":[]}}},
+    {"role_key":"LEAD","before":{"outfit_key":"daily","holding":"notebook"},"delta":{"set":{"holding":null},"remove":[]},"after":{"outfit_key":"daily","holding":null},"moment":{"at_shot":{"outfit_key":"daily","holding":"notebook"},"at_delta":{"set":{},"remove":[]},"after_delta":{"set":{"holding":null},"remove":[]}}},
+    {"role_key":"PARTNER_A","before":{"outfit_key":"daily","holding":null},"delta":{"set":{"holding":"notebook"},"remove":[]},"after":{"outfit_key":"daily","holding":"notebook"},"moment":{"at_shot":{"outfit_key":"daily","holding":"notebook"},"at_delta":{"set":{"holding":"notebook"},"remove":[]},"after_delta":{"set":{},"remove":[]}}}
+  ]
+}

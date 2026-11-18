@@ -4,6 +4,10 @@ description: "Quản lý định danh và trang phục của nhân vật Novel2A
 ---
 # Novel2Anima — Thư viện nhân vật và trang phục
 
+## V5: locked identity / outfit tags
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Từ profile và catalog có provenance, chốt `visual_bible.characters[role].prompt_tags` cho phần nhận diện, `outfits[outfit_key].prompt_tags` cho từng phiên bản trang phục đã xác nhận. Không trộn state pose/action vào identity; chỉ đổi outfit_key theo state nguồn, không tự đổi màu. Nếu chưa biết một chi tiết, không gán canon; yêu cầu chốt anchor có căn cứ trước compiler. Đổi cast/identity tạo revision và đánh giá shot phụ thuộc.
+
 > **Policy nội dung bắt buộc:** Đọc `docs/novel2anima/CONTENT_POLICY.md` trước khi xử lý. Mọi quyết định nội dung tuân theo scope và phiên bản tại đó; skill này không tự đặt chính sách khác.
 
 ## Vai trò

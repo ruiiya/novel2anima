@@ -4,6 +4,10 @@ description: "Theo dõi before/delta/after của Novel2Anima qua các Shot và n
 ---
 # Novel2Anima — Tính liên tục và quản lý trạng thái
 
+## V5: state trước / tại / sau shot
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Với V5, snapshot cho scene và **mọi role thuộc scene**, kể cả không nhìn thấy. Thêm moment gồm at_shot, at_delta, after_delta; tổng delta vẫn phải đúng. Dùng state tại moment để viết prompt, state after cho predecessor của shot tiếp nối. INDEPENDENT không kế thừa pose/action; SAME_MOMENT và FLASHBACK giữ before/at/after đúng anchor, không tự tiến thời gian. Theo dõi đạo cụ, người giữ, outfit_key và vị trí vật lý; cập nhật rõ lý do theo Event. Cảnh đổi thời gian/địa điểm bằng delta, không reset state ngầm. V4 lịch sử giữ quy tắc dưới đây.
+
 > **Policy nội dung bắt buộc:** Đọc `docs/novel2anima/CONTENT_POLICY.md` trước khi xử lý. Mọi quyết định nội dung tuân theo scope và phiên bản tại đó; skill này không tự đặt chính sách khác.
 
 ## Vai trò

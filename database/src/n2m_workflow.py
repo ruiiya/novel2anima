@@ -13,7 +13,8 @@ import sys
 from pathlib import Path
 
 from n2m_db import connect, apply_migrations, uid, js, DEFAULT_DB, save_natural_prompt
-from n2m_storyboard import save_storyboard, get_storyboard, seal_storyboard, compare_storyboards
+from n2m_storyboard import save_storyboard, get_storyboard, seal_storyboard, compare_storyboards, apply_delta, compile_bound_prompt
+from n2m_continuity import validate_moment
 
 
 def load_json(path: Path):
@@ -168,21 +169,30 @@ def save_continuity(con, shot_id, obj):
     rows=obj.get('snapshots',[])
     if not isinstance(rows,list) or not rows:
         raise ValueError('snapshots must be a non-empty list')
+    keys=[r.get('role_key') for r in rows]
+    if len(keys)!=len(set(keys)):
+        raise ValueError('Duplicate continuity role')
     with con:
         result=[]
         for snapshot in rows:
             role=role_id(con,story_id,snapshot.get('role_key'))
             values=[js(snapshot[k]) for k in ('before','delta','after')]
+            moment=snapshot.get('moment')
+            if moment is not None:
+                if apply_delta(snapshot['before'],snapshot['delta'])!=snapshot['after']:
+                    raise ValueError('CONTINUITY_DELTA_MISMATCH')
+                validate_moment(snapshot,apply_delta)
+            moment_json=js(moment) if moment is not None else None
             previous=con.execute('''SELECT * FROM continuity_snapshots
                             WHERE shot_id=? AND story_role_id IS ?''',(shot_id,role)).fetchone()
             if previous:
-                if tuple(previous[k+'_json'] for k in ('before','delta','after')) != tuple(values):
+                if tuple(previous[k+'_json'] for k in ('before','delta','after')) != tuple(values) or previous['moment_json']!=moment_json:
                     raise ValueError('Continuity is immutable: create new shot revision')
                 result.append(previous['id'])
                 continue
             id_=uid('state')
-            con.execute('''INSERT INTO continuity_snapshots(id,shot_id,story_role_id,before_json,delta_json,after_json)
-                       VALUES(?,?,?,?,?,?)''',(id_,shot_id,role,*values))
+            con.execute('''INSERT INTO continuity_snapshots(id,shot_id,story_role_id,before_json,delta_json,after_json,moment_json)
+                       VALUES(?,?,?,?,?,?,?)''',(id_,shot_id,role,*values,moment_json))
             result.append(id_)
     return result
 
@@ -219,6 +229,7 @@ def main():
     q=sub.add_parser('save-shot');q.add_argument('--beat-id',required=True);q.add_argument('--shot-key',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--event-id')
     q=sub.add_parser('save-continuity');q.add_argument('--shot-id',required=True);q.add_argument('--file',type=Path,required=True)
     q=sub.add_parser('save-natural-prompt');q.add_argument('--shot-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--language',choices=('en','vi','zh'),default='en')
+    q=sub.add_parser('compile-prompt');q.add_argument('--shot-id',required=True);q.add_argument('--save',action='store_true')
     q=sub.add_parser('save-qa');q.add_argument('--kind',choices=('STORY','SHOT','PROMPT'),required=True);q.add_argument('--subject-id',required=True);q.add_argument('--verdict',choices=('PASS','WARN','BLOCKED','SKIP'),required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--policy-ref')
     args=p.parse_args()
     con=connect(args.db)
@@ -236,6 +247,10 @@ def main():
         elif c=='save-shot':value=save_shot(con,args.beat_id,args.shot_key,load_json(args.file),args.event_id)
         elif c=='save-continuity':value=save_continuity(con,args.shot_id,load_json(args.file))
         elif c=='save-natural-prompt':value=save_natural_prompt(con,args.shot_id,args.file.read_text(encoding='utf-8'),args.language)
+        elif c=='compile-prompt':
+            prompt=compile_bound_prompt(con,args.shot_id)
+            value={'prompt':prompt}
+            if args.save:value['saved']=save_natural_prompt(con,args.shot_id,prompt)
         elif c=='save-qa':value=save_qa(con,args.kind,args.subject_id,args.verdict,load_json(args.file),args.policy_ref)
         print(json.dumps({'status':'PASS','result':value},ensure_ascii=False))
     finally:con.close()

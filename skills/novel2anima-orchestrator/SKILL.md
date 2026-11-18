@@ -4,6 +4,10 @@ description: "Điều phối Story → Act → Beat → Visual Storyboard → Sh
 ---
 # Novel2Anima — Orchestrator (Anima Prompt)
 
+## V5 (mặc định cho storyboard mới)
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md` trước workflow. Dùng một pipeline cho mọi story, phân biệt quan hệ từng shot, không hỏi Album/Comic. Chốt narrative + scene Bible trước shot, lưu state tại moment, gọi `compile-prompt --shot-id SHOT_ID --save`, QA từng shot và sequence với evidence cho từng slot rồi seal. Storyboard lịch sử V4 vẫn dùng contract cũ. Không thay đổi renderer.
+
 > **Policy:** Phải đọc `docs/novel2anima/CONTENT_POLICY.md` trước khi xử lý. Không tự đặt quy tắc nội dung riêng trong skill. Phạm vi kỹ thuật đọc `docs/novel2anima/ANIMA_TAG_PROMPT.md`, `docs/novel2anima/CONTENT_FIDELITY.md`, `docs/novel2anima/DATABASE_CONTRACT.md`.
 
 ## Khởi động

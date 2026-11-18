@@ -1,0 +1,9 @@
+{
+  "visual_context_sha256":"COPY_FROM_APPROVED_SLOT",
+  "camera":"medium two-shot",
+  "focus":"notebook",
+  "location_key":"reading-room",
+  "participants":[{"role_key":"LEAD"},{"role_key":"PARTNER_A"}],
+  "interactions":[{"event_id":"EVENT_HANDOVER","actor_role_key":"LEAD","target_role_key":"PARTNER_A","action_text":"passes notebook"}],
+  "prompt_blocks":{"prefix":["masterpiece","best quality","safe"],"subjects":["1boy","1girl"],"action":["holding book"],"camera":["upper body","eye level"],"prose":"The man on the left and the woman on the right both hold the blue notebook during the exchange."}
+}

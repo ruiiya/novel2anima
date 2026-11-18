@@ -4,6 +4,10 @@ description: "Quản lý SQLite migration, Story/Shot revisions, catalog và exp
 ---
 # Novel2Anima — Database Manager
 
+## V5 database migration và CLI
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Chạy init áp migration 009; backup DB trước upgrade. Scene/Bible locked tags ở storyboard JSON bất biến, dynamic blocks trong ShotSpec revision, moment_json trong continuity_snapshots. Chỉ dùng `compile-prompt --shot-id SHOT_ID --save` cho V5 sau snapshot; seal kiểm tra exact compiled text, dependency/moment và shot_checks. Không tự nâng version storyboard cũ hoặc thay seal lịch sử; tạo revision V5 có duyệt. Không lưu renderer, image, GPU, seed.
+
 > Đọc `docs/novel2anima/CONTENT_POLICY.md`, `docs/novel2anima/DATABASE_CONTRACT.md`, `docs/novel2anima/DATABASE_SKILL_MAPPING.md` và `docs/novel2anima/DATABASE_OPERATIONS.md`.
 
 ## Khi dùng

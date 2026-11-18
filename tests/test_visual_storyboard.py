@@ -319,7 +319,7 @@ class VisualStoryboardTests(unittest.TestCase):
         pid,_=save_natural_prompt(old,shot,'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
         apply_migrations(old)
         self.assertEqual(old.execute('SELECT prompt_text FROM shot_prompts WHERE id=?',(pid,)).fetchone()[0],
-                         'A person reads a book.')
+                         'sensitive, 1girl, solo, reading room, upper body\nA person reads a book.')
         export_story_prompts(old,story,self.root/'legacy')
         old.close()
 

@@ -4,6 +4,10 @@ description: "Chuyển một Beat đã xác nhận thành ShotSpec trực quan c
 ---
 # Novel2Anima — Xây dựng ShotSpec
 
+## V5: khoảnh khắc chính xác và prompt blocks
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Lấy approved slot và scene, xác định đúng một visual moment, actor/target, tay/vật đang tiếp xúc, state tại thời điểm chụp, frame visibility và world-space khác screen-space. Nếu cả hai role của Event tương tác đều nhìn thấy, ghi interaction có event_id và action_text khớp Event. Chỉ dùng dynamic `prompt_blocks` prefix/subjects/action/camera/prose; các tag identity/outfit/location/lighting/props/style lấy từ Bible và moment bởi compiler. Dùng ShotSpec revision mới khi chỉnh block. Không thay thế context hash bằng shot_order.
+
 > **Policy nội dung bắt buộc:** Đọc `docs/novel2anima/CONTENT_POLICY.md` trước khi xử lý. Mọi quyết định nội dung tuân theo scope và phiên bản tại đó; skill này không tự đặt chính sách khác.
 
 ## Vai trò

@@ -4,6 +4,10 @@ description: "Biến Story/Act/Beat/Event đã duyệt thành storyboard có nh�
 ---
 # Novel2Anima — Storyboard Planner
 
+## V5: scene lock và kế hoạch shot liên kết
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md` và `examples/storyboard_v5.example.json`. Dùng `schema_version: 5` cho storyboard mới. Kế hoạch toàn bộ scene trước khi viết slot: narrative_role, story_time, scene_key, danh sách role cả ngoài frame, ánh sáng, location landmarks, outfit version, canonical prompt_tags. Chọn `INDEPENDENT` (không predecessor) cho pose độc lập, `SAME_MOMENT` cho góc khác cùng thời điểm, `FLASHBACK` cho nhánh lịch sử có anchor; giữ các transition V4. Tại mỗi slot chọn visible_location_tags, role_keys, prop_keys đúng camera; đừng nhét toàn bộ scene vào close-up. Giữ trục không gian, eyeline, hướng di chuyển và nhịp kể hợp lý. Các quy tắc V5 này bổ sung/thay thế quy tắc transition V4 ở dưới; storyboard lịch sử giữ nguyên.
+
 Đọc `docs/novel2anima/CONTENT_POLICY.md` và `docs/novel2anima/VISUAL_STORYTELLING.md`. Chỉ lập kế hoạch hình ảnh; không tạo prompt cuối hoặc render.
 
 ## Điều kiện vào

@@ -1,4 +1,4 @@
-# Novel2Anima Skills V4 — Visual Storytelling · Natural Prompts · Database-First
+# Novel2Anima Skills V5 — Narrative & Visual Continuity · Database-First
 
 Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt Anima (tag block + tối đa 2 câu bổ trợ, UTF-8)** cho Anima-Base-v1.0. **Không dùng Layout JSON / bbox** trong luồng mới.
 
@@ -24,6 +24,8 @@ python database/src/n2m_db.py stats --detailed
 **Khi nâng cấp từ bản Layout V2:** `--upgrade` sao lưu file cũ trước khi thay. Installer dọn các skill/tool/docs Layout cũ theo **danh sách tệp cố định**, sao lưu trước khi xóa. Migration `007_natural_prompts.sql` chỉ **bổ sung** `shot_prompts` và QA `PROMPT`; **không drop hay sửa dữ liệu Layout lịch sử**. `CONTENT_POLICY.md` ở project đích luôn được giữ nguyên khi nâng cấp (cần đối chiếu thủ công nếu file policy cũ còn ghi “Layout”).
 
 **Nâng cấp V3 → V4:** chạy installer --upgrade rồi init. Migration 008 bổ sung storyboard, coverage, Visual Bible, liên kết Shot và seal, không sửa dữ liệu cũ. Story chưa có storyboard vẫn export theo V3. Để dùng V4, lập storyboard có duyệt và QA lại; không tự coi dữ liệu lịch sử là storyboard đã duyệt.
+
+**Nâng cấp V4 → V5:** backup SQLite, chạy installer --upgrade và init. Migration 009 giữ lịch sử V4, bổ sung moment và các dependency mới. Story mới dùng storyboard `schema_version: 5`, một pipeline chung cho ảnh độc lập và chuỗi diễn biến. Đọc [hợp đồng V5](docs/novel2anima/NARRATIVE_CONTINUITY.md), [mẫu storyboard V5](examples/storyboard_v5.example.json). Sau save-shot và save-continuity, chạy `python database/src/n2m_workflow.py compile-prompt --shot-id SHOT_ID --save`, QA và seal như trước (thêm shot_checks).
 
 ## 12 skill
 

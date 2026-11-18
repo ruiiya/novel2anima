@@ -4,6 +4,10 @@ description: "Lập Story, Act, Beat và diễn tiến sự kiện của Novel2A
 ---
 # Novel2Anima — Lập kế hoạch Story
 
+## V5: narrative plan
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Lập chuỗi nguyên nhân → hành động → hệ quả từ nguồn, nhóm scene theo thời gian/địa điểm, xác định mỗi event độc lập hay nối state. Với chuỗi liên tục, chọn các khoảnh khắc mở đầu, phát triển, cao trào, phản ứng/kết quả khi cần; không ép thêm event hoặc shot. Với ảnh pose độc lập, giữ mỗi pose độc lập. Trình narrative plan cùng Story Brief trước storyboard; vẫn dùng Act/Beat/Event hiện có.
+
 > **Policy nội dung bắt buộc:** Đọc `docs/novel2anima/CONTENT_POLICY.md` trước khi xử lý. Mọi quyết định nội dung tuân theo scope và phiên bản tại đó; skill này không tự đặt chính sách khác.
 
 ## Vai trò

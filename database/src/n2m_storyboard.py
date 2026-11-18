@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import re
 from n2m_db import js, sha, uid
+from n2m_continuity import is_v5, validate_bible, validate_slot, validate_states, compile_prompt
 
 PURPOSES = {'ESTABLISHING', 'ACTION', 'REACTION', 'DETAIL', 'TRANSITION', 'CLIMAX', 'AFTERMATH'}
 TRANSITIONS = {'CONTINUOUS', 'CAMERA_CUT', 'TIME_CUT', 'LOCATION_CUT', 'BRANCH'}
@@ -65,6 +66,7 @@ def _validate_plan(con, story_id, obj, story, plan):
     require(obj.get('approval', {}).get('status') == 'APPROVED', 'WAITING_FOR_STORYBOARD_APPROVAL')
     require(nonempty(obj['approval'].get('evidence')), 'Storyboard approval evidence required')
     visual = obj['visual_bible']
+    v5 = is_v5(obj)
     casts = cast_at(con, story_id, story['current_revision'])
     characters = visual['characters']
     require(isinstance(characters, dict), 'characters must be an object')
@@ -83,6 +85,8 @@ def _validate_plan(con, story_id, obj, story, plan):
             require(isinstance(spec, dict) and nonempty(spec.get('description')) and
                     nonempty(spec.get('provenance')), f'Invalid {group} entry: {k}')
     shots = obj['shots']
+    if v5:
+        validate_bible(obj)
     require(isinstance(shots, list), 'Storyboard shots must be a list')
     events = story_events(con, story_id)
     require(events, 'Storyboard requires materialized Story Events')
@@ -107,17 +111,22 @@ def _validate_plan(con, story_id, obj, story, plan):
         prev, transition = s.get('previous_shot_key'), s.get('transition')
         if index == 1:
             require(prev is None and transition == 'START', 'First shot must START')
+        elif v5 and transition == 'INDEPENDENT':
+            require(prev is None, f'INDEPENDENT_REQUIRES_NO_PREDECESSOR: {k}')
         else:
-            require(prev in by_key and transition in TRANSITIONS, f'Invalid predecessor: {k}')
+            allowed = TRANSITIONS | ({'SAME_MOMENT','FLASHBACK'} if v5 else set())
+            require(prev in by_key and transition in allowed, f'Invalid predecessor: {k}')
             if branch in branch_tail:
-                require(prev == branch_tail[branch] and transition != 'BRANCH',
+                require(prev == branch_tail[branch] and transition not in ('BRANCH','FLASHBACK'),
                         f'BRANCH_PREDECESSOR_MISMATCH: {k}')
             else:
-                require(transition == 'BRANCH' and by_key[prev]['branch_key'] != branch,
+                require(transition in ('BRANCH','FLASHBACK') and by_key[prev]['branch_key'] != branch,
                         f'New branch must fork explicitly: {k}')
             if by_key[prev]['location_key'] != s['location_key']:
-                require(transition in ('LOCATION_CUT', 'TIME_CUT', 'BRANCH'),
+                require(transition in ('LOCATION_CUT', 'TIME_CUT', 'BRANCH','FLASHBACK'),
                         f'LOCATION_CHANGE_WITHOUT_CUT: {k}')
+        if v5:
+            scene = validate_slot(obj,s,by_key.get(prev))
         by_key[k], branch_tail[branch] = s, k
         # Hash only this slot's visual dependencies so unrelated repairs can reuse shots.
         # Predecessor state is checked separately during sealing.
@@ -127,6 +136,10 @@ def _validate_plan(con, story_id, obj, story, plan):
                        'location': visual['locations'][s['location_key']],
                        'style': visual['styles'][s['style_key']],
                        'props': {p: visual['props'][p] for p in props}}
+        if v5:
+            contexts[k]['scene'] = scene
+            contexts[k]['schema_version'] = 5
+            contexts[k]['characters'] = {r:{'bible':characters[r],'casting':casts[r]} for r in scene['role_keys']}
     coverage = obj['coverage']
     require(isinstance(coverage, list), 'coverage must be a list')
     seen, mapped = {}, set()
@@ -271,13 +284,32 @@ def compare_storyboards(con, old_id, new_id):
 
 
 def _snapshots(con, shot_id):
-    return {r['role_key']: {k: json.loads(r[k+'_json']) for k in ('before','delta','after')}
+    return {r['role_key']: {**{k: json.loads(r[k+'_json']) for k in ('before','delta','after')},
+                            **({'moment':json.loads(r['moment_json'])} if r['moment_json'] is not None else {})}
             for r in con.execute('''SELECT c.*,r.role_key FROM continuity_snapshots c
                 LEFT JOIN story_roles r ON r.id=c.story_role_id WHERE c.shot_id=?''', (shot_id,))}
 
 
 def _state_digest(states):
     return sha(js([{'role_key': k, **v} for k,v in sorted(states.items(), key=lambda kv: kv[0] or '')]))
+
+
+def compile_bound_prompt(con, shot_id):
+    """Resolve the exact approved context, never the newest unrelated slot."""
+    shot=one(con,'SELECT * FROM shots WHERE id=?',(shot_id,),'Shot')
+    spec=json.loads(shot['shot_spec_json'])
+    row=one(con,'''SELECT s.storyboard_id FROM storyboard_shots s JOIN storyboards b ON b.id=s.storyboard_id
+        WHERE s.beat_id=? AND s.shot_key=? AND s.context_sha256=? ORDER BY b.revision DESC LIMIT 1''',
+        (shot['beat_id'],shot['shot_key'],spec.get('visual_context_sha256')),'Approved context')
+    board=get_storyboard(con,row['storyboard_id'])
+    require(is_v5(board['plan']),'Prompt compiler requires V5 storyboard')
+    slot=next(s for s in board['plan']['shots'] if s['shot_key']==shot['shot_key'])
+    require(spec.get('camera')==slot['camera'] and spec.get('focus')==slot['focus'] and
+            spec.get('location_key')==slot['location_key'], 'SHOT_DIRECTION_MISMATCH')
+    require({p.get('role_key') for p in spec.get('participants',[])}==set(slot['role_keys']), 'PARTICIPANT_MISMATCH')
+    states=_snapshots(con,shot_id)
+    moment=validate_states(board['plan'],slot,states,apply_delta)
+    return compile_prompt(board['plan'],slot,spec,moment)
 
 
 def _bindings(con, board, bindings):
@@ -287,7 +319,8 @@ def _bindings(con, board, bindings):
     blocked = [r for r in plan['coverage'] if r['status'] in ('UNRESOLVED','UNSUPPORTED_CONTENT')]
     require(not blocked, 'SOURCE_COVERAGE_BLOCKED: unresolved or unsupported events remain')
     require(board['slots'], 'No visual shots to seal')
-    history, result = {}, []
+    history, moment_history, result = {}, {}, []
+    v5=is_v5(plan)
     for slot in board['slots']:
         k = slot['shot_key']
         s = json.loads(slot['spec_json'])
@@ -313,6 +346,16 @@ def _bindings(con, board, bindings):
             require(interaction.get('actor_role_key') == event['actor_key'] and
                     interaction.get('target_role_key') == event['target_key'],
                     f'ACTOR_TARGET_MISMATCH: {k}')
+            if v5:
+                require(interaction.get('action_text') == event['action'], f'ACTION_SOURCE_MISMATCH: {k}')
+        if v5:
+            represented={a['event_id'] for a in spec.get('interactions',[])}
+            for event_id in mapped_events:
+                event=one(con,'''SELECT a.role_key AS actor_key,t.role_key AS target_key
+                    FROM story_events e LEFT JOIN story_roles a ON a.id=e.actor_role_id
+                    LEFT JOIN story_roles t ON t.id=e.target_role_id WHERE e.id=?''',(event_id,),'Event')
+                if event['actor_key'] in roles and event['target_key'] in roles:
+                    require(event_id in represented,f'INTERACTION_MISSING: {k}/{event_id}')
         prompt = one(con, 'SELECT * FROM shot_prompts WHERE id=? AND shot_id=?',
                      (binding['prompt_id'],shot['id']), 'Prompt for shot')
         require(sha(shot['shot_spec_json']) == prompt['shot_spec_sha256'] and
@@ -320,22 +363,37 @@ def _bindings(con, board, bindings):
         qa = latest_qa(con, prompt['id'])
         require_prompt_qa(qa,shot['id'])
         states = _snapshots(con, shot['id'])
-        require(set(states) == roles | {None}, f'CONTINUITY_SNAPSHOTS_MISSING: {k}')
+        if v5:
+            moment=validate_states(plan,s,states,apply_delta)
+            require(prompt['prompt_text']==compile_prompt(plan,s,spec,moment), f'PROMPT_COMPILER_MISMATCH: {k}')
+        else:
+            require(set(states) == roles | {None}, f'CONTINUITY_SNAPSHOTS_MISSING: {k}')
         inherited = dict(history.get(s.get('previous_shot_key'), {}))
+        same_moment = v5 and s['transition'] in ('SAME_MOMENT','FLASHBACK')
+        anchor=moment_history.get(s.get('previous_shot_key'),{}) if same_moment else {}
         for role, state in states.items():
             require(apply_delta(state['before'],state['delta']) == state['after'],
                     f'CONTINUITY_DELTA_MISMATCH: {k}/{role}')
-            if role in inherited:
+            if same_moment and role in anchor:
+                require(state['moment']['at_shot']==anchor[role]['moment']['at_shot'] and
+                        state['before']==anchor[role]['before'] and state['after']==anchor[role]['after'],
+                        f'SAME_MOMENT_STATE_MISMATCH: {k}/{role}')
+            elif role in inherited:
                 require(state['before'] == inherited[role], f'CONTINUITY_BREAK: {k}/{role}')
             inherited[role] = state['after']
         # Scene state is world-space; camera/screen placement lives in ShotSpec, not here.
         require(states[None]['after'].get('location_key') == s['location_key'],
                 f'SCENE_LOCATION_MISMATCH: {k}')
         history[k] = inherited
+        if v5:
+            moment_history[k] = states
         result.append({'shot_key': k,'shot_order': slot['shot_order'],'branch_key': slot['branch_key'],
                        'purpose': slot['purpose'],'shot_id':shot['id'],'prompt_id':prompt['id'],
                        'qa_id':qa['id'],'continuity_sha256':_state_digest(states),
                        'context_sha256':slot['context_sha256']})
+        if v5:
+            result[-1].update({field:s.get(field) for field in
+                               ('scene_key','story_time','narrative_role','transition','previous_shot_key')})
     return result
 
 
@@ -352,6 +410,11 @@ def seal_storyboard(con, bid, obj):
         review = obj['sequence_qa']
         require(review.get('verdict') == 'PASS' and nonempty(review.get('evidence')),
                 'SEQUENCE_QA_REQUIRED')
+        if is_v5(board['plan']):
+            checks=review.get('shot_checks',{})
+            require(set(checks)=={b['shot_key'] for b in bindings} and all(
+                isinstance(c,dict) and c.get('verdict')=='PASS' and nonempty(c.get('evidence'))
+                for c in checks.values()), 'CROSS_SHOT_QA_REQUIRED: evidence per shot')
         seal = {'bindings':bindings,'sequence_qa':review,'plan_sha256':sha(js(board['plan']))}
         body = js(seal)
         existing = con.execute('SELECT * FROM storyboard_seals WHERE storyboard_id=?',(bid,)).fetchone()

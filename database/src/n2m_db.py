@@ -550,10 +550,18 @@ def validate_natural_prompt(prompt: str, language: str = 'en') -> str:
 def save_natural_prompt(con, shot_id: str, prompt_text: str, language: str = 'en'):
     text = validate_natural_prompt(prompt_text, language)
     with con:
-        shot = con.execute('SELECT shot_spec_json FROM shots WHERE id=?', (shot_id,)).fetchone()
+        shot = con.execute('SELECT shot_spec_json,beat_id,shot_key FROM shots WHERE id=?', (shot_id,)).fetchone()
         if shot is None:
             raise ValueError(f'Shot not found: {shot_id}')
         spec_hash = sha(shot['shot_spec_json'])
+        spec=json.loads(shot['shot_spec_json'])
+        if spec.get('visual_context_sha256') and con.execute('''SELECT 1 FROM storyboard_shots s
+                JOIN storyboards b ON b.id=s.storyboard_id WHERE s.beat_id=? AND s.shot_key=?
+                AND s.context_sha256=? AND json_extract(b.plan_json,'$.schema_version')=5''',
+                (shot['beat_id'],shot['shot_key'],spec['visual_context_sha256'])).fetchone():
+            from n2m_storyboard import compile_bound_prompt
+            if text!=compile_bound_prompt(con,shot_id):
+                raise ValueError('PROMPT_COMPILER_MISMATCH: use compile-prompt')
         previous = con.execute('''SELECT * FROM shot_prompts WHERE shot_id=?
                                   ORDER BY revision DESC LIMIT 1''', (shot_id,)).fetchone()
         if previous and previous['prompt_text'] == text and previous['language'] == language:
@@ -679,6 +687,7 @@ def export_story_prompts(con, story_id: str, out_dir: Path, storyboard_id=None):
                'prompt_sha256': prompt['prompt_sha256'], 'prompt': prompt['prompt_text']}
         if bindings:
             row.update({k: bindings[index][k] for k in ('shot_order','branch_key','purpose','qa_id','continuity_sha256')})
+            row.update({k: bindings[index][k] for k in ('scene_key','story_time','narrative_role','transition','previous_shot_key') if k in bindings[index]})
             row['storyboard_id'] = storyboard_id
         line = json.dumps(row, ensure_ascii=False, separators=(',', ':'))
         all_lines.append(line)

@@ -4,6 +4,10 @@ description: "QA bảo toàn Story/ShotSpec khi chuyển thành prompt Anima (ta
 ---
 # Novel2Anima — Fidelity QA (Anima Prompt)
 
+## V5: cross-shot QA
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Kiểm tra toàn bộ chuỗi, không chỉ từng prompt. Mỗi slot kiểm tra continuity graph, before/at/after, role ngoài frame, outfit/prop ownership, hướng nhìn, camera, đúng nhân vật và actor→target; kiểm tra tag lock, loại tag thực sự không nhìn thấy theo frame, mâu thuẫn tag/prose và nhịp kể. Với shot độc lập chỉ kiểm tra thông tin chung đã khóa, không ép pose liên tục. Ghi `sequence_qa.shot_checks` mỗi slot verdict/evidence cụ thể và `sequence_qa` tổng thể. Chỉ seal khi đánh giá thật; sửa đúng tầng, kiểm tra lại descendant liên quan. Đây là QA prompt, không phải QA ảnh render.
+
 > Đọc `docs/novel2anima/CONTENT_POLICY.md` và `docs/novel2anima/CONTENT_FIDELITY.md`, `docs/novel2anima/ANIMA_TAG_PROMPT.md`. Quy tắc phân loại thuộc duy nhất policy trung tâm.
 
 ## Công việc

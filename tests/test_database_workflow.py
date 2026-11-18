@@ -59,7 +59,8 @@ class NaturalWorkflowTests(unittest.TestCase):
         versions = [x[0] for x in self.con.execute('SELECT version FROM schema_migrations ORDER BY version')]
         self.assertEqual(versions, ['001_init', '002_integrity', '003_history_guards',
                                     '004_catalog_enrichment', '005_db_boundary',
-                                    '006_qa_history_guards', '007_natural_prompts', '008_visual_storytelling'])
+                                    '006_qa_history_guards', '007_natural_prompts', '008_visual_storytelling',
+                                    '009_narrative_continuity'])
         self.assertEqual(self.con.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(list(self.con.execute('PRAGMA foreign_key_check')), [])
         self.assertEqual(self.con.execute('SELECT count(*) FROM shot_prompts').fetchone()[0], 0)

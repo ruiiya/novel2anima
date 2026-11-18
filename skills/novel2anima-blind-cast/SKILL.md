@@ -4,6 +4,10 @@ description: "Lập kế hoạch Novel2Anima với vai trò tạm thời khi ch�
 ---
 # Novel2Anima — Vai trò tạm thời và gán nhân vật sau (Blind Cast)
 
+## V5: continuity xuyên casting
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Giữ role_key ổn định trong scene, state, interactions và Bible. Dùng anchor nhận diện có căn cứ đã chốt cho Blind, không tự suy diễn danh tính từ franchise; Non-Blind lấy đúng revision casting/catalog. Rebind cast cần storyboard revision mới, kiểm tra lại context hash và compile các shot ảnh hưởng; không thay world state hoặc Event chỉ vì đổi casting.
+
 > **Policy nội dung bắt buộc:** Đọc `docs/novel2anima/CONTENT_POLICY.md` trước khi xử lý. Mọi quyết định nội dung tuân theo scope và phiên bản tại đó; skill này không tự đặt chính sách khác.
 
 ## Khi nào sử dụng

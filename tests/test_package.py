@@ -40,6 +40,8 @@ class PackageTests(unittest.TestCase):
             self.assertTrue((Path(tmp)/'.claude/skills/novel2anima-anima-prompt/SKILL.md').exists())
             self.assertTrue((Path(tmp)/'.claude/skills/novel2anima-storyboard-planner/SKILL.md').exists())
             self.assertTrue((Path(tmp)/'database/migrations/008_visual_storytelling.sql').exists())
+            self.assertTrue((Path(tmp)/'database/migrations/009_narrative_continuity.sql').exists())
+            self.assertTrue((Path(tmp)/'database/src/n2m_continuity.py').exists())
             self.assertTrue((Path(tmp)/'database/src/n2m_storyboard.py').exists())
             self.assertTrue((Path(tmp)/'docs/novel2anima/VISUAL_STORYTELLING.md').exists())
             self.assertTrue((Path(tmp)/'examples/novel2anima/storyboard.example.json').exists())

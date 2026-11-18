@@ -4,6 +4,10 @@ description: "Skill canonical: biên soạn positive prompt Anima (tag block + t
 ---
 # Novel2Anima — Anima Prompt (canonical)
 
+## V5: Prompt Compiler (bắt buộc cho storyboard V5)
+
+Đọc `docs/novel2anima/NARRATIVE_CONTINUITY.md`. Chọn block động theo contract Anima, lưu trong ShotSpec `prompt_blocks` (prefix, subjects, action, camera, prose). Sau khi lưu state đúng khoảnh khắc, chạy `python database/src/n2m_workflow.py compile-prompt --shot-id SHOT_ID --save`. Compiler ghép đúng khóa Bible/scene/moment/visibility và validate format; không tự sinh quyết định ngữ nghĩa. QA prompt đã compile theo source và predecessor; code không thay QA LLM/human. Không sửa tag đã khóa bằng prose, không ghi file prompt thủ công rồi bypass compiler; sửa ShotSpec revision và continuity khi cần. Các bước viết/lưu thủ công bên dưới chỉ áp dụng cho storyboard V4 hoặc legacy.
+
 > **Policy:** Luôn đọc `docs/novel2anima/CONTENT_POLICY.md`. Quy tắc nội dung do policy trung tâm quyết định; skill này chỉ điều phối tính chính xác và định dạng.
 >
 > **Hợp đồng định dạng:** `docs/novel2anima/ANIMA_TAG_PROMPT.md`. Model đích: `Anima-Base-v1.0` (Qwen-3 0.6B text encoder, Qwen-Image VAE).

@@ -1,0 +1,23 @@
+{
+  "schema_version": 5,
+  "story_revision": 1,
+  "approval": {"status": "PENDING", "evidence": "Thay bằng xác nhận thực tế"},
+  "visual_bible": {
+    "characters": {
+      "LEAD": {"description":"Adult man, black hair, white shirt","provenance":"story","character_id":null,"outfit_id":null,"prompt_tags":["black hair"],"outfits":{"daily":{"prompt_tags":["white shirt"]}}},
+      "PARTNER_A": {"description":"Adult woman, brown hair, blue jacket","provenance":"story","character_id":null,"outfit_id":null,"prompt_tags":["brown hair"],"outfits":{"daily":{"prompt_tags":["blue jacket"]}}}
+    },
+    "locations": {"reading-room":{"description":"Wooden table beside window","provenance":"story","prompt_tags":["indoors","wooden table"]}},
+    "props": {"notebook":{"description":"Blue notebook","provenance":"story","prompt_tags":["blue notebook"]}},
+    "styles": {"anime":{"description":"Clean anime linework","provenance":"user choice","prompt_tags":["anime style"]}}
+  },
+  "scenes":{"room-day":{"location_key":"reading-room","style_key":"anime","time_key":"afternoon","role_keys":["LEAD","PARTNER_A"],"lighting_tags":["sunlight"]}},
+  "shots":[
+    {"shot_key":"S01","shot_order":1,"beat_id":"BEAT_ID","branch_key":"main","previous_shot_key":null,"transition":"START","purpose":"ACTION","narrative_role":"INITIATE","story_time":1,"scene_key":"room-day","camera":"medium two-shot","focus":"notebook","visual_moment":"A offers the notebook to B.","role_keys":["LEAD","PARTNER_A"],"location_key":"reading-room","visible_location_tags":["indoors","wooden table"],"prop_keys":["notebook"],"style_key":"anime"},
+    {"shot_key":"S02","shot_order":2,"beat_id":"BEAT_ID","branch_key":"main","previous_shot_key":"S01","transition":"CONTINUOUS","purpose":"REACTION","narrative_role":"REACTION","story_time":2,"scene_key":"room-day","camera":"close-up","focus":"smile","visual_moment":"B smiles with the notebook.","role_keys":["PARTNER_A"],"location_key":"reading-room","visible_location_tags":["indoors"],"prop_keys":["notebook"],"style_key":"anime"}
+  ],
+  "coverage":[
+    {"event_id":"EVENT_HANDOVER","status":"VISUALIZED","shot_key":"S01","evidence":"The transfer is visible."},
+    {"event_id":"EVENT_SMILE","status":"VISUALIZED","shot_key":"S02","evidence":"B reacts."}
+  ]
+}
