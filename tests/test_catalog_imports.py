@@ -61,6 +61,35 @@ class CatalogImportTests(unittest.TestCase):
                                      ORDER BY antecedent LIMIT 1''').fetchone()
         self.assertEqual(tuple(alias), ('long hair', 'long_hair', 'archive_unspecified'))
 
+    def test_gz_headered_dump_and_relations_csv(self):
+        import gzip
+
+        def gz(name, text):
+            path = Path(self.tmp.name) / name
+            with gzip.open(path, 'wt', encoding='utf-8', newline='') as handle:
+                handle.write(text)
+            return path
+        tags = gz('tags.csv.gz',
+                  'id,name,category,post_count,created_at,updated_at,is_locked\n'
+                  '1,dragon,5,478284,2020-01-01,2020-01-01,f\n'
+                  '2,1girl,0,0,2020-01-01,2020-01-01,f\n')
+        result = import_tags_csv(self.con, tags, 'e621')
+        self.assertEqual(result['rows_processed'], 2)
+        self.assertEqual(result['new_tags'], 2)
+        self.assertEqual(result['new_alias_relations'], 0)
+        self.assertEqual(self.con.execute(
+            "SELECT label FROM catalog_tag_taxonomy WHERE namespace='e621' AND category=5"
+        ).fetchone()[0], 'species')
+        aliases = gz('aliases.csv.gz',
+                     'id,antecedent_name,consequent_name,status\n'
+                     '1,tits,breasts,active\n'
+                     '2,old_name,breasts,deleted\n')
+        rel = import_tag_relations_json(self.con, aliases, 'e621', 'alias')
+        self.assertEqual(rel['new_relations'], 2)
+        self.assertEqual(self.con.execute(
+            "SELECT status FROM catalog_tag_relations WHERE antecedent='old_name'"
+        ).fetchone()[0], 'deleted')
+
     def test_tags_csv_can_be_limited_to_character_core_tags(self):
         import_deepghs(self.con, ROOT / 'tests' / 'fixtures' / 'deepghs_sample.md')
         tags = self.write('core_tags.csv',

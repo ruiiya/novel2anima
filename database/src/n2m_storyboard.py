@@ -10,7 +10,8 @@ import re
 from n2m_db import js, sha, uid
 from n2m_continuity import is_v5, validate_bible, validate_slot, validate_states, compile_prompt
 
-PURPOSES = {'ESTABLISHING', 'ACTION', 'REACTION', 'DETAIL', 'TRANSITION', 'CLIMAX', 'AFTERMATH'}
+PURPOSES = {'ESTABLISHING', 'ACTION', 'REACTION', 'DETAIL', 'TRANSITION', 'CLIMAX', 'AFTERMATH',
+            'TEASE', 'UNDRESS', 'POV', 'SELF_TOUCH', 'AFTERGLOW'}
 TRANSITIONS = {'CONTINUOUS', 'CAMERA_CUT', 'TIME_CUT', 'LOCATION_CUT', 'BRANCH'}
 COVERAGE = {'VISUALIZED', 'CONTEXT_ONLY', 'UNRESOLVED', 'UNSUPPORTED_CONTENT'}
 BIBLES = {'locations': ('story_locations', 'location_key'),

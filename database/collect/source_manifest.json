@@ -77,6 +77,32 @@
       }
     },
     {
+      "id": "storyaura_danbooru_csv",
+      "enabled": true,
+      "kind": "csv_metadata",
+      "download_images": false,
+      "importer": "import-storyaura-csv",
+      "consumer_skill": "novel2anima-character-profile / novel2anima-blind-cast / novel2anima-shot-spec",
+      "target_fields": "universes, characters, character_aliases, character_traits, catalog_tags, catalog_tag_relations",
+      "used_in_step": "BLIND/NON_BLIND casting lookup and candidate appearance/outfit traits",
+      "license_note": "Repository MIT; original noob-wiki core tags are Apache-2.0 (attribution required); upstream Danbooru terms apply to tags. Dataset ships CSV metadata only, no images.",
+      "notes": "Only character-related tables are in scope. Artist tags, general tags and near-synonym relations have no consumer here and are not collected. Scope decision 2026-11-18: rows without a Danbooru copyright (no universe) are NOT imported. Looks/outfit columns are statistical/CL-tagger derived: import as CANDIDATE traits, never VERIFIED identity or canon outfits.",
+      "files": {
+        "danbooru_character_tags_corrected": {
+          "url": "https://huggingface.co/datasets/StoryAura/Danbooru-Dataset-csv/resolve/main/danbooru_character_tags_corrected.csv",
+          "dest": "storyaura-danbooru-csv/danbooru_character_tags_corrected.csv",
+          "source_revision": "2026-10-29-corrected",
+          "enabled": true
+        },
+        "danbooru_character_appearance_corrected": {
+          "url": "https://huggingface.co/datasets/StoryAura/Danbooru-Dataset-csv/resolve/main/danbooru_character_appearance_corrected.csv",
+          "dest": "storyaura-danbooru-csv/danbooru_character_appearance_corrected.csv",
+          "source_revision": "2026-10-29-corrected",
+          "enabled": true
+        }
+      }
+    },
+    {
       "id": "danbooru_api",
       "enabled": false,
       "kind": "api",

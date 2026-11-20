@@ -28,9 +28,12 @@ python database/src/n2m_db.py seed
 python database/src/collect_sources.py fetch --source deepghs
 python database/src/collect_sources.py fetch --source ai_pose_gallery
 python database/src/collect_sources.py fetch --source dbr_e621_lists
+python database/src/collect_sources.py fetch --source storyaura_danbooru_csv
 python database/src/collect_sources.py verify
 python database/src/n2m_db.py import-deepghs-md database/imports/deepghs/blue_archive.md
 python database/src/n2m_db.py import-tags-csv database/imports/dbr-e621-lists-archive/danbooru/danbooru_2026-10-01_pt20-ia-dd.csv --namespace danbooru --from-character-core-tags
+python database/src/n2m_db.py import-storyaura-characters database/imports/storyaura-danbooru-csv/danbooru_character_tags_corrected.csv --source-revision 2026-10-29-corrected
+python database/src/n2m_db.py import-storyaura-appearance database/imports/storyaura-danbooru-csv/danbooru_character_appearance_corrected.csv --source-revision 2026-10-29-corrected
 python database/src/n2m_db.py import-costume-gallery-json database/imports/ai-pose-gallery/data/costume-zh.json --source-id ai_pose_gallery
 python database/src/n2m_db.py import-costume-gallery-json database/imports/ai-pose-gallery/data/costume-anime-zh.json --source-id charadb
 python database/src/n2m_db.py import-tag-relations-json data/aliases.json --namespace danbooru --kind alias

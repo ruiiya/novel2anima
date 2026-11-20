@@ -108,6 +108,7 @@ SOURCES = [
     ('moss_official', 'OpenMOSS Natural Caption Prompt Guide', 'documentation', 'https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE.md', 'Code repository rights may differ from generated images', '', 'Read official guidance for natural-language captions; this is documentation, not an imported dataset.'),
     ('posescript', 'PoseScript pose descriptions', 'dataset', 'https://github.com/naver/posescript', 'CC BY-NC-SA 4.0 dataset', 'https://github.com/naver/posescript/blob/main/LICENSE', 'Optional manual import only; non-commercial/SA and AMASS dependencies.'),
     ('dbr_e621_lists', 'Danbooru tag list archive (DraconicDragon; V2 uses Danbooru namespace)', 'dataset', 'https://github.com/DraconicDragon/dbr-e621-lists-archive', 'Repository license plus upstream Danbooru terms', 'https://github.com/DraconicDragon/dbr-e621-lists-archive/blob/main/LICENSE', 'V2 imports only selected Danbooru tags; no e621 or merged list.'),
+    ('storyaura_danbooru_csv', 'StoryAura Danbooru Dataset CSV (character tags + appearance, corrected 2026-10-29)', 'dataset', 'https://huggingface.co/datasets/StoryAura/Danbooru-Dataset-csv', 'MIT (repository); noob-wiki core tags Apache-2.0 with attribution; upstream Danbooru terms apply', 'https://huggingface.co/datasets/StoryAura/Danbooru-Dataset-csv', 'CSV metadata only, no images. Looks/outfit columns are statistical/CL-tagger derived candidates: never promoted to verified identity or canon outfits. Variant characters stay separate (base_character is provenance, not a merge key).'),
     ('ai_pose_gallery', 'AI Pose Gallery metadata', 'dataset', 'https://github.com/anhao/ai-pose-gallery-zh', 'Code MIT; image/data rights may differ per asset', 'https://github.com/anhao/ai-pose-gallery-zh', 'Import JSON metadata only. Do not download or redistribute images before checking per-asset terms.'),
     ('charadb', 'CharaDB generic outfit metadata', 'dataset', 'https://github.com/taki-ttt/charadb', 'Check CharaDB terms; metadata and images can differ', 'https://github.com/taki-ttt/charadb', 'Generic outfit metadata only; never treat it as a canon outfit for a character.'),
 ]
@@ -805,8 +806,11 @@ def main():
     a=sub.add_parser('import-wikidata-json');a.add_argument('file',type=Path)
     a=sub.add_parser('import-tags-csv');a.add_argument('file',type=Path);a.add_argument('--namespace',required=True,choices=('danbooru','e621'));a.add_argument('--limit',type=int);a.add_argument('--no-aliases',action='store_true');a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true');a.add_argument('--from-character-core-tags',action='store_true')
     a=sub.add_parser('import-tag-relations-json');a.add_argument('file',type=Path);a.add_argument('--namespace',required=True,choices=('danbooru','e621'));a.add_argument('--kind',required=True,choices=('alias','implication'));a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true')
+    a=sub.add_parser('import-tag-relations-csv');a.add_argument('file',type=Path);a.add_argument('--namespace',required=True,choices=('danbooru','e621'));a.add_argument('--kind',required=True,choices=('alias','implication'));a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true')
     a=sub.add_parser('import-pose-gallery-json');a.add_argument('file',type=Path);a.add_argument('--limit',type=int);a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true')
     a=sub.add_parser('import-costume-gallery-json');a.add_argument('file',type=Path);a.add_argument('--source-id',default='ai_pose_gallery',choices=('ai_pose_gallery','charadb'));a.add_argument('--limit',type=int);a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true')
+    a=sub.add_parser('import-storyaura-characters');a.add_argument('file',type=Path);a.add_argument('--limit',type=int);a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true')
+    a=sub.add_parser('import-storyaura-appearance');a.add_argument('file',type=Path);a.add_argument('--limit',type=int);a.add_argument('--source-revision');a.add_argument('--dry-run',action='store_true')
     a=sub.add_parser('create-story');a.add_argument('--title',required=True);a.add_argument('--mode',choices=('BLIND','NON_BLIND'),required=True);a.add_argument('--text-file',type=Path,required=True);a.add_argument('--label',action='append',default=[])
     a=sub.add_parser('add-role');a.add_argument('--story-id',required=True);a.add_argument('--key',required=True);a.add_argument('--description',default='')
     a=sub.add_parser('bind-role');a.add_argument('--story-id',required=True);a.add_argument('--key',required=True);a.add_argument('--character-id',required=True);a.add_argument('--outfit-id')
@@ -833,7 +837,7 @@ def main():
                                    source_revision=args.source_revision,dry_run=args.dry_run,
                                    from_character_core_tags=args.from_character_core_tags)
             print(json.dumps(result,indent=2,ensure_ascii=False))
-        elif args.action=='import-tag-relations-json':
+        elif args.action in ('import-tag-relations-json','import-tag-relations-csv'):
             from catalog_imports import import_tag_relations_json
             result=import_tag_relations_json(con,args.file,args.namespace,args.kind,
                                              source_revision=args.source_revision,dry_run=args.dry_run)
@@ -847,6 +851,16 @@ def main():
             from catalog_imports import import_generic_outfits
             result=import_generic_outfits(con,args.file,source_id=args.source_id,limit=args.limit,
                                           source_revision=args.source_revision,dry_run=args.dry_run)
+            print(json.dumps(result,indent=2,ensure_ascii=False))
+        elif args.action=='import-storyaura-characters':
+            from catalog_imports import import_storyaura_characters
+            result=import_storyaura_characters(con,args.file,limit=args.limit,
+                                               source_revision=args.source_revision,dry_run=args.dry_run)
+            print(json.dumps(result,indent=2,ensure_ascii=False))
+        elif args.action=='import-storyaura-appearance':
+            from catalog_imports import import_storyaura_appearance
+            result=import_storyaura_appearance(con,args.file,limit=args.limit,
+                                               source_revision=args.source_revision,dry_run=args.dry_run)
             print(json.dumps(result,indent=2,ensure_ascii=False))
         elif args.action=='search-catalog':
             print(json.dumps(search_catalog(con,args.kind,args.query,args.limit,args.namespace),

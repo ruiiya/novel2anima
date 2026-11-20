@@ -67,4 +67,3 @@ Lưu trong sidecar như `shot_spec.json`, `prompt.manifest.json`; không đưa c
 - Nội dung nguồn được phân loại explicit → tự đổi thành nhãn SFW mơ hồ khi chưa được yêu cầu.
 - Ba nhân vật có danh tính → hai nhân vật vô danh để dễ bố cục.
 - Dấu vết thể chất đã xác nhận → cảnh sau tự trở về sạch sẽ/nguyên trạng mà không có sự kiện chuyển tiếp.
-- Tuổi chưa rõ → tự bịa tuổi trưởng thành để khiến yêu cầu trông có vẻ đủ điều kiện render.

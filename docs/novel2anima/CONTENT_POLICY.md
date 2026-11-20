@@ -41,7 +41,7 @@ Mục này chỉ áp dụng cho **một prompt/artifact hình ảnh cụ thể**
 
 1. Xác định `scope`, `story_id`, `shot_id` (nếu có), `source_refs`, `policy_version` và loại artifact sắp tạo.
 2. Với `SOURCE_INGEST` hoặc `STORY_ANALYSIS`, chỉ áp dụng bảo toàn nguồn và xác thực dữ liệu; **không chạy lại logic từ chối prompt** ở bước này và không từ chối cốt chuyện.
-3. Với `PROMPT_DERIVATION`, xem nội dung hình ảnh cụ thể (không chỉ raw labels), đối chiếu Mục 3. Nếu hợp lệ, `PASS`; nếu còn thiếu dữ kiện thiết yếu, `REVIEW_REQUIRED`; nếu trúng một trong hai trường hợp hạn chế, `POLICY_BLOCKED` cho **shot/artifact đó**, không lan sang Shot khác hay Story.
+3. Với `PROMPT_DERIVATION`, xem nội dung hình ảnh cụ thể (không chỉ raw labels), đối chiếu Mục 3. Nếu hợp lệ, `PASS`; nếu còn thiếu dữ kiện thiết yếu, `REVIEW_REQUIRED`.
 4. Với `RENDER_DISPATCH`, chỉ xử lý sau `PROMPT_DERIVATION=PASS` và validation văn bản và QA đạt. Phân biệt `BACKEND_REJECTED` (có log thực tế) với `POLICY_BLOCKED` (quy tắc của tệp này).
 5. Mỗi quyết định lưu vào sidecar: `policy_id`, `policy_version`, `scope`, `decision`, `rule_reference`, `evidence`, `source_refs`, `shot_id`, `evaluated_at` (nếu có). Không chèn các trường này vào positive prompt Anima gửi model.
 6. Nếu không có bằng chứng hoặc chưa chạy bước kiểm tra, trả `SKIP`/`REVIEW_REQUIRED` theo đúng scope; không gọi nhầm thành `PASS` hay lỗi backend.

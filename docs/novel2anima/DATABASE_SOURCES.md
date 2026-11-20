@@ -8,6 +8,7 @@ Nguồn được khai báo trong `source_registry` và manifest `database/collec
 |---|---|---|---|
 | DeepGHS Character Index | **Giữ — P0** | Series, character, core tags, post count | `character-profile`, `blind-cast`, `shot-spec` |
 | DraconicDragon Danbooru CSV | **Giữ có chọn lọc — P1** | Chỉ Danbooru tag gắn với `character_tags` đã import + aliases | `catalog-ingest`, `character-profile` |
+| StoryAura Danbooru Dataset CSV | **Giữ có chọn lọc — P1** | Chỉ `danbooru_character_tags_corrected.csv` (nhân vật, alias, copyright, parent, base_character) và `danbooru_character_appearance_corrected.csv` (looks/outfit làm CANDIDATE tags). Loại artist/general/near-synonym, không ảnh | `catalog-ingest`, `character-profile`, `blind-cast`, `shot-spec` |
 | AI Pose Gallery outfit JSON | **Giữ có chọn lọc — P1** | `costume-zh.json`, `costume-anime-zh.json`: tên/tags/keywords | `character-profile`, `shot-spec`, `continuity` |
 | AI Pose Gallery pose JSON | **Pilot sau — P1** | Chỉ sau khi caption tiếng Anh đã review; hiện `enabled:false` | `shot-spec`, `anima-prompt` |
 | Danbooru API aliases/implications | **P1, thủ công** | Export có sẵn; không bypass Cloudflare | `catalog-ingest` |
@@ -39,6 +40,8 @@ python database/src/collect_sources.py verify
 
 python database/src/n2m_db.py import-deepghs-md database/imports/deepghs/blue_archive.md
 python database/src/n2m_db.py import-tags-csv database/imports/dbr-e621-lists-archive/danbooru/danbooru_2026-10-01_pt20-ia-dd.csv --namespace danbooru --from-character-core-tags
+python database/src/n2m_db.py import-storyaura-characters database/imports/storyaura-danbooru-csv/danbooru_character_tags_corrected.csv --source-revision 2026-10-29-corrected
+python database/src/n2m_db.py import-storyaura-appearance database/imports/storyaura-danbooru-csv/danbooru_character_appearance_corrected.csv --source-revision 2026-10-29-corrected
 python database/src/n2m_db.py import-costume-gallery-json database/imports/ai-pose-gallery/data/costume-zh.json --source-id ai_pose_gallery
 python database/src/n2m_db.py import-costume-gallery-json database/imports/ai-pose-gallery/data/costume-anime-zh.json --source-id charadb
 ```
