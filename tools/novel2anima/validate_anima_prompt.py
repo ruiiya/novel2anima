@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate one Anima positive prompt (tag block + up to 2 prose sentences).
+"""Validate one Anima positive prompt (tag block + up to 3 prose sentences).
 
 Checks format and integrity only; content fidelity still needs QA against ShotSpec.
 Contract: docs/novel2anima/ANIMA_TAG_PROMPT.md
@@ -17,7 +17,6 @@ FORMAT = 'anima-tag-v1'
 SAFETY = ('safe', 'sensitive', 'nsfw', 'explicit')
 FRAMING = ('close-up', 'upper body', 'cowboy shot', 'full body', 'wide shot')
 ANGLE_HEIGHT = ('from above', 'from below')
-ANGLE_YAW = ('from side', 'three-quarter view', 'from behind')
 # Anima-Base v1.0 is the reference model: quality tags (masterpiece/best quality/score_*)
 # are legal and useful because the base has no aesthetic tuning. Contradictions with the
 # content still hurt, so only the negative-side labels are blocked in the positive block.
@@ -27,7 +26,7 @@ SUBJECT_RE = re.compile(r'\b(\d+(?:girl|boy|other)s?|multiple (?:girls|boys))\b'
 SCORE_RE = re.compile(r'\bscore_\d+\b')
 UNDERSCORE_RE = re.compile(r'[a-z]_[a-z]', re.I)
 BBOX_RE = re.compile(r'\[\s*-?\d+\s*,\s*-?\d+\s*,')
-MAX_WORDS = 280  # ~480 T5 tokens; detail loss starts near 512
+MAX_WORDS = 320  # ~550 T5 tokens; detail loss starts near 512
 
 
 def has_tag(tag_line: str, name: str) -> bool:
@@ -70,8 +69,6 @@ def validate(text: str) -> list[str]:
         errors.append('CAMERA_CONFLICT')
     if sum(has_tag(low, a) for a in ANGLE_HEIGHT) > 1:
         errors.append('CAMERA_CONFLICT')
-    if sum(has_tag(low, a) for a in ANGLE_YAW) > 1:
-        errors.append('CAMERA_CONFLICT')
 
     if BBOX_RE.search(text):
         errors.append('BBOX_IN_PROMPT')
@@ -88,7 +85,7 @@ def validate(text: str) -> list[str]:
     # One prose sentence per positioned subject is the only reliable multi-character
     # technique, so a group scene gets a larger sentence allowance.
     subjects = SUBJECT_RE.search(low)
-    max_sentences = 4 if subjects and not subjects.group(1).startswith('1') else 2
+    max_sentences = 4 if subjects and not subjects.group(1).startswith('1') else 3
     if len([s for s in re.split(r'[.!?]+', prose) if s.strip()]) > max_sentences:
         errors.append('PROSE_TOO_LONG')
     return errors

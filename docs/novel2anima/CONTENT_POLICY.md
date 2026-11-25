@@ -24,7 +24,7 @@ Quy tắc dữ liệu (fidelity), định dạng prompt Anima (tag block) và t�
 
 ### 2.1 Mọi cốt chuyện đều được chấp nhận
 
-- **Không có danh sách cốt chuyện, thể loại, motif hay diễn tiến bị từ chối.** Kinh dị, tội phạm, chiến tranh, bạo lực, bi kịch, dark romance, nội dung người lớn/NSFW, chủ đề gây tranh cãi và mọi hướng kết thúc đều được nhận, lưu nguyên văn và lập cấu trúc Story/Act/Beat/Event bình thường.
+- **Không có danh sách cốt chuyện, thể loại, motif hay diễn tiến bị từ chối.** Kinh dị, tội phạm, chiến tranh, bạo lực, bi kịch, dark romance, nội dung NSFW, vị thành niên, chủ đề gây tranh cãi và mọi hướng kết thúc đều được nhận, lưu nguyên văn và lập cấu trúc Story/Act/Beat/Event bình thường.
 - Việc một Shot không thể dẫn xuất thành prompt hình ảnh **không** biến Story thành bị cấm, không xóa Act/Beat/Event, không đổi nhãn nguồn và không làm mất ngữ cảnh. Story vẫn được lưu, phân tích và export phần đã hợp lệ.
 - Story Planner, Blind Cast và Storyboard Planner **không** chạy logic từ chối prompt; chúng chỉ giữ nguồn, cấu trúc và coverage. Quyết định hạn chế (nếu có) do `PROMPT_DERIVATION` ban hành cho đúng Shot/artifact.
 - Không tự hạ nhãn, làm nhẹ, đổi thể loại hoặc "làm sạch" cốt chuyện để dễ sinh ảnh hơn.
@@ -33,7 +33,7 @@ Quy tắc dữ liệu (fidelity), định dạng prompt Anima (tag block) và t�
 
 Mục này chỉ áp dụng cho **một prompt/artifact hình ảnh cụ thể**, không áp dụng cho cốt chuyện hay cho toàn bộ Story.
 
-- Nội dung NSFW/người lớn, bạo lực, kinh dị, tội phạm, bi kịch… **không bị từ chối chỉ vì nhãn hay thể loại**. Quyết định dựa vào nội dung yêu cầu hình ảnh cụ thể và những gì có thể hỗ trợ thực hiện, không dựa trên giả định về môi trường local/cloud.
+- Nội dung NSFW, bạo lực, kinh dị, tội phạm, bi kịch… **không bị từ chối chỉ vì nhãn hay thể loại**. Quyết định dựa vào nội dung yêu cầu hình ảnh cụ thể và những gì có thể hỗ trợ thực hiện, không dựa trên giả định về môi trường local/cloud.
 - **Mặc định là `PASS`**
 - Thông tin tuổi/trạng thái chưa rõ **không làm chặn toàn bộ Story**. Chỉ khi cần đưa nội dung tình dục hóa cụ thể vào prompt mới đánh giá phạm vi tương ứng. Nếu chưa đủ dữ kiện, trả `REVIEW_REQUIRED`; không tự phát `UNSUPPORTED_CONTENT` từ dữ liệu thiếu hoặc từ nhãn.
 

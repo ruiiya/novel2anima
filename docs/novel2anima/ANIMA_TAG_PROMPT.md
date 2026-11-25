@@ -1,6 +1,6 @@
 # Novel2Anima — Hợp đồng Prompt Anima (tag block + câu bổ trợ)
 
-> **Định dạng canonical duy nhất:** Mỗi Shot → **một tag block** (dòng 1, lowercase, cách nhau `, `) + **tối đa 2 câu natural-language** (dòng 2, chỉ để đặt vị trí/quan hệ/ánh sáng mà tag không nói được). Model nhận nguyên văn bản này ở **positive prompt**. Không tạo JSON, bbox, item array, field name, hay `Prompt:` đầu dòng.
+> **Định dạng canonical duy nhất:** Mỗi Shot → **một tag block** (dòng 1, lowercase, cách nhau `, `) + **tối đa 3 câu natural-language** (dòng 2, chỉ để đặt vị trí/quan hệ/ánh sáng mà tag không nói được). Model nhận nguyên văn bản này ở **positive prompt**. Không tạo JSON, bbox, item array, field name, hay `Prompt:` đầu dòng.
 >
 > Hợp đồng **định dạng/kỹ thuật**, không quyết định nội dung được phép. Nội dung do `docs/novel2anima/CONTENT_POLICY.md` quyết định.
 
@@ -25,7 +25,7 @@
 ```
 [quality] , [safety] , [subject count] , [character] , [series] , [@artist] , [appearance] ,
 [clothing] , [expression] , [pose/action] , [camera] , [environment] , [lighting]
-<2 câu natural language: vị trí chủ thể trong khung, quan hệ actor→target, độ sâu, ánh sáng>
+<2–3 câu natural language: vị trí chủ thể trong khung, quan hệ actor→target, độ sâu, ánh sáng>
 ```
 
 Thứ tự trên là thứ tự chính thức của model card: `[quality/meta/year/safety] [1girl…] [character] [series] [artist] [general tags]`. Trong cùng một nhóm, thứ tự tuỳ ý. Tag bắt buộc có mặt:
@@ -72,7 +72,7 @@ Chỉ một framing và một angle trong một prompt. `close-up` loại trừ 
 
 ## Ngân sách token (không phải gợi ý)
 
-Anima tokenize hai lần (Qwen-3 0.6B + T5); ngưỡng quan sát thực tế: **≤ 280 từ / ~480 T5 token**. Vượt ~512 token bắt đầu mất chi tiết (chất liệu vải, phụ kiện, cử động tay); ~1000 token thì mặt/tay/chân vỡ. Prompt chuẩn của dự án ~40–70 tag + 2 câu ⇒ 120–200 từ. Validator chặn ở 280 từ.
+Anima tokenize hai lần (Qwen-3 0.6B + T5); ngưỡng quan sát thực tế: **≤ 320 từ / ~550 T5 token**. Vượt ~600 token bắt đầu mất chi tiết (chất liệu vải, phụ kiện, cử động tay); ~1000 token thì mặt/tay/chân vỡ. Prompt chuẩn của dự án ~45–80 tag + 2–3 câu ⇒ 130–230 từ. Validator chặn ở 320 từ.
 
 ## Ví dụ hợp lệ
 
@@ -81,7 +81,7 @@ masterpiece, best quality, score_7, sensitive, 1girl, solo, karin (blue archive)
 Karin stands sideways in the left third of the frame with her arms folded under her chest. The empty green room recedes behind her, and flat daylight from the ceiling keeps every surface evenly lit.
 ```
 
-- Dòng 1 là tag block; dòng 2 tối đa **2 câu** (nhóm cảnh 2 người trở lên: tối đa **4 câu**, mỗi chủ thể một câu có vị trí), chỉ chứa thông tin tag không diễn đạt được (vị trí trong khung, quan hệ, độ sâu). Prompt thuần natural language (không dùng ở đây) cần **tối thiểu 2 câu** theo model card; câu quá ngắn dễ sinh nội dung ngoài ý.
+- Dòng 1 là tag block; dòng 2 tối đa **3 câu** (nhóm cảnh 2 người trở lên: tối đa **4 câu**, mỗi chủ thể một câu có vị trí), chỉ chứa thông tin tag không diễn đạt được (vị trí trong khung, quan hệ, độ sâu). Prompt thuần natural language (không dùng ở đây) cần **tối thiểu 2 câu** theo model card; câu quá ngắn dễ sinh nội dung ngoài ý.
 - Câu natural language **không** được thêm/bớt người, đổi trang phục, đổi actor→target hay đổi mức nội dung.
 
 ## Lưu trữ và xuất file

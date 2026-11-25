@@ -13,6 +13,15 @@ import re
 
 NARRATIVE_ROLES = {'ESTABLISH','INITIATE','PROLONG','PEAK','REACTION','RESOLUTION','TRANSITION','DETAIL'}
 SAFETY = {'safe','sensitive','nsfw','explicit'}
+# Any of these means somebody else (or something) shares the frame, so 'solo' is wrong.
+PARTNER_TAGS = {'sex','penetration','vaginal','anal','oral','fellatio','deep throat','irrumatio',
+    'handjob','paizuri','kissing','hugging','holding leash','leash pull','thrusting','mounting',
+    'mating press','prone bone','suspended congress','bestiality','knot','creampie','cum in mouth',
+    'cum on face','group sex','public sex','size difference','orc','goblin','hellhound','dog','wolf',
+    'beastman','minotaur','tentacles','tentacle sex','slime','1boy','2girls','multiple girls','male'}
+SEX_TAGS = {'sex','vaginal','anal','penetration','bestiality','knot'}
+MOTION_TAGS = {'ACTION': ['motion blur'], 'UNDRESS': ['motion blur'],
+               'CLIMAX': ['motion lines', 'shaking']}
 
 
 def ensure(ok, message):
@@ -132,6 +141,14 @@ def compile_prompt(plan, slot, shot_spec, moment):
     for prop in slot.get('prop_keys',[]):
         output+=visual['props'][prop]['prompt_tags']
     output+=visual['styles'][slot['style_key']]['prompt_tags']
+    # A second body in frame makes 'solo' a lie: the renderer answers with a duplicate
+    # woman instead of the partner. Drop it whenever the partner is tagged anywhere.
+    if 'solo' in output and any(t in output for t in PARTNER_TAGS):
+        output=[t for t in output if t!='solo']
+    # Static poses read as frozen frames; give the acting shots visible motion.
+    output+=MOTION_TAGS.get(slot.get('purpose'), [])
+    if any(t in output for t in SEX_TAGS):
+        output+=['thrusting']
     selected=set(locked+slot['visible_location_tags']+scene['lighting_tags']+
         visual['styles'][slot['style_key']]['prompt_tags'])
     for prop in slot.get('prop_keys',[]):
