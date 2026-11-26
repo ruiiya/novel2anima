@@ -219,7 +219,7 @@ def main():
     p.add_argument('--db',type=Path,default=DEFAULT_DB)
     sub=p.add_subparsers(dest='command',required=True)
     q=sub.add_parser('save-plan');q.add_argument('--story-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--expected-revision',type=int)
-    q=sub.add_parser('save-storyboard');q.add_argument('--story-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--expected-revision',type=int)
+    q=sub.add_parser('save-storyboard');q.add_argument('--story-id',required=True);q.add_argument('--file',type=Path,required=True);q.add_argument('--expected-revision',type=int);q.add_argument('--force-new-revision',action='store_true',help='Re-seal after manual feedback; keep older approved edition immutable')
     q=sub.add_parser('get-storyboard');q.add_argument('--storyboard-id',required=True)
     q=sub.add_parser('compare-storyboards');q.add_argument('--old-id',required=True);q.add_argument('--new-id',required=True)
     q=sub.add_parser('seal-storyboard');q.add_argument('--storyboard-id',required=True);q.add_argument('--file',type=Path,required=True)
@@ -237,7 +237,7 @@ def main():
         apply_migrations(con)
         c=args.command
         if c=='save-plan':value=save_plan(con,args.story_id,load_json(args.file),args.expected_revision)
-        elif c=='save-storyboard':value=save_storyboard(con,args.story_id,load_json(args.file),args.expected_revision)
+        elif c=='save-storyboard':value=save_storyboard(con,args.story_id,load_json(args.file),args.expected_revision,args.force_new_revision)
         elif c=='get-storyboard':value=get_storyboard(con,args.storyboard_id)
         elif c=='compare-storyboards':value=compare_storyboards(con,args.old_id,args.new_id)
         elif c=='seal-storyboard':value=seal_storyboard(con,args.storyboard_id,load_json(args.file))

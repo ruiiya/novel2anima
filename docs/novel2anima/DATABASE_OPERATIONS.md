@@ -45,7 +45,7 @@ V4: sau materialize Event và trước ShotSpec, lưu/đọc storyboard đã ch�
 
 ## 4. Natural Prompt (định dạng duy nhất gửi model)
 
-Soạn `drafts/S01.txt` theo `docs/novel2anima/ANIMA_TAG_PROMPT.md`; dòng 1 là tag block Anima, dòng 2 tối đa 2 câu bổ trợ bằng tiếng Anh mặc định. Natural prompt được **soạn trực tiếp từ ShotSpec** bởi skill/LLM của dự án; các script SQLite không tự sinh nội dung.
+Soạn `drafts/S01.txt` theo `docs/novel2anima/ANIMA_TAG_PROMPT.md`; dòng 1 là tag block Anima, dòng 2 tối đa 3 câu bổ trợ (cảnh nhiều người: 4 câu) bằng tiếng Anh mặc định. Natural prompt được **soạn trực tiếp từ ShotSpec** bởi skill/LLM của dự án; các script SQLite không tự sinh nội dung.
 
 ```powershell
 python tools/novel2anima/validate_natural_prompt.py drafts/S01.txt

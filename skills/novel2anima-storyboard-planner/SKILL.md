@@ -3,6 +3,12 @@ name: novel2anima-storyboard-planner
 description: "Biến Story/Act/Beat/Event đã duyệt thành storyboard có nhịp kể, Shot purpose, Visual Bible, thứ tự/nhánh, coverage nguồn và kế hoạch sửa cục bộ cho Novel2Anima; dùng cho Blind và Non-Blind trước ShotSpec."
 ---
 # Novel2Anima — Storyboard Planner
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+Sau `STORY` và `RESEARCH_VISUAL` được duyệt, AI tự xác định số trang, mục đích từng Shot, nhịp kể, camera, actor/target và quan hệ không gian; đánh giá cinematic/immersion/scene continuity và show toàn bộ storyboard. Chỉ trình gate `STORYBOARD` khi người dùng đã được xem bản hoàn chỉnh; phê duyệt phải ở cấp V6 stage, không chỉ trường `plan.approval`. Sau feedback, `--force-new-revision` cho board edition nếu phải reseal lại cùng một cấu trúc Shot.
+
 
 ## V5: scene lock và kế hoạch shot liên kết
 

@@ -3,6 +3,12 @@ name: novel2anima-character-profile
 description: "Quản lý định danh và trang phục của nhân vật Novel2Anima có thể tái sử dụng, kèm màu sắc và bằng chứng, không thay đổi trạng thái theo Story hoặc nhãn nội dung."
 ---
 # Novel2Anima — Thư viện nhân vật và trang phục
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+Kết quả nghiên cứu cần kết tinh thành `RESEARCH_VISUAL` (visual_bible, research_summary, references/provenance) để user duyệt; không tự biến tag từ catalog thành ngoại hình/trang phục canon không được xác nhận. Khi Bible đổi, các Stage phụ thuộc tự stale.
+
 
 ## V5: locked identity / outfit tags
 

@@ -1,8 +1,14 @@
 ---
 name: novel2anima-anima-prompt
-description: "Skill canonical: biên soạn positive prompt Anima (tag block + tối đa 2 câu bổ trợ) trực tiếp từ ShotSpec, character catalog, casting và continuity; không đi qua JSON Layout/bbox."
+description: "Skill canonical: biên soạn positive prompt Anima (tag block + tối đa 3 câu bổ trợ (cảnh nhiều người: 4 câu)) trực tiếp từ ShotSpec, character catalog, casting và continuity; không đi qua JSON Layout/bbox."
 ---
 # Novel2Anima — Anima Prompt (canonical)
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+Chỉ tạo bộ prompt cuối sau `STORYBOARD` stage được duyệt. Một Shot một Anima prompt, đúng locked blocks và continuity; kiểm tra cú pháp, chạy semantic QA/sequence QA rồi seal. `PROMPTS` là gate cuối phải được user xác nhận trước **studio export**. Phản hồi sau người dùng render chỉ dẫn đến revision prompt/ShotSpec và diff, không tự thay Story hoặc ảnh.
+
 
 ## V5: Prompt Compiler (bắt buộc cho storyboard V5)
 
@@ -37,7 +43,7 @@ Dòng 1 — tag block, đúng thứ tự chính thức của Anima:
 7. **Camera:** một framing + một angle từ danh sách đóng — `close-up` / `upper body` / `cowboy shot` / `full body` / `wide shot`, × `from above` / `from below` / `eye level` / `from side` / `three-quarter view`.
 8. **Environment + lighting:** địa điểm, 1–2 vật thể nhận diện, thời điểm; 1–3 tag ánh sáng vật lý tương thích.
 
-Dòng 2 (tuỳ chọn, **tối đa 2 câu**; cảnh ≥2 người: tối đa 4 câu) — chỉ chứa thứ tag không nói được: chủ thể nằm ở đâu trong khung, quan hệ actor→target, độ sâu, hướng sáng. Không kể chuyện, không lời thoại, không lệnh “create/generate”.
+Dòng 2 (tuỳ chọn, **tối đa 3 câu nếu một người, 4 câu nếu nhiều người**) — chỉ chứa thứ tag không nói được: chủ thể nằm ở đâu trong khung, quan hệ actor→target, độ sâu, hướng sáng. Không kể chuyện, không lời thoại, không lệnh “create/generate”.
 
 Với cảnh ≥2 người, thứ tự bắt buộc trong câu: count → cảnh chung → vị trí (left/right, foreground/background) → chủ thể A + ngoại hình A → chủ thể B + ngoại hình B → tương tác. Không liệt kê tên trần, không mô tả hai bộ trang phục trước khi gán vị trí, không dùng cùng một màu cho mọi người.
 
@@ -48,7 +54,7 @@ Với cảnh ≥2 người, thứ tự bắt buộc trong câu: count → cảnh
 - **Quality tag hợp lệ với Base:** `masterpiece, best quality, good quality, normal quality`, `score_9`…`score_1` — dùng hay không đều được; prefix khuyến nghị chính thức là `masterpiece, best quality, score_7, `. Cấm trong positive: `worst quality`, `low quality` (tự mâu thuẫn), `ultra detailed`, `8k`, `4k`. `highres`, `absurdres`, `anime screenshot`, `official art`, `year 2025`/`newest` là **meta/era tag hợp lệ**.
 - Không tag tự mâu thuẫn: hai framing, hai angle cùng trục, `short hair` + `very long hair`, `solo` + `2girls`.
 - Không tag mọi thứ nhìn thấy; ưu tiên đúng thứ tự trên, bỏ tag không chắc tác dụng.
-- Ngân sách: **≤ 280 từ** (~480 T5 token). Vượt ~512 token bắt đầu mất chi tiết vải/phụ kiện/cử động tay.
+- Ngân sách: **≤ 320 từ** (~480 T5 token). Vượt ~512 token bắt đầu mất chi tiết vải/phụ kiện/cử động tay.
 - Weight `(tag:1.5)` chỉ khi tag cần thiết lặp lại bị mất, thang 1.5 → 1.8 → 2.0. Mặc định không weight.
 - Artist tag nếu có phải prefix `@`; không bịa tên artist từ style label.
 - Mỗi Shot tự đủ ngữ cảnh: không “same woman as previous image”, không “continue the last scene”.
@@ -59,7 +65,7 @@ Với cảnh ≥2 người, thứ tự bắt buộc trong câu: count → cảnh
 1. **Đối chiếu nguồn:** tải đúng revision, ghi source_refs, không tự gán thông tin thiếu thành canon.
 2. **Visual checklist nội bộ:** số người, identity anchors, outfit, actor/target, tay/cử chỉ, phản ứng, framing, background, light, chữ thật sự nhìn thấy. Checklist chỉ để QA, không vào prompt.
 3. **Tra tag:** lấy tag appearance/clothing/pose từ catalog và Visual Bible; chỉ tạo tag mới khi catalog thiếu, và ghi lý do.
-4. **Viết tag block** theo 7 block; **rồi** viết tối đa 2 câu bổ trợ cho vị trí/quan hệ nếu Shot cần.
+4. **Viết tag block** theo 7 block; **rồi** viết tối đa 3 câu bổ trợ (cảnh nhiều người: 4 câu) cho vị trí/quan hệ nếu Shot cần.
 5. **Validate:** `tools/novel2anima/validate_anima_prompt.py` phải PASS (kiểm tra cú pháp, safety tag, framing, mâu thuẫn camera, ngân sách từ).
 6. **QA:** gọi `novel2anima-fidelity-qa`; chỉ ghi `PASS` khi thực sự đã đối chiếu ShotSpec.
 7. **Lưu:** `n2m_workflow.py save-natural-prompt --shot-id SHOT_ID --file drafts/S01.txt`, rồi `save-qa --kind PROMPT`.

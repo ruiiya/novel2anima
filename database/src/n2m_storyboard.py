@@ -166,7 +166,7 @@ def _validate_plan(con, story_id, obj, story, plan):
     return contexts
 
 
-def save_storyboard(con, story_id, obj, expected_revision=None):
+def save_storyboard(con, story_id, obj, expected_revision=None, force_new_revision=False):
     # Serialize competing writers before reading revisions.
     con.execute('BEGIN IMMEDIATE')
     try:
@@ -177,7 +177,7 @@ def save_storyboard(con, story_id, obj, expected_revision=None):
         revision = prev['revision'] if prev else 0
         require(expected_revision is None or expected_revision == revision, 'STALE_STORYBOARD_REVISION')
         body = js(obj)
-        if prev and prev['plan_json'] == body and prev['plan_id'] == plan['id'] and all(
+        if prev and not force_new_revision and prev['plan_json'] == body and prev['plan_id'] == plan['id'] and all(
                 sha(js(contexts[r['shot_key']])) == r['context_sha256']
                 for r in con.execute('SELECT shot_key,context_sha256 FROM storyboard_shots WHERE storyboard_id=?',
                                      (prev['id'],))):

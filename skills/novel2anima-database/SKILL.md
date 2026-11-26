@@ -3,6 +3,12 @@ name: novel2anima-database
 description: "Quản lý SQLite migration, Story/Shot revisions, catalog và export prompt Anima; DB kết thúc ở prompt, không liên quan render."
 ---
 # Novel2Anima — Database Manager
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+V6 dùng migration `011_studio_process.sql` (additive), CLI `database/src/n2a_studio.py` và manifest `studio.manifest.json`. Mọi Stage artifact/decision append-only, approval pin revision+SHA256; Story đã vào Studio phải có `PROMPTS` approved mới export, kể cả gọi CLI legacy. Không ghi render jobs/ảnh hoặc sửa migration 001–010.
+
 
 ## V5 database migration và CLI
 

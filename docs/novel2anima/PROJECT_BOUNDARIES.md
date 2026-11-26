@@ -7,7 +7,7 @@
 
 Novel2Anima là **sản phẩm và mã nguồn độc lập** (*own product and codebase*), không phải fork, bản migration, plugin, adapter, lớp tương thích, tiện ích mở rộng hay biến thể triển khai của bất kỳ dự án chuyển truyện thành ảnh nào trước đây.
 
-**Đầu ra duy nhất gửi model ở V4 là Anima positive prompt (tag block + tối đa 2 câu bổ trợ) dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/Storyboard/ShotSpec thuộc Novel2Anima và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
+**Đầu ra duy nhất gửi model ở V4 là Anima positive prompt (tag block + tối đa 3 câu bổ trợ (cảnh nhiều người: 4 câu)) dạng text.** Logic giữ nguyên nội dung Story/Act/Beat/Storyboard/ShotSpec thuộc Novel2Anima và phải được xây dựng, kiểm thử, quản lý phiên bản ngay tại đây.
 
 ## Các phụ thuộc bị cấm
 

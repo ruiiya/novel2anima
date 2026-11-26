@@ -3,6 +3,12 @@ name: novel2anima-story-planner
 description: "Lập Story, Act, Beat và diễn tiến sự kiện của Novel2Anima mà không bịa hoặc làm nhẹ ý định người dùng, giữ nhãn nguồn nhạy cảm và tính liên tục ngữ nghĩa."
 ---
 # Novel2Anima — Lập kế hoạch Story
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+Trước tạo storyboard: trình **toàn Story** gồm nhân vật, Act/Beat, diễn biến, kết thúc và full-story review (động cơ/logic/tình tiết/nhịp cảm xúc), chờ user chốt. Sau khi materialize/ghi plan, `submit-stage --stage STORY` kèm review JSON; quyết định `APPROVED` chỉ ghi sau xác nhận người dùng. Khi Story đổi, downstream phải review lại revision mới.
+
 
 ## V5: narrative plan
 

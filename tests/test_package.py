@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 class PackageTests(unittest.TestCase):
     def test_all_skill_metadata(self):
         skills=list((ROOT/'skills').glob('*/SKILL.md'))
-        self.assertEqual(len(skills),12)
+        self.assertEqual(len(skills),13)
         for file in skills:
             with self.subTest(file=file):
                 text=file.read_text(encoding='utf-8')
@@ -38,6 +38,9 @@ class PackageTests(unittest.TestCase):
             result=subprocess.run([sys.executable,str(ROOT/'install.py'),'--target',tmp,'--mode','claude'],capture_output=True,text=True)
             self.assertEqual(result.returncode,0,result.stderr)
             self.assertTrue((Path(tmp)/'.claude/skills/novel2anima-anima-prompt/SKILL.md').exists())
+            self.assertTrue((Path(tmp)/'.claude/skills/novel2anima-studio-process/SKILL.md').exists())
+            self.assertTrue((Path(tmp)/'database/migrations/011_studio_process.sql').exists())
+            self.assertTrue((Path(tmp)/'database/src/n2a_studio.py').exists())
             self.assertTrue((Path(tmp)/'.claude/skills/novel2anima-storyboard-planner/SKILL.md').exists())
             self.assertTrue((Path(tmp)/'database/migrations/008_visual_storytelling.sql').exists())
             self.assertTrue((Path(tmp)/'database/migrations/009_narrative_continuity.sql').exists())

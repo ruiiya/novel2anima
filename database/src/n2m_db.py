@@ -595,9 +595,26 @@ def _prompt_bundle_data(con, prompt_id: str):
     return prompt, qa
 
 
+def _studio_export_guard(con, story_id):
+    """V6 stories cannot bypass approval via legacy CLI export commands.
+
+    Legacy stories (no V6 stage artifacts) remain readable for migration and
+    previous tests. Once a story enters Studio it requires approved PROMPTS.
+    """
+    if not _table_exists(con, 'studio_artifacts'):
+        return
+    managed = con.execute('SELECT 1 FROM studio_artifacts WHERE story_id=? LIMIT 1',
+                          (story_id,)).fetchone()
+    if managed:
+        from n2a_studio import latest, valid_approval
+        if not valid_approval(con, latest(con, story_id, 'PROMPTS')):
+            raise ValueError('STUDIO_PROMPTS_APPROVAL_REQUIRED')
+
+
 def export_bundle(con, prompt_id: str, out_dir: Path, qa_id=None):
     """Export natural text and traceability sidecars, no renderer dependency."""
     prompt, qa = _prompt_bundle_data(con, prompt_id)
+    _studio_export_guard(con, prompt['story_id'])
     if qa and qa['verdict'] == 'BLOCKED':
         raise ValueError('Blocked QA for natural prompt; export refused')
     if json.loads(prompt['shot_spec_json']).get('visual_context_sha256'):
@@ -646,6 +663,7 @@ def export_story_prompts(con, story_id: str, out_dir: Path, storyboard_id=None):
     """
     if not con.execute('SELECT 1 FROM stories WHERE id=?', (story_id,)).fetchone():
         raise ValueError(f'Story not found: {story_id}')
+    _studio_export_guard(con, story_id)
     from n2m_storyboard import sealed_selection
     selection = sealed_selection(con,story_id,storyboard_id)
     if selection:

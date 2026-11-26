@@ -1,6 +1,12 @@
+# Novel2Anima V6 — Story & Prompt Studio
+
+**Pipeline chính:** Hội thoại → chốt Story → Research/Visual Bible → duyệt Storyboard → Anima Prompts + QA → duyệt → export. **Không tạo hoặc quản lý ảnh/render.**
+
+Đọc [hướng dẫn Studio V6](docs/novel2anima/STUDIO_V6.md) để dùng approval CLI `database/src/n2a_studio.py`. Các lệnh export V5 vẫn tương thích với Story legacy; Story đã đăng ký Studio phải có cổng `PROMPTS` được duyệt.
+
 # Novel2Anima Skills V5 — Narrative & Visual Continuity · Database-First
 
-Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt Anima (tag block + tối đa 2 câu bổ trợ, UTF-8)** cho Anima-Base-v1.0. **Không dùng Layout JSON / bbox** trong luồng mới.
+Novel2Anima là project **độc lập**, hỗ trợ **Blind** và **Non-Blind**. Mỗi Shot được viết thành **một prompt Anima (tag block + tối đa 3 câu bổ trợ (cảnh nhiều người: 4 câu), UTF-8)** cho Anima-Base-v1.0. **Không dùng Layout JSON / bbox** trong luồng mới.
 
 ```text
 Story → Act → Beat/Event → Visual Bible + Storyboard → ShotSpec → Continuity
@@ -27,7 +33,7 @@ python database/src/n2m_db.py stats --detailed
 
 **Nâng cấp V4 → V5:** backup SQLite, chạy installer --upgrade và init. Migration 009 giữ lịch sử V4, bổ sung moment và các dependency mới. Story mới dùng storyboard `schema_version: 5`, một pipeline chung cho ảnh độc lập và chuỗi diễn biến. Đọc [hợp đồng V5](docs/novel2anima/NARRATIVE_CONTINUITY.md), [mẫu storyboard V5](examples/storyboard_v5.example.json). Sau save-shot và save-continuity, chạy `python database/src/n2m_workflow.py compile-prompt --shot-id SHOT_ID --save`, QA và seal như trước (thêm shot_checks).
 
-## 12 skill
+## 13 skill (12 skill V5 + Studio Process V6)
 
 | Skill | Vai trò |
 |---|---|
@@ -42,7 +48,8 @@ python database/src/n2m_db.py stats --detailed
 | `novel2anima-fidelity-qa` | Kiểm tra fidelity trước export |
 | `novel2anima-database` | Migration, revision, transaction, QA/export |
 | `novel2anima-catalog-ingest` | Import catalog có nguồn, chỉ khi skill sử dụng |
-| `novel2anima-render-adapter` | File-only downstream, độc lập DB |
+| `novel2anima-render-adapter` | Tương thích legacy, không thuộc pipeline Studio V6 |
+| **`novel2anima-studio-process`** | **Approval gates, multi-Story dashboard, manual feedback, export prompt đã duyệt** |
 
 ## Sử dụng prompt theo Shot
 

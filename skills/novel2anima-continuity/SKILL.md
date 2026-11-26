@@ -3,6 +3,12 @@ name: novel2anima-continuity
 description: "Theo dõi before/delta/after của Novel2Anima qua các Shot và nhánh, tránh tự reset trang phục, màu sắc, đạo cụ, tư thế hoặc hệ quả câu chuyện."
 ---
 # Novel2Anima — Tính liên tục và quản lý trạng thái
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+Khi sửa thông tin có thể ảnh hưởng phiên bản đã duyệt, tạo revision mới, đánh dấu dependency cần review, không tự chuyển sang giai đoạn sau. Kỹ thuật chi tiết của từng Shot do AI tự lựa chọn, không yêu cầu user nhập pose/depth.
+
 
 ## V5: state trước / tại / sau shot
 

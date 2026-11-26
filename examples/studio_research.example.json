@@ -1,0 +1,8 @@
+{
+  "research_summary": "Phương án biểu đạt cho Story đã được người dùng chốt. Chưa sinh ảnh.",
+  "visual_bible": {
+    "characters": {"LEAD": {"description": "Nhận diện từ Story và casting", "provenance": "Story source / user confirmation"}},
+    "locations": {}, "props": {}, "styles": {}
+  },
+  "references": [{"kind": "user_story", "value": "story revision đã chốt"}]
+}

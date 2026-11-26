@@ -17,6 +17,7 @@ FORMAT = 'anima-tag-v1'
 SAFETY = ('safe', 'sensitive', 'nsfw', 'explicit')
 FRAMING = ('close-up', 'upper body', 'cowboy shot', 'full body', 'wide shot')
 ANGLE_HEIGHT = ('from above', 'from below')
+ANGLE_AZIMUTH = ('from side', 'three-quarter view')
 # Anima-Base v1.0 is the reference model: quality tags (masterpiece/best quality/score_*)
 # are legal and useful because the base has no aesthetic tuning. Contradictions with the
 # content still hurt, so only the negative-side labels are blocked in the positive block.
@@ -68,6 +69,8 @@ def validate(text: str) -> list[str]:
     elif len(framings) > 1:
         errors.append('CAMERA_CONFLICT')
     if sum(has_tag(low, a) for a in ANGLE_HEIGHT) > 1:
+        errors.append('CAMERA_CONFLICT')
+    if sum(has_tag(low, a) for a in ANGLE_AZIMUTH) > 1:
         errors.append('CAMERA_CONFLICT')
 
     if BBOX_RE.search(text):

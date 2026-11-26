@@ -3,6 +3,12 @@ name: novel2anima-fidelity-qa
 description: "QA bảo toàn Story/ShotSpec khi chuyển thành prompt Anima (tag block + câu bổ trợ); kiểm tra actor/target, identity/outfit, continuity, camera tag và chữ trong ảnh, không làm QA render trong DB."
 ---
 # Novel2Anima — Fidelity QA (Anima Prompt)
+## Studio V6 — áp dụng khi Story được quản lý theo quy trình Studio
+
+Đọc `docs/novel2anima/STUDIO_V6.md` và dùng `novel2anima-studio-process` để kiểm tra giai đoạn trước/sau công việc. Không tự ghi nhận người dùng đã chốt chỉ từ JSON hay sự im lặng. **CONTENT_POLICY** vẫn ở `docs/novel2anima/CONTENT_POLICY.md`; skill này không tự tạo quy tắc mới. V6 kết thúc tại prompt export; không tự gửi ảnh tới renderer.
+
+Review toàn Story và chuỗi Page: fidelity nguồn, narrative pacing/immersion, cinematic staging, actor-target, outfit/prop, timeline, scene, coverage và các evidence per-shot. QA cú pháp không được tự nhận là semantic PASS. Kết quả cung cấp cho `submit-stage` nhưng không tự duyệt stage; kiểm tra policy và lưu bằng chứng.
+
 
 ## V5: cross-shot QA
 
@@ -19,14 +25,14 @@ description: "QA bảo toàn Story/ShotSpec khi chuyển thành prompt Anima (ta
 - Kiểm tra từ `story_sources` → Plan/Act/Beat/Event → `shots`/ShotSpec → `continuity_snapshots` → `shot_prompts` và bản `.txt` sắp export.
 - So sánh **số người**, tên/đặc điểm nhân vật, outfit và màu, tay/cử chỉ/đạo cụ, vai trò actor→target, biểu cảm/phản ứng, bối cảnh, vị trí tương đối, camera, ánh sáng, state before/delta/after, và chữ cần xuất hiện nguyên văn.
 - Cảnh phải **độc lập khi render**; báo lỗi khi prompt chỉ nói “as before”, “the same outfit” mà không có chi tiết cần thiết hoặc dùng tên không rõ danh tính.
-- Kiểm tra prompt đúng **hợp đồng Anima**: dòng 1 là tag block lowercase, space không underscore, cách nhau `, `; có **safety tag** và **subject count**; không quality/`score_*`; không JSON/layout/bbox/code fence/metadata. Thiếu identity anchor bắt buộc (tóc/mắt/dấu nhận diện khi nhân vật đã cast) → finding, không `PASS`. Cấu trúc `PASS` không đủ để kết luận ngữ nghĩa `PASS`.
+- Kiểm tra prompt đúng **hợp đồng Anima**: dòng 1 là tag block lowercase, space không underscore, cách nhau `, `; có **safety tag** và **subject count**; cho phép quality/`score_*` hợp lệ; không JSON/layout/bbox/code fence/metadata. Thiếu identity anchor bắt buộc (tóc/mắt/dấu nhận diện khi nhân vật đã cast) → finding, không `PASS`. Cấu trúc `PASS` không đủ để kết luận ngữ nghĩa `PASS`.
 - Kiểm tra camera: đúng **một** framing tag + **một** angle tag trong danh sách đóng, khớp ShotSpec, không trộn hai trục góc; lệch hoặc mâu thuẫn → `CAMERA_CONTRADICTION`, không `PASS`. Validator trả `CAMERA_CONFLICT`/`FRAMING_TAG_MISSING`/`TAG_UPPERCASE`/`QUALITY_TAG_FORBIDDEN`/`TOKEN_BUDGET_EXCEEDED` thì sửa prompt hoặc tạo revision.
-- Kiểm tra ngân sách: prompt ≤ 280 từ; vượt ngưỡng thì tag chi tiết sẽ bị mất khi render → cắt tag ưu tiên thấp, không cắt identity anchor.
+- Kiểm tra ngân sách: prompt ≤ 320 từ; vượt ngưỡng thì tag chi tiết sẽ bị mất khi render → cắt tag ưu tiên thấp, không cắt identity anchor.
 - Kiểm tra quyết định `PROMPT_DERIVATION` và `policy_version` đã có; không tự kết luận từ nhãn NSFW, không đổi Story để tránh kết quả kiểm tra.
 
 ## Phát hiện
 
-Mỗi finding: `{shot_id, rule, status, source_pointer, target_pointer, evidence, suggestion, autofix:false}`. Các mã điển hình: `ACTOR_TARGET_MISMATCH`, `PARTICIPANT_LOSS`, `WARDROBE_COLOR_CHANGED`, `STATE_RESET_UNEXPLAINED`, `VISIBLE_TEXT_CHANGED`, `SCENE_MISMATCH`, `CAMERA_CONTRADICTION`, `FRAMING_TAG_MISSING`, `SAFETY_TAG_MISSING`, `TAG_GRAMMAR_INVALID`, `QUALITY_TAG_PRESENT`, `IDENTITY_ANCHOR_MISSING`, `PROMPT_OVER_BUDGET`, `PROVENANCE_MISSING`.
+Mỗi finding: `{shot_id, rule, status, source_pointer, target_pointer, evidence, suggestion, autofix:false}`. Các mã điển hình: `ACTOR_TARGET_MISMATCH`, `PARTICIPANT_LOSS`, `WARDROBE_COLOR_CHANGED`, `STATE_RESET_UNEXPLAINED`, `VISIBLE_TEXT_CHANGED`, `SCENE_MISMATCH`, `CAMERA_CONTRADICTION`, `FRAMING_TAG_MISSING`, `SAFETY_TAG_MISSING`, `TAG_GRAMMAR_INVALID`, `QUALITY_TAG_CONFLICT`, `IDENTITY_ANCHOR_MISSING`, `PROMPT_OVER_BUDGET`, `PROVENANCE_MISSING`.
 
 - `PASS`: Đã kiểm tra và không phát hiện sai lệch theo phạm vi được nêu; không bảo đảm model vẽ đúng.
 - `WARN`: Cần người duyệt thêm chi tiết không chắc chắn.
