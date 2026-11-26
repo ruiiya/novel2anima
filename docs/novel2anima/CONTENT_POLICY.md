@@ -16,7 +16,7 @@ Quy tắc dữ liệu (fidelity), định dạng prompt Anima (tag block) và t�
 |---|---|---|
 | `SOURCE_INGEST` | Nhận và lưu dữ liệu nguồn, nhãn phân loại và provenance như được cung cấp; không tự sửa thành phiên bản nhẹ hơn. Không có thể loại hay nhãn nào bị từ chối ở bước này | `ACCEPTED` hoặc `SKIP` nếu không có đầu vào/công cụ |
 | `STORY_ANALYSIS` | Blind Mode, Story Planner, ShotSpec và Continuity được đối chiếu, lập cấu trúc với **mọi cốt chuyện**; dữ liệu không phá hủy; tình trạng chưa rõ được ghi là chưa rõ | `PASS`, `WARN`, `CONFLICT` hoặc `SKIP` |
-| `PROMPT_DERIVATION` | Đánh giá **yêu cầu hình ảnh cụ thể của từng Shot**, không kết luận chỉ dựa trên từ khóa nhãn nguồn hay thể loại truyện; chỉ hai trường hợp ở Mục 3 phải dừng tạo prompt cho artifact đó | `PASS`, `REVIEW_REQUIRED` hoặc `POLICY_BLOCKED` |
+| `PROMPT_DERIVATION` | Đánh giá **yêu cầu hình ảnh cụ thể của từng Shot**, không kết luận chỉ dựa trên từ khóa nhãn nguồn hay thể loại truyện| `PASS`, `REVIEW_REQUIRED` hoặc `POLICY_BLOCKED` |
 | `RENDER_DISPATCH` | Chỉ gửi yêu cầu có prompt hợp lệ và quyết định `PROMPT_DERIVATION=PASS`; backend local không tự được gán hạn chế của dịch vụ cloud | `EXPORTED`, `GENERATED`, `SKIP`, `BACKEND_REJECTED` hoặc `POLICY_BLOCKED` |
 | `QA` | Kiểm tra fidelity, schema và hiệu lực quyết định policy độc lập với đánh giá chất lượng ảnh | `PASS`, `WARN`, `BLOCKED` hoặc `SKIP` |
 
